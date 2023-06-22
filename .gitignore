@@ -1,0 +1,24 @@
+node_modules
+.env
+coverage
+coverage.json
+docgen
+typechain
+
+#Hardhat files
+cache
+artifacts
+mocharc.json
+hardhat.config.js
+
+# env files
+.env*
+
+# solhint linter files
+scripts/createTradingGauge.js
+scripts/createLendingGauge.js
+scripts/runFunction.js
+.openzeppelin/unknown-11155111.json
+
+# contracts
+contracts/protocol/SingleSideVault.sol
