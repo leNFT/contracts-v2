@@ -149,32 +149,6 @@ contract LoanCenter is ILoanCenter, OwnableUpgradeable {
         _closeLoan(loanId);
     }
 
-    /// @notice Auxiliary function to close the loan
-    /// @param loanId The ID of the loan to close
-    function _closeLoan(uint256 loanId) internal {
-        // Cache loan NFTs array
-        uint256[] memory loanTokenIds = _loans[loanId].tokenIds;
-        // Get loans nft mapping
-        address loanCollection = _loans[loanId].asset;
-
-        // Remove nft to loan id mapping
-        for (uint256 i = 0; i < loanTokenIds.length; i++) {
-            delete _nftToLoanId[loanCollection][loanTokenIds[i]];
-        }
-
-        // Remove loan from user active loans
-        uint256[] memory userActiveLoans = _activeLoans[_loans[loanId].owner];
-        for (uint256 i = 0; i < userActiveLoans.length; i++) {
-            if (userActiveLoans[i] == loanId) {
-                _activeLoans[_loans[loanId].owner][i] = userActiveLoans[
-                    userActiveLoans.length - 1
-                ];
-                _activeLoans[_loans[loanId].owner].pop();
-                break;
-            }
-        }
-    }
-
     /// @notice Start an auction for a loan
     /// @dev Sets its state to Auctioned and creates the liquidation data
     /// @dev Only the market contract can call this function

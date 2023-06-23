@@ -18,6 +18,7 @@ import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {DataTypes} from "../../../libraries/types/DataTypes.sol";
 import {PercentageMath} from "../../../libraries/utils/PercentageMath.sol";
 import {ILiquidityPairMetadata} from "../../../interfaces/ILiquidityPairMetadata.sol";
+import {SafeCast} from "../../../libraries/utils/SafeCast.sol";
 
 /// @title Trading Pool Contract
 /// @author leNFT
@@ -69,6 +70,10 @@ contract TradingPool721 is
         string memory name,
         string memory symbol
     ) ERC721(name, symbol) {
+        require(
+            msg.sender == addressProvider.getTradingPoolFactory(),
+            "TP:C:MUST_BE_FACTORY"
+        );
         _addressProvider = addressProvider;
         _token = token;
         _nft = nft;
@@ -82,19 +87,14 @@ contract TradingPool721 is
         uint256 tokenId
     ) public view override lpExists(tokenId) returns (string memory) {
         return
-            ILiquidityPairMetadata(
-                _addressProvider.getLiquidityPair721Metadata()
-            ).tokenURI(address(this), tokenId);
+            ILiquidityPairMetadata(_addressProvider.getLiquidityPairMetadata())
+                .tokenURI(address(this), tokenId);
     }
 
     /// @notice Gets the address of the ERC721 traded in the pool.
     /// @return The address of the ERC721 token.
     function getNFT() external view override returns (address) {
         return _nft;
-    }
-
-    function getNFTType() external pure returns (DataTypes.TokenStandard) {
-        return DataTypes.TokenStandard.ERC721;
     }
 
     /// @notice Gets the address of the ERC20 token traded in the pool.
@@ -113,7 +113,7 @@ contract TradingPool721 is
         view
         override
         lpExists(lpId)
-        returns (DataTypes.LiquidityPair721 memory)
+        returns (DataTypes.LiquidityPair memory)
     {
         return _liquidityPairs[lpId];
     }
@@ -155,14 +155,14 @@ contract TradingPool721 is
         uint256 delta,
         uint256 fee
     ) external override nonReentrant poolNotPaused {
-        ITradingPoolRegistry tradingPoolRegistry = ITradingPoolRegistry(
-            _addressProvider.getTradingPoolRegistry()
+        ITradingPoolFactory tradingPoolFactory = ITradingPoolFactory(
+            _addressProvider.getTradingPoolFactory()
         );
 
         // Check if pool will exceed maximum permitted amount
         require(
             tokenAmount + IERC20(_token).balanceOf(address(this)) <
-                tradingPoolRegistry.getTVLSafeguard(),
+                tradingPoolFactory.getTVLSafeguard(),
             "TP:AL:SAFEGUARD_EXCEEDED"
         );
 
@@ -205,7 +205,7 @@ contract TradingPool721 is
         }
 
         // Require that the curve conforms to the curve interface
-        require(tradingPoolRegistry.isPriceCurve(curve), "TP:AL:INVALID_CURVE");
+        require(tradingPoolFactory.isPriceCurve(curve), "TP:AL:INVALID_CURVE");
 
         // Validate LP params for chosen curve
         IPricingCurve(curve).validateLpParameters(spotPrice, delta, fee);
@@ -218,8 +218,8 @@ contract TradingPool721 is
                 nftIds[i]
             );
             _nftToLp[nftIds[i]] = DataTypes.NftToLp({
-                liquidityPair: _lpCount,
-                index: i
+                liquidityPair: SafeCast.toUint128(_lpCount),
+                index: SafeCast.toUint128(i)
             });
         }
 
@@ -233,14 +233,14 @@ contract TradingPool721 is
         }
 
         // Save the user deposit info
-        _liquidityPairs[_lpCount] = DataTypes.LiquidityPair721({
+        _liquidityPairs[_lpCount] = DataTypes.LiquidityPair({
             lpType: lpType,
             nftIds: nftIds,
-            tokenAmount: tokenAmount,
-            spotPrice: spotPrice,
+            tokenAmount: SafeCast.toUint128(tokenAmount),
+            spotPrice: SafeCast.toUint128(spotPrice),
             curve: curve,
-            delta: delta,
-            fee: fee
+            delta: SafeCast.toUint128(delta),
+            fee: SafeCast.toUint16(fee)
         });
 
         // Mint liquidity position NFT
@@ -331,7 +331,7 @@ contract TradingPool721 is
         uint256 fee;
         uint256 totalProtocolFee;
         uint256 protocolFee;
-        DataTypes.LiquidityPair memory lp;
+        DataTypes.LiquidityPair721 memory lp;
         uint256 protocolFeePercentage = ITradingPoolFactory(
             _addressProvider.getTradingPoolFactory()
         ).getProtocolFeePercentage();
@@ -361,9 +361,9 @@ contract TradingPool721 is
             delete _nftToLp[nftIds[i]];
             _liquidityPairs[lpIndex].nftIds.pop();
 
-            _liquidityPairs[lpIndex].tokenAmount += (lp.spotPrice +
-                fee -
-                protocolFee);
+            _liquidityPairs[lpIndex].tokenAmount += SafeCast.toUint128(
+                (lp.spotPrice + fee - protocolFee)
+            );
 
             // Increase total price and fee sum
             finalPrice += (lp.spotPrice + fee);
@@ -371,8 +371,13 @@ contract TradingPool721 is
 
             // Update liquidity pair price
             if (lp.lpType != DataTypes.LPType.TradeDown) {
-                _liquidityPairs[lpIndex].spotPrice = IPricingCurve(lp.curve)
-                    .priceAfterBuy(lp.spotPrice, lp.delta, lp.fee);
+                _liquidityPairs[lpIndex].spotPrice = SafeCast.toUint128(
+                    IPricingCurve(lp.curve).priceAfterBuy(
+                        lp.spotPrice,
+                        lp.delta,
+                        lp.fee
+                    )
+                );
             }
 
             // Send NFT to user
@@ -429,8 +434,8 @@ contract TradingPool721 is
         uint256 fee;
         DataTypes.LiquidityPair721 memory lp;
         uint256 lpIndex;
-        uint256 protocolFeePercentage = ITradingPoolRegistry(
-            _addressProvider.getTradingPoolRegistry()
+        uint256 protocolFeePercentage = ITradingPoolFactory(
+            _addressProvider.getTradingPoolFactory()
         ).getProtocolFeePercentage();
         // Transfer the NFTs to the pool
         for (uint i = 0; i < nftIds.length; i++) {
@@ -467,14 +472,18 @@ contract TradingPool721 is
 
             //Update NFT tracker
             _nftToLp[nftIds[i]] = DataTypes.NftToLp({
-                liquidityPair: lpIndex,
-                index: _liquidityPairs[lpIndex].nftIds.length - 1
+                liquidityPair: SafeCast.toUint128(lpIndex),
+                index: SafeCast.toUint128(
+                    _liquidityPairs[lpIndex].nftIds.length - 1
+                )
             });
 
             // Update token amount in liquidity pair
-            _liquidityPairs[lpIndex].tokenAmount -= (lp.spotPrice -
-                fee +
-                PercentageMath.percentMul(fee, protocolFeePercentage));
+            _liquidityPairs[lpIndex].tokenAmount -= SafeCast.toUint128(
+                (lp.spotPrice -
+                    fee +
+                    PercentageMath.percentMul(fee, protocolFeePercentage))
+            );
 
             // Update total price quote and fee sum
             finalPrice += (lp.spotPrice - fee);
@@ -485,8 +494,13 @@ contract TradingPool721 is
 
             // Update liquidity pair price
             if (lp.lpType != DataTypes.LPType.TradeUp) {
-                _liquidityPairs[lpIndex].spotPrice = IPricingCurve(lp.curve)
-                    .priceAfterSell(lp.spotPrice, lp.delta, lp.fee);
+                _liquidityPairs[lpIndex].spotPrice = SafeCast.toUint128(
+                    IPricingCurve(lp.curve).priceAfterSell(
+                        lp.spotPrice,
+                        lp.delta,
+                        lp.fee
+                    )
+                );
             }
         }
 
@@ -523,7 +537,7 @@ contract TradingPool721 is
         bytes4 interfaceId
     ) public view override(ERC165, ERC721Enumerable) returns (bool) {
         return
-            type(ITradingPool721).interfaceId == interfaceId ||
+            type(ITradingPool).interfaceId == interfaceId ||
             ERC721Enumerable.supportsInterface(interfaceId) ||
             ERC165.supportsInterface(interfaceId);
     }

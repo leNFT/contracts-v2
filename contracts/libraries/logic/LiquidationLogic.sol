@@ -42,7 +42,12 @@ library LiquidationLogic {
             addressProvider,
             address(loanCenter),
             params,
-            loanData
+            loanData.state,
+            loanData.collateralType,
+            loanData.pool,
+            loanData.asset,
+            loanData.tokenIds,
+            loanData.tokenAmounts
         );
 
         // Add auction to the loan
@@ -66,7 +71,8 @@ library LiquidationLogic {
         // Get the loan center
         ILoanCenter loanCenter = ILoanCenter(addressProvider.getLoanCenter());
         // Get the loan
-        DataTypes.LoanData memory loanData = loanCenter.getLoan(params.loanId);
+        DataTypes.LoanState loanState = loanCenter.getLoanState(params.loanId);
+        address loanLendingPool = loanCenter.getLoanLendingPool(params.loanId);
         // Get the loan liquidation data
         DataTypes.LoanLiquidationData memory loanLiquidationData = loanCenter
             .getLoanLiquidationData(params.loanId);
@@ -74,12 +80,12 @@ library LiquidationLogic {
         // validate the auction bid
         _validateBidLiquidationAuction(
             params.bid,
-            loanData.state,
+            loanState,
             loanLiquidationData
         );
 
         // Get the address of this asset's lending pool
-        address poolAsset = IERC4626(loanData.pool).asset();
+        address poolAsset = IERC4626(loanLendingPool).asset();
 
         // Send the old liquidator their funds back
         IERC20Upgradeable(poolAsset).safeTransfer(
@@ -209,9 +215,8 @@ library LiquidationLogic {
         // Unlock Genesis NFT if it was used with this loan
         if (loanData.genesisNFTId != 0) {
             // Unlock Genesis NFT
-            IGenesisNFT(addressProvider.getGenesisNFT()).setLockedState(
-                uint256(loanData.genesisNFTId),
-                false
+            IGenesisNFT(addressProvider.getGenesisNFT()).unlockGenesisNFT(
+                uint256(loanData.genesisNFTId)
             );
         }
     }
@@ -229,9 +234,11 @@ library LiquidationLogic {
         address loanCenter,
         DataTypes.CreateAuctionParams memory params,
         DataTypes.LoanState loanState,
+        DataTypes.TokenStandard tokenStandard,
         address lendingPool,
         address loanNFTAsset,
-        uint256[] memory loanNFTTokenIds
+        uint256[] memory loanNFTTokenIds,
+        uint256[] memory loanTokenAmounts
     ) internal view {
         // Verify if liquidation conditions are met
         //Require the loan exists
@@ -245,13 +252,25 @@ library LiquidationLogic {
             addressProvider.getTokenOracle()
         ).getTokenETHPrice(IERC4626(lendingPool).asset());
 
-        uint256 collateralETHPrice = INFTOracle(addressProvider.getNFTOracle())
-            .getTokensETHPrice(
-                loanNFTAsset,
-                loanNFTTokenIds,
-                params.request,
-                params.packet
-            );
+        uint256 collateralETHPrice;
+        if (tokenStandard == DataTypes.TokenStandard.ERC721) {
+            collateralETHPrice = INFTOracle(addressProvider.getNFTOracle())
+                .getTokens721ETHPrice(
+                    loanNFTAsset,
+                    loanNFTTokenIds,
+                    params.request,
+                    params.packet
+                );
+        } else {
+            collateralETHPrice = INFTOracle(addressProvider.getNFTOracle())
+                .getTokens1155ETHPrice(
+                    loanNFTAsset,
+                    loanNFTTokenIds,
+                    loanTokenAmounts,
+                    params.request,
+                    params.packet
+                );
+        }
 
         require(
             (ILoanCenter(loanCenter).getLoanMaxDebt(
