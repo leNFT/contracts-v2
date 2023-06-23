@@ -124,6 +124,60 @@ contract WETHGateway is ReentrancyGuard, ERC721Holder {
         require(sent, "ETHG:B:ETH_TRANSFER_FAILED");
     }
 
+    /// @notice Borrow ETH from a WETH lending pool using an ERC1155 as collateral
+    /// @param amount Amount of ETH to be borrowed
+    /// @param tokenAddress Address of the ERC1155 collateral
+    /// @param tokenIds Token ids of the ERC1155 collateral
+    /// @param tokenAmounts Amounts of the ERC1155 collateral
+    /// @param genesisNFTId Token id of the genesis NFT to be used for the loan (0 if none)
+    /// @param request ID of the collateral price request sent by the trusted server
+    /// @param packet Signed collateral price request sent by the trusted server
+    function borrow1155(
+        uint256 amount,
+        address tokenAddress,
+        uint256[] memory tokenIds,
+        uint256[] memory tokenAmounts,
+        uint256 genesisNFTId,
+        bytes32 request,
+        Trustus.TrustusPacket calldata packet
+    ) external payable nonReentrant {
+        ILendingMarket market = ILendingMarket(
+            _addressProvider.getLendingMarket()
+        );
+
+        // Transfer the collateral to the WETH Gateway
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            IERC1155(tokenAddress).safeTransferFrom(
+                msg.sender,
+                address(this),
+                tokenIds[i],
+                tokenAmounts[i],
+                ""
+            );
+
+            // Approve the collateral to be moved by the market
+            IERC1155(tokenAddress).setApprovalForAll(address(market), true);
+        }
+
+        IWETH weth = _weth;
+        market.borrow1155(
+            msg.sender,
+            address(weth),
+            amount,
+            tokenAddress,
+            tokenIds,
+            tokenAmounts,
+            genesisNFTId,
+            request,
+            packet
+        );
+
+        weth.withdraw(amount);
+
+        (bool sent, ) = msg.sender.call{value: amount}("");
+        require(sent, "ETHG:B:ETH_TRANSFER_FAILED");
+    }
+
     /// @notice Repay an an active loan with ETH
     /// @param loanId The ID of the loan to be paid
     function repay(uint256 loanId) external payable nonReentrant {

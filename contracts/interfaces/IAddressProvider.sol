@@ -76,8 +76,6 @@ interface IAddressProvider {
 
     function getLiquidityPair1155Metadata() external view returns (address);
 
-    function getLiquidityPairMetadata() external view returns (address);
-
     function setSwapPoolFactory(address swapPoolFactory) external;
 
     function getSwapPoolFactory() external view returns (address);

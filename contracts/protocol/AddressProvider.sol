@@ -24,11 +24,19 @@ contract AddressProvider is OwnableUpgradeable, IAddressProvider {
     address private _gaugeController;
     address private _tradingPoolFactory; // Used by V1
     address private _tradingPoolHelpers;
+
+    function getLiquidityPairMetadata()
+        external
+        view
+        override
+        returns (address)
+    {}
+
     address private _bribes;
     address private _liquidityPair721Metadata;
     address private _liquidityPair1155Metadata;
-    address private _tradingPoolRegistry;
     address private _swapLiquidityMetadata;
+    address private _tradingPoolRegistry;
     address private _swapPoolFactory;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
