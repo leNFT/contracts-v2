@@ -36,7 +36,7 @@ contract SwapRouter is ISwapRouter {
     /// @param sellLps The amounts of liquidity provider tokens to be sold
     /// @param minimumSellPrice The minimum price that the user is willing to accept for the NFTs
     /// @return change The amount of tokens returned to the user
-    function swapWithin(
+    function swapWithin721(
         address tradingPool,
         address swapPool,
         uint256[] calldata buyNftIds,
@@ -47,29 +47,10 @@ contract SwapRouter is ISwapRouter {
         uint256[] calldata swapSendNftIds,
         uint256[] calldata swapReceiveNftIds,
         uint256 swapFees
-    ) external returns (uint256 change) {
-        // Pools need to be registered in the factory
-        require(
-            ITradingPoolRegistry(_addressProvider.getTradingPoolRegistry())
-                .isTradingPool(tradingPool),
-            "SR:SW:INVALID_TRADING_POOL"
-        );
-
-        // If we are also using the swap pool
+    ) external returns (uint256) {
         address tradingPoolToken = ITradingPool(tradingPool).getToken();
-        if (swapPool != address(0)) {
-            require(
-                ISwapPoolFactory(_addressProvider.getSwapPoolFactory())
-                    .isSwapPool(swapPool),
-                "SR:SW:INVALID_SWAP_POOL"
-            );
 
-            // Pools need to have the same underlying token
-            require(
-                ISwapPool(swapPool).getFeeToken() == tradingPoolToken,
-                "SR:SW:DIFFERENT_TOKENS"
-            );
-        }
+        _verifySwapWithinPools(tradingPoolToken, tradingPool, swapPool);
 
         uint256 sellPrice = ITradingPool(tradingPool).sell(
             msg.sender,
@@ -79,15 +60,12 @@ contract SwapRouter is ISwapRouter {
         );
 
         // If the buy price is greater than the sell price + swap fees, transfer the remaining amount to the swap contract + the swap fees
-        uint256 priceDiff;
-        if (maximumBuyPrice > minimumSellPrice + swapFees) {
-            priceDiff = maximumBuyPrice - minimumSellPrice + swapFees;
-            IERC20(tradingPoolToken).safeTransferFrom(
-                msg.sender,
-                address(this),
-                priceDiff
-            );
-        }
+        uint256 priceDiff = _transferPriceDiffWithin(
+            tradingPoolToken,
+            maximumBuyPrice,
+            minimumSellPrice,
+            swapFees
+        );
 
         // Buy the NFTs
         uint256 buyPrice = ITradingPool(tradingPool).buy(
@@ -107,10 +85,77 @@ contract SwapRouter is ISwapRouter {
         }
 
         // If the price difference + sell price + swapPrice is greater than the buy price, return the difference to the user
-        if (sellPrice + priceDiff + swapPrice > buyPrice) {
-            change = sellPrice + priceDiff + swapPrice - buyPrice;
-            IERC20(tradingPool).safeTransfer(msg.sender, change);
+        return
+            _returnChangeWithin(
+                tradingPoolToken,
+                buyPrice,
+                sellPrice,
+                swapPrice,
+                priceDiff
+            );
+    }
+
+    function swapWithin1155(
+        address tradingPool,
+        address swapPool,
+        uint256[] calldata buyNftIds,
+        uint256[] calldata buyAmounts,
+        uint256 maximumBuyPrice,
+        uint256[] calldata sellNftIds,
+        uint256[] calldata sellAmounts,
+        uint256[] calldata sellLps,
+        uint256 minimumSellPrice,
+        uint256[] calldata swapSendNftIds,
+        uint256[] calldata swapSendAmounts,
+        uint256[] calldata swapReceiveNftIds,
+        uint256[] calldata swapReceiveAmounts,
+        uint256 swapFees
+    ) external returns (uint256 change) {
+        address tradingPoolToken = ITradingPool(tradingPool).getToken();
+
+        _verifySwapWithinPools(tradingPoolToken, tradingPool, swapPool);
+
+        uint256 sellPrice = ITradingPool(tradingPool).sell(
+            msg.sender,
+            sellNftIds,
+            sellLps,
+            minimumSellPrice
+        );
+
+        // If the buy price is greater than the sell price + swap fees, transfer the remaining amount to the swap contract + the swap fees
+        uint256 priceDiff = _transferPriceDiffWithin(
+            tradingPoolToken,
+            maximumBuyPrice,
+            minimumSellPrice,
+            swapFees
+        );
+
+        // Buy the NFTs
+        uint256 buyPrice = ITradingPool(tradingPool).buy(
+            msg.sender,
+            buyNftIds,
+            maximumBuyPrice
+        );
+
+        // If we are also using the swap pool, swap the NFTs
+        uint256 swapPrice;
+        if (swapPool != address(0)) {
+            swapPrice = ISwapPool(swapPool).swap(
+                msg.sender,
+                swapSendNftIds,
+                swapReceiveNftIds
+            );
         }
+
+        // If the price difference + sell price + swapPrice is greater than the buy price, return the difference to the user
+        return
+            _returnChangeWithin(
+                tradingPoolToken,
+                buyPrice,
+                sellPrice,
+                swapPrice,
+                priceDiff
+            );
     }
 
     /// @notice Swaps tokens between two different trading pools
@@ -123,7 +168,7 @@ contract SwapRouter is ISwapRouter {
     /// @param sellLps The amounts of liquidity provider tokens to be sold
     /// @param minimumSellPrice The minimum price that the user is willing to accept for the NFTs
     /// @return change The amount of tokens returned to the user
-    function swap(
+    function swap721to721(
         address buyPool,
         address sellPool,
         uint256[] calldata buyNftIds,
@@ -131,46 +176,8 @@ contract SwapRouter is ISwapRouter {
         uint256[] calldata sellNftIds,
         uint256[] calldata sellLps,
         uint256 minimumSellPrice
-    ) external returns (uint256 change) {
-        // Pools need to be different
-        require(buyPool != sellPool, "SR:S:SAME_POOL");
-        // Pools need to be registered in the factory
-        require(
-            ITradingPoolRegistry(_addressProvider.getTradingPoolRegistry())
-                .isTradingPool(buyPool),
-            "SR:S:INVALID_BUY_POOL"
-        );
-
-        require(
-            ITradingPoolRegistry(_addressProvider.getTradingPoolRegistry())
-                .isTradingPool(sellPool),
-            "SR:S:INVALID_SELL_POOL"
-        );
-        // Pools need to have the same underlying token
-        address sellPoolToken = ITradingPool(sellPool).getToken();
-        if (buyPool != sellPool) {
-            require(
-                ITradingPoolRegistry(_addressProvider.getTradingPoolRegistry())
-                    .isTradingPool(sellPool),
-                "SR:S:INVALID_SELL_POOL"
-            );
-            require(
-                tradingPoolFactory.isTradingPool(buyPool),
-                "SR:S:INVALID_BUY_POOL"
-            );
-            sellPoolToken = ITradingPool(sellPool).getToken();
-            if (buyPool != sellPool) {
-                require(
-                    tradingPoolFactory.isTradingPool(sellPool),
-                    "SR:S:INVALID_SELL_POOL"
-                );
-                // Pools need to have the same underlying token
-                require(
-                    ITradingPool(buyPool).getToken() == sellPoolToken,
-                    "SR:S:DIFFERENT_TOKENS"
-                );
-            }
-        }
+    ) external returns (uint256) {
+        _verifySwapPools(buyPool, sellPool);
 
         uint256 sellPrice = ITradingPool721(sellPool).sell(
             msg.sender,
@@ -179,16 +186,14 @@ contract SwapRouter is ISwapRouter {
             minimumSellPrice
         );
 
-        // If the buy price is greater than the sell price, transfer the remaining amount to the swap contract
-        uint256 priceDiff;
-        if (maximumBuyPrice > minimumSellPrice) {
-            priceDiff = maximumBuyPrice - minimumSellPrice;
-            IERC20(sellPoolToken).safeTransferFrom(
-                msg.sender,
-                address(this),
-                priceDiff
-            );
-        }
+        // Get the underlying token of the pools
+        address poolsToken = ITradingPool721(sellPool).getToken();
+
+        uint256 priceDiff = _transferPriceDiff(
+            poolsToken,
+            maximumBuyPrice,
+            minimumSellPrice
+        );
 
         // Buy the NFTs
         uint256 buyPrice = ITradingPool721(buyPool).buy(
@@ -197,11 +202,142 @@ contract SwapRouter is ISwapRouter {
             maximumBuyPrice
         );
 
-        // If the price difference + sell price is greater than the buy price, return the difference to the user
-        if (sellPrice + priceDiff > buyPrice) {
-            change = sellPrice + priceDiff - buyPrice;
-            IERC20(sellPoolToken).safeTransfer(msg.sender, change);
-        }
+        return _returnChange(poolsToken, buyPrice, sellPrice, priceDiff);
+    }
+
+    function swap721to1155(
+        address buyPool,
+        address sellPool,
+        uint256[] calldata buyNftIds,
+        uint256 maximumBuyPrice,
+        uint256[] calldata sellNftIds,
+        uint256[] calldata sellLps
+    ) external returns (uint256) {
+        _verifySwapPools(buyPool, sellPool);
+
+        uint256 sellPrice = ITradingPool721(sellPool).sell(
+            msg.sender,
+            sellNftIds,
+            sellLps,
+            minimumSellPrice
+        );
+
+        // Get the underlying token of the pools
+        address poolsToken = ITradingPool721(sellPool).getToken();
+
+        uint256 priceDiff = _transferPriceDiff(
+            poolsToken,
+            maximumBuyPrice,
+            minimumSellPrice
+        );
+
+        // Buy the NFTs
+        uint256 buyPrice = ITradingPool1155(buyPool).buy(
+            msg.sender,
+            buyNftIds,
+            maximumBuyPrice
+        );
+
+        // Swap the NFTs
+        uint256 swapPrice = ITradingPool1155(buyPool).swap(
+            msg.sender,
+            swapSendNftIds,
+            swapReceiveNftIds
+        );
+
+        return
+            _returnChange(
+                sellPrice,
+                priceDiff,
+                buyPrice + swapPrice,
+                poolsToken
+            );
+    }
+
+    function swap1155to721(
+        address buyPool,
+        address sellPool,
+        uint256[] calldata buyNftIds,
+        uint256 maximumBuyPrice,
+        uint256[] calldata sellNftIds,
+        uint256[] calldata sellLps,
+        uint256 minimumSellPrice
+    ) external returns (uint256) {
+        _verifySwapPools(buyPool, sellPool);
+
+        uint256 sellPrice = ITradingPool1155(sellPool).sell(
+            msg.sender,
+            sellNftIds,
+            sellLps,
+            minimumSellPrice
+        );
+
+        // Get the underlying token of the pools
+        address poolsToken = ITradingPool1155(sellPool).getToken();
+
+        uint256 priceDiff = _transferPriceDiff(
+            poolsToken,
+            maximumBuyPrice,
+            minimumSellPrice
+        );
+
+        // Buy the NFTs
+        uint256 buyPrice = ITradingPool721(buyPool).buy(
+            msg.sender,
+            buyNftIds,
+            maximumBuyPrice
+        );
+
+        return _returnChange(sellPrice, priceDiff, buyPrice, poolsToken);
+    }
+
+    function swap1155to1155(
+        address buyPool,
+        address sellPool,
+        uint256[] calldata buyNftIds,
+        uint256 maximumBuyPrice,
+        uint256[] calldata sellNftIds,
+        uint256[] calldata sellLps
+    ) external returns (uint256) {
+        _verifySwapPools(buyPool, sellPool);
+
+        uint256 sellPrice = ITradingPool1155(sellPool).sell(
+            msg.sender,
+            sellNftIds,
+            sellLps,
+            minimumSellPrice
+        );
+
+        // Get the underlying token of the pools
+        address poolsToken = ITradingPool1155(sellPool).getToken();
+
+        uint256 priceDiff = _transferPriceDiff(
+            poolsToken,
+            maximumBuyPrice,
+            minimumSellPrice
+        );
+
+        // Buy the NFTs
+        uint256 buyPrice = ITradingPool1155(buyPool).buy(
+            msg.sender,
+            buyNftIds,
+            maximumBuyPrice
+        );
+
+        // Swap the NFTs
+        uint256 swapPrice = ITradingPool1155(buyPool).swap(
+            msg.sender,
+            swapSendNftIds,
+            swapReceiveNftIds
+        );
+
+        return
+            _returnChange(
+                sellPrice,
+                priceDiff,
+                buyPrice + swapPrice,
+                poolsToken
+            );
     }
 
     /// @notice Approves a trading pool to spend an unlimited amount of tokens on behalf of this contract
@@ -213,5 +349,117 @@ contract SwapRouter is ISwapRouter {
             "SR:ATP:NOT_REGISTRY"
         );
         IERC20(token).safeApprove(tradingPool, type(uint256).max);
+    }
+
+    function _verifySwapWithinPools(
+        address tradingPool,
+        address tradingPoolToken,
+        address swapPool
+    ) internal view {
+        // Pools need to be registered in the factory
+        require(
+            ITradingPoolRegistry(_addressProvider.getTradingPoolRegistry())
+                .isTradingPool(tradingPool),
+            "SR:SW:INVALID_TRADING_POOL"
+        );
+
+        // If we are also using the swap pool
+        if (swapPool != address(0)) {
+            require(
+                ISwapPoolFactory(_addressProvider.getSwapPoolFactory())
+                    .isSwapPool(swapPool),
+                "SR:SW:INVALID_SWAP_POOL"
+            );
+
+            // Pools need to have the same underlying token
+            require(
+                ISwapPool(swapPool).getFeeToken() == tradingPoolToken,
+                "SR:SW:DIFFERENT_TOKENS"
+            );
+        }
+    }
+
+    function _verifySwapPools(address buyPool, address sellPool) internal {
+        ITradingPoolRegistry tradingPoolRegistry = ITradingPoolRegistry(
+            _addressProvider.getTradingPoolRegistry()
+        );
+        // Pools need to be different
+        require(buyPool != sellPool, "SR:S:SAME_POOL");
+        // Pools need to be registered in the factory
+        require(
+            tradingPoolRegistry.isTradingPool(buyPool),
+            "SR:S:INVALID_BUY_POOL"
+        );
+
+        require(
+            tradingPoolRegistry.isTradingPool(sellPool),
+            "SR:S:INVALID_SELL_POOL"
+        );
+
+        // Pools need to have the same underlying token
+        require(
+            ITradingPool(buyPool).getToken() ==
+                ITradingPool(sellPool).getToken(),
+            "SR:S:DIFFERENT_TOKENS"
+        );
+    }
+
+    function _transferPriceDiffWithin(
+        address tradingPoolToken,
+        uint256 maximumBuyPrice,
+        uint256 minimumSellPrice,
+        uint256 swapFees
+    ) internal returns (uint256 priceDiff) {
+        if (maximumBuyPrice > minimumSellPrice + swapFees) {
+            priceDiff = maximumBuyPrice - minimumSellPrice + swapFees;
+            IERC20(tradingPoolToken).safeTransferFrom(
+                msg.sender,
+                address(this),
+                priceDiff
+            );
+        }
+    }
+
+    function _transferPriceDiff(
+        address poolsToken,
+        uint256 maximumBuyPrice,
+        uint256 minimumSellPrice
+    ) internal returns (uint256 priceDiff) {
+        // If the buy price is greater than the sell price, transfer the remaining amount to the swap contract
+        if (maximumBuyPrice > minimumSellPrice) {
+            priceDiff = maximumBuyPrice - minimumSellPrice;
+            IERC20(poolsToken).safeTransferFrom(
+                msg.sender,
+                address(this),
+                priceDiff
+            );
+        }
+    }
+
+    function _returnChangeWithin(
+        address tradingPoolToken,
+        uint256 buyPrice,
+        uint256 sellPrice,
+        uint256 priceDiff,
+        uint256 swapPrice
+    ) internal returns (uint256 change) {
+        // If the price difference + sell price is greater than the buy price, return the difference to the user
+        if (sellPrice + priceDiff + swapPrice > buyPrice) {
+            change = sellPrice + priceDiff + swapPrice - buyPrice;
+            IERC20(tradingPoolToken).safeTransfer(msg.sender, change);
+        }
+    }
+
+    function _returnChange(
+        address poolsToken,
+        uint256 buyPrice,
+        uint256 sellPrice,
+        uint256 priceDiff
+    ) internal returns (uint256 change) {
+        // If the price difference + sell price is greater than the buy price, return the difference to the user
+        if (sellPrice + priceDiff > buyPrice) {
+            change = sellPrice + priceDiff - buyPrice;
+            IERC20(poolsToken).safeTransfer(msg.sender, change);
+        }
     }
 }

@@ -17,7 +17,7 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/se
 /// @author leNFT
 /// @notice This contract is responsible for creating new swap pools
 /// @dev Swap pools are created associated with a collection
-contract SwapPoolFactory is
+contract SwapPool721Factory is
     ISwapPoolFactory,
     OwnableUpgradeable,
     ReentrancyGuardUpgradeable

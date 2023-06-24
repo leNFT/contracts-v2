@@ -22,7 +22,7 @@ import {ISwapLiquidityMetadata} from "../../interfaces/ISwapLiquidityMetadata.so
 /// @author leNFT
 /// @notice A contract that enables the creation of liquidity pools and the swapping of NFTs.
 /// @dev This contract manages liquidity positions, each consisting of a certain number of NFTs, as well as the swapping of these pairs.
-contract SwapPool is
+contract SwapPool1155 is
     ERC165,
     ERC721Enumerable,
     ERC721Holder,

@@ -11,6 +11,7 @@ import {ITradingPool} from "../interfaces/ITradingPool.sol";
 import {ITradingPool721} from "../interfaces/ITradingPool721.sol";
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {Trustus} from "./Trustus/Trustus.sol";
 import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
@@ -145,18 +146,16 @@ contract WETHGateway is ERC721Holder {
         );
 
         // Transfer the collateral to the WETH Gateway
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            IERC1155(tokenAddress).safeTransferFrom(
-                msg.sender,
-                address(this),
-                tokenIds[i],
-                tokenAmounts[i],
-                ""
-            );
+        IERC1155(tokenAddress).safeBatchTransferFrom(
+            msg.sender,
+            address(this),
+            tokenIds,
+            tokenAmounts,
+            ""
+        );
 
-            // Approve the collateral to be moved by the market
-            IERC1155(tokenAddress).setApprovalForAll(address(market), true);
-        }
+        // Approve the collateral to be moved by the market
+        IERC1155(tokenAddress).setApprovalForAll(address(market), true);
 
         IWETH weth = _weth;
         market.borrow1155(

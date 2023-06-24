@@ -126,7 +126,7 @@ contract LendingMarket is
     /// @param onBehalfOf The address of the user who will receive the borrowed tokens
     /// @param asset The address of the asset to be borrowed
     /// @param amount Amount of the asset to be borrowed
-    /// @param nftTokenAddress Address of the ERC721 collateral
+    /// @param nftAddress Address of the ERC721 collateral
     /// @param nftTokenIds Token id(s) of the ERC721 collateral
     /// @param genesisNFTId Token id of the genesis ERC721 to be used for LTV boost
     /// @param request ID of the collateral price request sent by the trusted server
@@ -135,7 +135,7 @@ contract LendingMarket is
         address onBehalfOf,
         address asset,
         uint256 amount,
-        address nftTokenAddress,
+        address nftAddress,
         uint256[] memory nftTokenIds,
         uint256 genesisNFTId,
         bytes32 request,
@@ -143,14 +143,14 @@ contract LendingMarket is
     ) external override nonReentrant {
         BorrowLogic.borrow(
             _addressProvider,
-            _pools[nftTokenAddress][asset],
+            _pools[nftAddress][asset],
             DataTypes.BorrowParams({
                 caller: msg.sender,
                 onBehalfOf: onBehalfOf,
                 asset: asset,
                 amount: amount,
                 collateralType: DataTypes.TokenStandard.ERC721,
-                tokenAddress: nftTokenAddress,
+                tokenAddress: nftAddress,
                 tokenIds: nftTokenIds,
                 tokenAmounts: new uint256[](0),
                 genesisNFTId: genesisNFTId,
@@ -159,7 +159,7 @@ contract LendingMarket is
             })
         );
 
-        emit Borrow721(onBehalfOf, asset, nftTokenAddress, nftTokenIds, amount);
+        emit Borrow721(onBehalfOf, asset, nftAddress, nftTokenIds, amount);
     }
 
     /// @notice Repay an an active loan
