@@ -13,12 +13,12 @@ import {ILendingPool} from "../../../interfaces/ILendingPool.sol";
 /// @author leNFT
 /// @notice Manages loans
 /// @dev Keeps the list of loans, their states and their liquidation data
-contract PoolLoanCenter is ILoanCenter, OwnableUpgradeable {
+contract PoolLoanCenter is IPoolLoanCenter, OwnableUpgradeable {
     // NFT address + NFT ID to loan ID mapping
     mapping(address => mapping(uint256 => uint256)) private _nftToLoanId;
 
     // Loan ID to loan info mapping
-    mapping(uint256 => DataTypes.LoanData) private _loans;
+    mapping(uint256 => DataTypes.PoolLoanData) private _loans;
 
     // Loan id to liquidation data
     mapping(uint256 => DataTypes.LoanLiquidationData)
@@ -95,17 +95,19 @@ contract PoolLoanCenter is ILoanCenter, OwnableUpgradeable {
         uint256 borrowRate
     ) public override onlyMarket returns (uint256) {
         // Create the loan and add it to the list
-        _loans[_loansCount].init(
-            owner,
-            pool,
-            amount,
-            asset,
-            collateralType,
-            tokenIds,
-            tokenAmounts,
-            genesisNFTId,
-            borrowRate
-        );
+        _loans[_loansCount] = DataTypes.PoolLoanData({
+            owner: borrower,
+            amount: amount,
+            tokenIds: tokenIds,
+            tokenAmounts: tokenAmounts,
+            asset: asset,
+            borrowRate: SafeCast.toUint16(borrowRate),
+            initTimestamp: SafeCast.toUint40(block.timestamp),
+            debtTimestamp: SafeCast.toUint40(block.timestamp),
+            pool: pool,
+            genesisNFTId: SafeCast.toUint16(genesisNFTId),
+            state: DataTypes.LoanState.Active
+        });
 
         // Add NFT to loanId mapping
         for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -117,14 +119,6 @@ contract PoolLoanCenter is ILoanCenter, OwnableUpgradeable {
 
         // Increment the loans count and then return it
         return _loansCount++;
-    }
-
-    /// @notice Activate a loan by setting its state to Active
-    /// @dev Only the market contract can call this function
-    /// @param loanId The ID of the loan to be activated
-    function activateLoan(uint256 loanId) external override onlyMarket {
-        // Update loan state
-        _loans[loanId].state = DataTypes.LoanState.Active;
     }
 
     /// @notice Repay a loan by setting its state to Repaid

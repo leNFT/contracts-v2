@@ -89,9 +89,6 @@ library PoolBorrowLogic {
             borrowRate
         );
 
-        // Activate the loan
-        loanCenter.activateLoan(loanId);
-
         // Send the principal to the borrower
         ILendingPool(lendingPool).transferUnderlying(
             params.caller,
@@ -236,6 +233,14 @@ library PoolBorrowLogic {
 
         // Check if theres at least one asset to use as collateral
         require(params.tokenIds.length > 0, "VL:VB:NO_NFTS");
+
+        // If its an ERC1155 loan, check if the token amounts are the same length as the token ids
+        if (params.tokenStandard == DataTypes.TokenStandard.ERC1155) {
+            require(
+                params.tokenIds.length == params.tokenAmounts.length,
+                "VL:VB:LENGTH_MISMATCH"
+            );
+        }
 
         // Check if the lending pool exists
         require(lendingPool != address(0), "VL:VB:INVALID_LENDING_POOL");

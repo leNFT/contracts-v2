@@ -128,15 +128,13 @@ library DataTypes {
 
     /// @notice Enum of all the states a loan can be in
     /// @dev State change flow: None -> Created -> Active -> Repaid -> Auction -> Liquidated
-    /// @dev None (Default Value): We need a default that is not 'Created' - this is the zero value
-    /// @dev Created: The loan data is stored; but not initiated yet.
+    /// @dev None (Default Value): We need a default that is not 'Active' - this is the zero value
     /// @dev Active: The loan has been initialized; funds have been delivered to the borrower and the collateral is held.
     /// @dev Repaid: The loan has been repaid; and the collateral has been returned to the borrower.
     /// @dev Auctioned: The loan's collateral has been auctioned off and its in the process of being liquidated.
     /// @dev Liquidated: The loan's collateral was claimed by the liquidator.
     enum LoanState {
         None,
-        Created,
         Active,
         Repaid,
         Auctioned,
@@ -166,7 +164,7 @@ library DataTypes {
         uint256[] tokenAmounts; // Only used for ERC1155 loans
         address asset;
         uint256 borrowRate;
-        uint256 expiryTimestamp;
+        uint256 initTimestamp;
         uint256 lendingLiquidity;
         TokenStandard collateralType;
         LoanState state;
@@ -220,18 +218,6 @@ library DataTypes {
         uint40 timestamp;
         uint40 locktime;
         uint128 lpAmount;
-    }
-
-    struct PeerBorrowParams {
-        address caller;
-        address onBehalfOf;
-        address asset;
-        uint256 amount;
-        TokenStandard collateralType;
-        address tokenAddress;
-        uint256[] tokenIds;
-        uint256[] tokenAmounts; // Only used for ERC1155 loans
-        uint256 liquidityId;
     }
 
     /// @notice Struct to store the parameters for a borrow call

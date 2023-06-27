@@ -59,8 +59,15 @@ contract PeerLoanCenter is IPeerLoanCenter, OwnableUpgradeable {
 
     function createLoan() external {}
 
-    function activateLoan(uint256 loanId) external {
-        _loans[loanId].state = DataTypes.LoanState.Active;
+    /// @notice Repay a loan by setting its state to Repaid
+    /// @dev Only the market contract can call this function
+    /// @param loanId The ID of the loan to be repaid
+    function repayLoan(uint256 loanId) external override onlyMarket {
+        // Update loan state
+        _loans[loanId].state = DataTypes.LoanState.Repaid;
+
+        // Close the loan
+        _closeLoan(loanId);
     }
 
     function _requireOnlyMarket() internal view {

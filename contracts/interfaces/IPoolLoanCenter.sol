@@ -45,8 +45,6 @@ interface IPoolLoanCenter {
         uint256 bid
     ) external;
 
-    function activateLoan(uint256 loanId) external;
-
     function getLoansCount() external view returns (uint256);
 
     function getNFTLoanId(

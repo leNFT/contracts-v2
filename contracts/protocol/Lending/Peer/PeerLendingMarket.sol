@@ -121,7 +121,7 @@ contract PeerLendingMarket is
         _safeMint(onBehalfOf, _liquidityCount);
     }
 
-    function removeLiquidity(uint256 liquidityId) external override {
+    function removeLiquidity(uint256 liquidityId) public override {
         // Make sure the caller is the owner of the liquidity
         require(
             _lendingLiquidity[liquidityId].owner == msg.sender,
@@ -134,13 +134,15 @@ contract PeerLendingMarket is
         );
 
         // Transfer the asset back to the owner
-        IERC20Upgradeable(asset).safeTransfer(
+        IERC20Upgradeable(_lendingLiquidity[liquidityId].asset).safeTransfer(
             msg.sender,
             _lendingLiquidity[liquidityId].tokenAmount
         );
 
         // Delete the liquidity
-        delete _lendingLiquidity[liquidityId];
+        if (_lendingLiquidity[liquidityId].loanCount == 0) {
+            delete _lendingLiquidity[liquidityId];
+        }
 
         // Burn the liquidity token
         _burn(liquidityId);
@@ -160,28 +162,20 @@ contract PeerLendingMarket is
         uint256[] tokenIds,
         uint256 liquidityId
     ) external override {
-        PeerBorrowLogic.borrow(
-            _addressProvider,
-            DataTypes.PeerBorrowParams({
-                caller: msg.sender,
-                onBehalfOf: onBehalfOf,
-                asset: asset,
-                amount: amount,
-                collateralType: DataTypes.TokenStandard.ERC721,
-                tokenAddress: tokenAddress,
-                tokenIds: tokenIds,
-                tokenAmounts: new uint256[](0),
-                liquidityId: liquidityId
-            })
+        IPeerLoanCenter loanCenter = IPeerLoanCenter(
+            addressProvider.getLoanCenter()
         );
+
+        // Validate the borrow parameters
+        _validateBorrow(addressProvider, address(loanCenter), params);
 
         emit Borrow721(
             onBehalfOf,
             asset,
-            amount,
             tokenAddress,
             tokenIds,
-            liquidityId
+            liquidityId,
+            amount
         );
     }
 
@@ -194,29 +188,21 @@ contract PeerLendingMarket is
         uint256[] tokenAmounts,
         uint256 liquidityId
     ) external override {
-        PeerBorrowLogic.borrow(
-            _addressProvider,
-            DataTypes.PeerBorrowParams({
-                caller: msg.sender,
-                onBehalfOf: onBehalfOf,
-                asset: asset,
-                amount: amount,
-                collateralType: DataTypes.TokenStandard.ERC721,
-                tokenAddress: tokenAddress,
-                tokenIds: tokenIds,
-                tokenAmounts: tokenAmounts,
-                liquidityId: liquidityId
-            })
+        IPeerLoanCenter loanCenter = IPeerLoanCenter(
+            addressProvider.getLoanCenter()
         );
+
+        // Validate the borrow parameters
+        _validateBorrow(addressProvider, address(loanCenter), params);
 
         emit Borrow1155(
             onBehalfOf,
             asset,
-            amount,
             tokenAddress,
             tokenIds,
             tokenAmounts,
-            liquidityId
+            liquidityId,
+            amount
         );
     }
 
@@ -224,14 +210,25 @@ contract PeerLendingMarket is
         uint256 loanId,
         uint256 amount
     ) external override nonReentrant {
-        PeerBorrowLogic.repay(
-            _addressProvider,
-            DataTypes.RepayParams({
-                caller: msg.sender,
-                loanId: loanId,
-                amount: amount
-            })
+        // Get the loan
+        IPeerLoanCenter loanCenter = IPeerLoanCenter(
+            addressProvider.getLoanCenter()
         );
+        DataTypes.PeerLoanData memory loanData = loanCenter.getLoan(
+            params.loanId
+        );
+
+        // Validate the repay parameters
+        _validateRepay(amount, loanData.state, loanDebt);
+
+        if (
+            amount == loanData.amount &&
+            exists(loanData.liquidityId) &&
+            _lendingLiquidity[loanData.lendingLiquidity].loanAmount - 1 == 0
+        ) {
+            delete _lendingLiquidity[loanData.lendingLiquidity];
+            loanCenter
+        }
 
         emit Repay(msg.sender, loanId);
     }
@@ -244,23 +241,7 @@ contract PeerLendingMarket is
         );
         DataTypes.PeerLoanData memory loanData = peerLoanCenter.getLoan(loanId);
 
-        // Make sure the loan is active
-        require(
-            loanData.state == DataTypes.LoanState.Active,
-            "PLM:CC:LOAN_NOT_ACTIVE"
-        );
-
-        // Make sure the loan is expired
-        require(
-            loanData.expiryTimestamp < block.timestamp,
-            "PLM:CC:LOAN_NOT_EXPIRED"
-        );
-
-        // Make sure the caller is the lender
-        require(
-            _lendingLiquidity[loanData.lendingLiqudity].owner == msg.sender,
-            "PLM:CC:NOT_LENDER"
-        );
+        _validateClaimCollateral(loanData);
 
         // Mark the loan as liquidated
         peerLoanCenter.liquidateLoan(loanId);
@@ -283,5 +264,87 @@ contract PeerLendingMarket is
                 ""
             );
         }
+    }
+
+    /// @notice Validates the parameters of the borrow function
+    /// @param addressProvider The address of the addresses provider
+    /// @param loanCenter The address loan center
+    /// @param params A struct with the parameters of the borrow function
+    function _validateBorrow(
+        IAddressProvider addressProvider,
+        address loanCenter,
+        DataTypes.PeerBorrowParams memory params
+    ) internal view {
+        // Check if borrow amount is bigger than 0
+        require(params.amount > 0, "VL:VB:AMOUNT_0");
+
+        // Check if theres at least one asset to use as collateral
+        require(params.tokenIds.length > 0, "VL:VB:NO_NFTS");
+
+        // If its an ERC1155 loan, check if the token amounts are the same length as the token ids
+        if (params.tokenStandard == DataTypes.TokenStandard.ERC1155) {
+            require(
+                params.tokenIds.length == params.tokenAmounts.length,
+                "VL:VB:LENGTH_MISMATCH"
+            );
+        }
+
+        // Check if the loan amount exceeds the maximum loan amount
+
+        // Check if the loan amount exceeds the available tokens in the liquidity
+    }
+
+    /// @notice Validates the parameters of the repay function
+    /// @param repayAmount The amount to repay
+    /// @param loanState The state of the loan
+    /// @param loanDebt The debt of the loan
+    function _validateRepay(
+        uint256 repayAmount,
+        DataTypes.LoanState loanState,
+        uint256 loanDebt
+    ) internal pure {
+        // Validate the movement
+        // Check if borrow amount is bigger than 0
+        require(repayAmount > 0, "VL:VR:AMOUNT_0");
+
+        //Require that loan exists
+        require(
+            loanState == DataTypes.LoanState.Active ||
+                loanState == DataTypes.LoanState.Auctioned,
+            "VL:VR:LOAN_NOT_FOUND"
+        );
+
+        // Check if user is over-paying
+        require(repayAmount <= loanDebt, "VL:VR:AMOUNT_EXCEEDS_DEBT");
+
+        // Can only do partial repayments if the loan is not being auctioned
+        if (repayAmount < loanDebt) {
+            require(
+                loanState != DataTypes.LoanState.Auctioned,
+                "VL:VR:PARTIAL_REPAY_AUCTIONED"
+            );
+        }
+    }
+
+    function _validateClaimCollateral(
+        DataTypes.PeerLoanData memory loanData
+    ) internal pure {
+        // Make sure the loan is active
+        require(
+            loanData.state == DataTypes.LoanState.Active,
+            "PLM:CC:LOAN_NOT_ACTIVE"
+        );
+
+        // Make sure the loan is expired
+        require(
+            loanData.expiryTimestamp < block.timestamp,
+            "PLM:CC:LOAN_NOT_EXPIRED"
+        );
+
+        // Make sure the caller is the lender
+        require(
+            _lendingLiquidity[loanData.lendingLiqudity].owner == msg.sender,
+            "PLM:CC:NOT_LENDER"
+        );
     }
 }
