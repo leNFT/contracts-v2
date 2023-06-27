@@ -19,7 +19,7 @@ import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ER
 /// @author leNFT
 /// @notice Contains the logic for the borrow and repay functions
 /// @dev Library dealing with the logic for the borrow and repay functions
-library BorrowLogic {
+library PeerBorrowLogic {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /// @notice Creates a new loan, transfers the collateral to the loan center and mints the debt token

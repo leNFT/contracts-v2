@@ -20,7 +20,7 @@ import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ER
 /// @author leNFT
 /// @notice Contains the logic for the liquidate function
 /// @dev Library dealing with the logic for the function responsible for liquidating a loan
-library LiquidationLogic {
+library PoolLiquidationLogic {
     uint256 private constant LIQUIDATION_AUCTION_PERIOD = 3600 * 24;
 
     using SafeERC20Upgradeable for IERC20Upgradeable;

@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import {Trustus} from "../protocol/Trustus/Trustus.sol";
 
-interface ILendingMarket {
+interface IPoolLendingMarket {
     event Borrow721(
         address indexed user,
         address indexed asset,

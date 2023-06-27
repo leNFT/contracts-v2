@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.8.19;
 
-import {ILendingMarket} from "../../interfaces/ILendingMarket.sol";
-import {IInterestRate} from "../../interfaces/IInterestRate.sol";
-import {ITokenOracle} from "../../interfaces/ITokenOracle.sol";
-import {LiquidationLogic} from "../../libraries/logic/LiquidationLogic.sol";
-import {BorrowLogic} from "../../libraries/logic/BorrowLogic.sol";
-import {DataTypes} from "../../libraries/types/DataTypes.sol";
-import {ConfigTypes} from "../../libraries/types/ConfigTypes.sol";
+import {IPoolLendingMarket} from "../../../interfaces/IPoolLendingMarket.sol";
+import {IInterestRate} from "../../../interfaces/IInterestRate.sol";
+import {ITokenOracle} from "../../../interfaces/ITokenOracle.sol";
+import {PoolLiquidationLogic} from "../../../libraries/logic/PoolLiquidationLogic.sol";
+import {PoolBorrowLogic} from "../../../libraries/logic/PoolBorrowLogic.sol";
+import {DataTypes} from "../../../libraries/types/DataTypes.sol";
+import {ConfigTypes} from "../../../libraries/types/ConfigTypes.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
-import {ILendingPool} from "../../interfaces/ILendingPool.sol";
+import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
+import {ILendingPool} from "../../../interfaces/ILendingPool.sol";
 import {IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import {IERC1155Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
@@ -20,15 +20,15 @@ import {ERC721HolderUpgradeable} from "@openzeppelin/contracts-upgradeable/token
 import {ERC1155HolderUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
 import {ERC165CheckerUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import {Trustus} from "../Trustus/Trustus.sol";
+import {Trustus} from "../../Trustus/Trustus.sol";
 import {LendingPool} from "./LendingPool.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-/// @title LendingMarket Contract
+/// @title PoolLendingMarket Contract
 /// @author leNFT
-/// @notice This contract is the entrypoint for the leNFT lending protocol
+/// @notice This contract is the entrypoint for the leNFT peer-to-pool lending protocol
 /// @dev Call these contract functions to interact with the lending part of the protocol
-contract LendingMarket is
+contract PoolLendingMarket is
     ILendingMarket,
     OwnableUpgradeable,
     ERC721HolderUpgradeable,
@@ -96,7 +96,7 @@ contract LendingMarket is
         BorrowLogic.borrow(
             _addressProvider,
             _pools[tokenAddress][asset],
-            DataTypes.BorrowParams({
+            DataTypes.PoolBorrowParams({
                 caller: msg.sender,
                 onBehalfOf: onBehalfOf,
                 asset: asset,
@@ -169,7 +169,7 @@ contract LendingMarket is
         uint256 loanId,
         uint256 amount
     ) external override nonReentrant {
-        BorrowLogic.repay(
+        PoolBorrowLogic.repay(
             _addressProvider,
             DataTypes.RepayParams({
                 caller: msg.sender,

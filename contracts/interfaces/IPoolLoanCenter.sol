@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 import {DataTypes} from "../libraries/types/DataTypes.sol";
 import {Trustus} from "../protocol/Trustus/Trustus.sol";
 
-interface ILoanCenter {
+interface IPoolLoanCenter {
     function createLoan(
         address owner,
         address lendingPool,

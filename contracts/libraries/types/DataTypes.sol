@@ -148,6 +148,27 @@ library DataTypes {
         ERC1155
     }
 
+    struct PeerLendingLiquidity {
+        address owner;
+        uint256 loanCount;
+        uint256 tokenAmount;
+        uint256 maxBorrowableAmount;
+        uint256 maxDuration;
+        address interestRateCurve;
+        uint256 delta;
+        uint256 resetPeriod;
+    }
+
+    struct PeerLoanData {
+        address owner;
+        uint256 amount;
+        uint256[] tokenIds;
+        uint256[] tokenAmounts; // Only used for ERC1155 loans
+        address asset;
+        uint256 borrowRate;
+        LoanState state;
+    }
+
     /// @notice Stores the data for a loan
     /// @param owner The owner of the loan
     /// @param amount The amount borrowed
@@ -161,7 +182,7 @@ library DataTypes {
     /// @param pool The address of the lending pool associated with the loan
     /// @param genesisNFTId The genesis NFT id for the boost (0 if not used)
     /// @param state The current state of the loan
-    struct LoanData {
+    struct PoolLoanData {
         address owner;
         uint256 amount;
         uint256[] tokenIds;
@@ -198,6 +219,18 @@ library DataTypes {
         uint128 lpAmount;
     }
 
+    struct PeerBorrowParams {
+        address caller;
+        address onBehalfOf;
+        address asset;
+        uint256 amount;
+        TokenStandard collateralType;
+        address tokenAddress;
+        uint256[] tokenIds;
+        uint256[] tokenAmounts;
+        uint256 liquidityId;
+    }
+
     /// @notice Struct to store the parameters for a borrow call
     /// @param caller The caller of the borrow function
     /// @param onBehalfOf The address of the user on whose behalf the caller is borrowing
@@ -209,7 +242,7 @@ library DataTypes {
     /// @param genesisNFTId The genesis NFT id for the boost (0 if not used)
     /// @param request The request ID for the borrow
     /// @param packet The Trustus packet for the borrow
-    struct BorrowParams {
+    struct PoolBorrowParams {
         address caller;
         address onBehalfOf;
         address asset;
