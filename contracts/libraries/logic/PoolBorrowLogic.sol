@@ -30,7 +30,7 @@ library PoolBorrowLogic {
     function borrow(
         IAddressProvider addressProvider,
         address lendingPool,
-        DataTypes.BorrowParams memory params
+        DataTypes.PoolBorrowParams memory params
     ) external returns (uint256 loanId) {
         ILoanCenter loanCenter = ILoanCenter(addressProvider.getLoanCenter());
 
@@ -229,7 +229,7 @@ library PoolBorrowLogic {
         address lendingPool,
         address loanCenter,
         uint256 maxLTVBoost,
-        DataTypes.BorrowParams memory params
+        DataTypes.PoolBorrowParams memory params
     ) internal view {
         // Check if borrow amount is bigger than 0
         require(params.amount > 0, "VL:VB:AMOUNT_0");

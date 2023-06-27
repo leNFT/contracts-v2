@@ -39,8 +39,7 @@ contract PeerLendingMarket is
     mapping(address => bool) private _isInterestRateCurve;
 
     // PeerLendingLiquidity
-    mapping(uint256 => DataTypes.PeerLendingLiquidity)
-        private _lendingLiquidity;
+    mapping(uint256 => DataTypes.LendingLiquidity) private _lendingLiquidity;
 
     // Supported collections per lending liquidity
     mapping(uint256 => mapping(address => bool)) private _supportedCollections;
@@ -98,7 +97,7 @@ contract PeerLendingMarket is
         );
 
         // Save a new peer lending liquidity struct
-        _lendingLiquidity[_liquidityCount] = DataTypes.PeerLendingLiquidity({
+        _lendingLiquidity[_liquidityCount] = DataTypes.LendingLiquidity({
             owner: onBehalfOf,
             loanCount: 0,
             tokenAmount: amount,
@@ -161,8 +160,8 @@ contract PeerLendingMarket is
         uint256[] tokenIds,
         uint256 liquidityId
     ) external override {
-                PeerBorrowLogic.borrow(
-            _addressProvider
+        PeerBorrowLogic.borrow(
+            _addressProvider,
             DataTypes.PeerBorrowParams({
                 caller: msg.sender,
                 onBehalfOf: onBehalfOf,
@@ -186,7 +185,7 @@ contract PeerLendingMarket is
         );
     }
 
-     function borrow1155(
+    function borrow1155(
         address onBehalfOf,
         address asset,
         uint256 amount,
@@ -195,8 +194,8 @@ contract PeerLendingMarket is
         uint256[] tokenAmounts,
         uint256 liquidityId
     ) external override {
-                PeerBorrowLogic.borrow(
-            _addressProvider
+        PeerBorrowLogic.borrow(
+            _addressProvider,
             DataTypes.PeerBorrowParams({
                 caller: msg.sender,
                 onBehalfOf: onBehalfOf,
@@ -205,7 +204,7 @@ contract PeerLendingMarket is
                 collateralType: DataTypes.TokenStandard.ERC721,
                 tokenAddress: tokenAddress,
                 tokenIds: tokenIds,
-                tokenAmounts:tokenAmounts,
+                tokenAmounts: tokenAmounts,
                 liquidityId: liquidityId
             })
         );
@@ -235,9 +234,54 @@ contract PeerLendingMarket is
         );
 
         emit Repay(msg.sender, loanId);
+    }
 
+    /// @notice Claim the collateral from a loan
+    /// @param loanId The ID of the loan to claim the collateral from
     function claimCollateral(uint256 loanId) external override {
-        // Make sure the loan is expired
+        IPeerLoanCenter peerLoanCenter = IPeerLoanCenter(
+            _addressProvider.getPeerLoanCenter()
+        );
+        DataTypes.PeerLoanData memory loanData = peerLoanCenter.getLoan(loanId);
 
+        // Make sure the loan is active
+        require(
+            loanData.state == DataTypes.LoanState.Active,
+            "PLM:CC:LOAN_NOT_ACTIVE"
+        );
+
+        // Make sure the loan is expired
+        require(
+            loanData.expiryTimestamp < block.timestamp,
+            "PLM:CC:LOAN_NOT_EXPIRED"
+        );
+
+        // Make sure the caller is the lender
+        require(
+            _lendingLiquidity[loanData.lendingLiqudity].owner == msg.sender,
+            "PLM:CC:NOT_LENDER"
+        );
+
+        // Mark the loan as liquidated
+        peerLoanCenter.liquidateLoan(loanId);
+
+        // Transfer the collateral to the lender
+        if (loanData.collateralType == DataTypes.TokenStandard.ERC721) {
+            for (uint256 i = 0; i < loanData.tokenIds; i++) {
+                IERC721Upgradeable(loanData.asset).safeTransferFrom(
+                    address(this),
+                    msg.sender,
+                    i
+                );
+            }
+        } else {
+            IERC1155Upgradeable(loanData.asset).safeBatchTransferFrom(
+                address(this),
+                msg.sender,
+                loanData.tokenIds,
+                loanData.tokenAmounts,
+                ""
+            );
+        }
     }
 }

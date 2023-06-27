@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 import {DataTypes} from "../types/DataTypes.sol";
 import {PercentageMath} from "../utils/PercentageMath.sol";
 import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
-import {ILoanCenter} from "../../interfaces/ILoanCenter.sol";
+import {IPeerLoanCenter} from "../../interfaces/IPeerLoanCenter.sol";
 import {ITokenOracle} from "../../interfaces/ITokenOracle.sol";
 import {INFTOracle} from "../../interfaces/INFTOracle.sol";
 import {ILendingPool} from "../../interfaces/ILendingPool.sol";
@@ -29,74 +29,18 @@ library PeerBorrowLogic {
     /// @return loanId The id of the new loan
     function borrow(
         IAddressProvider addressProvider,
-        address lendingPool,
-        DataTypes.BorrowParams memory params
+        DataTypes.PeerBorrowParams memory params
     ) external returns (uint256 loanId) {
-        ILoanCenter loanCenter = ILoanCenter(addressProvider.getLoanCenter());
-
-        // If a genesis NFT was used with this loan we need to lock it
-        uint256 maxLTVBoost;
-        if (params.genesisNFTId != 0) {
-            maxLTVBoost = IGenesisNFT(addressProvider.getGenesisNFT())
-                .lockGenesisNFT(
-                    params.onBehalfOf,
-                    params.caller,
-                    params.genesisNFTId
-                );
-        }
+        IPeerLoanCenter loanCenter = IPeerLoanCenter(
+            addressProvider.getLoanCenter()
+        );
 
         // Validate the borrow parameters
         _validateBorrow(
             addressProvider,
             lendingPool,
-            address(loanCenter),
-            maxLTVBoost,
+            address(loanCenter)
             params
-        );
-
-        // Transfer the collateral to the the lending market
-        if (params.collateralType == DataTypes.TokenStandard.ERC1155) {
-            IERC1155Upgradeable(params.tokenAddress).safeBatchTransferFrom(
-                params.caller,
-                address(this),
-                params.tokenIds,
-                params.tokenAmounts,
-                ""
-            );
-        } else {
-            for (uint256 i = 0; i < params.tokenIds.length; i++) {
-                IERC721Upgradeable(params.tokenAddress).safeTransferFrom(
-                    params.caller,
-                    address(this),
-                    params.tokenIds[i]
-                );
-            }
-        }
-
-        // Get the current borrow rate index
-        uint256 borrowRate = ILendingPool(lendingPool).getBorrowRate();
-
-        // Create the loan
-        loanId = loanCenter.createLoan(
-            params.onBehalfOf,
-            lendingPool,
-            params.amount,
-            params.tokenAddress,
-            params.collateralType,
-            params.tokenIds,
-            params.tokenAmounts,
-            params.genesisNFTId,
-            borrowRate
-        );
-
-        // Activate the loan
-        loanCenter.activateLoan(loanId);
-
-        // Send the principal to the borrower
-        ILendingPool(lendingPool).transferUnderlying(
-            params.caller,
-            params.amount,
-            borrowRate
         );
     }
 
@@ -108,115 +52,17 @@ library PeerBorrowLogic {
         DataTypes.RepayParams memory params
     ) external {
         // Get the loan
-        ILoanCenter loanCenter = ILoanCenter(addressProvider.getLoanCenter());
-        DataTypes.LoanData memory loanData = loanCenter.getLoan(params.loanId);
+        IPeerLoanCenter loanCenter = IPeerLoanCenter(
+            addressProvider.getLoanCenter()
+        );
+        DataTypes.PeerLoanData memory loanData = loanCenter.getLoan(
+            params.loanId
+        );
         uint256 interest = loanCenter.getLoanInterest(params.loanId);
         uint256 loanDebt = interest + loanData.amount;
 
         // Validate the repay parameters
         _validateRepay(params.amount, loanData.state, loanDebt);
-
-        // If we are paying the entire loan debt
-        if (params.amount == loanDebt) {
-            // If the loan was being liquidated we send the liquidators payment back with a fee
-            if (loanData.state == DataTypes.LoanState.Auctioned) {
-                address asset = IERC4626(loanData.pool).asset();
-
-                DataTypes.LoanLiquidationData
-                    memory liquidationData = loanCenter.getLoanLiquidationData(
-                        params.loanId
-                    );
-
-                // Give max bid back to liquidator
-                IERC20Upgradeable(asset).safeTransfer(
-                    liquidationData.liquidator,
-                    liquidationData.auctionMaxBid
-                );
-                // Get the fee from the user and give it to the auctioneer
-                IERC20Upgradeable(asset).safeTransferFrom(
-                    params.caller,
-                    liquidationData.auctioneer,
-                    loanCenter.getLoanAuctioneerFee(params.loanId)
-                );
-            }
-
-            // Return the principal + interest
-            ILendingPool(loanData.pool).receiveUnderlying(
-                params.caller,
-                loanData.amount,
-                uint256(loanData.borrowRate),
-                interest
-            );
-
-            // Repay the loan through the loan center contract
-            loanCenter.repayLoan(params.loanId);
-
-            // If a genesis NFT was used with this loan we need to unlock it
-            if (loanData.genesisNFTId != 0) {
-                // Unlock Genesis NFT
-                IGenesisNFT(addressProvider.getGenesisNFT()).unlockGenesisNFT(
-                    uint256(loanData.genesisNFTId)
-                );
-            }
-
-            // Transfer the collateral back to the owner
-            if (loanData.collateralType == DataTypes.TokenStandard.ERC1155)
-                IERC1155Upgradeable(loanData.asset).safeBatchTransferFrom(
-                    address(this),
-                    loanData.owner,
-                    loanData.tokenIds,
-                    loanData.tokenAmounts,
-                    ""
-                );
-            else {
-                for (uint256 i = 0; i < loanData.tokenIds.length; i++) {
-                    IERC721Upgradeable(loanData.asset).safeTransferFrom(
-                        address(this),
-                        loanData.owner,
-                        loanData.tokenIds[i]
-                    );
-                }
-            }
-        }
-        // User is sending less than the total debt
-        else {
-            // User is sending less than interest or the interest entirely
-            if (params.amount <= interest) {
-                ILendingPool(loanData.pool).receiveUnderlying(
-                    params.caller,
-                    0,
-                    uint256(loanData.borrowRate),
-                    params.amount
-                );
-
-                // Calculate how much time the user has paid off with sent amount
-                loanCenter.updateLoanDebtTimestamp(
-                    params.loanId,
-                    uint256(loanData.debtTimestamp) +
-                        ((365 days *
-                            params.amount *
-                            PercentageMath.PERCENTAGE_FACTOR) /
-                            (loanData.amount * uint256(loanData.borrowRate)))
-                );
-            }
-            // User is sending the full interest and closing part of the loan
-            else {
-                ILendingPool(loanData.pool).receiveUnderlying(
-                    params.caller,
-                    params.amount - interest,
-                    uint256(loanData.borrowRate),
-                    interest
-                );
-                loanCenter.updateLoanDebtTimestamp(
-                    params.loanId,
-                    block.timestamp
-                );
-                loanCenter.updateLoanAmount(
-                    params.loanId,
-                    loanData.amount - params.amount + interest
-                );
-            }
-        }
     }
 
     /// @notice Validates the parameters of the borrow function
@@ -229,7 +75,7 @@ library PeerBorrowLogic {
         address lendingPool,
         address loanCenter,
         uint256 maxLTVBoost,
-        DataTypes.BorrowParams memory params
+        DataTypes.PeerBorrowParams memory params
     ) internal view {
         // Check if borrow amount is bigger than 0
         require(params.amount > 0, "VL:VB:AMOUNT_0");
@@ -239,35 +85,6 @@ library PeerBorrowLogic {
 
         // Check if the lending pool exists
         require(lendingPool != address(0), "VL:VB:INVALID_LENDING_POOL");
-
-        // Check if borrow amount exceeds allowed amount
-        (uint256 ethPrice, uint256 precision) = ITokenOracle(
-            addressProvider.getTokenOracle()
-        ).getTokenETHPrice(params.asset);
-
-        require(
-            params.amount <=
-                (PercentageMath.percentMul(
-                    INFTOracle(addressProvider.getNFTOracle())
-                        .getTokensETHPrice(
-                            params.tokenAddress,
-                            params.tokenIds,
-                            params.request,
-                            params.packet
-                        ),
-                    ILoanCenter(loanCenter).getCollectionMaxLTV(
-                        params.nftAddress
-                    ) + maxLTVBoost
-                ) * precision) /
-                    ethPrice,
-            "VL:VB:MAX_LTV_EXCEEDED"
-        );
-
-        // Check if the pool has enough underlying to borrow
-        require(
-            params.amount <= ILendingPool(lendingPool).getUnderlyingBalance(),
-            "VL:VB:INSUFFICIENT_UNDERLYING"
-        );
     }
 
     /// @notice Validates the parameters of the repay function

@@ -17,7 +17,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {DataTypes} from "../../../libraries/types/DataTypes.sol";
 import {PercentageMath} from "../../../libraries/utils/PercentageMath.sol";
-import {ILiquidityPairMetadata} from "../../../interfaces/ILiquidityPairMetadata.sol";
+import {IPositionMetadata} from "../../../interfaces/IPositionMetadata.sol";
 import {SafeCast} from "../../../libraries/utils/SafeCast.sol";
 
 /// @title Trading Pool Contract
@@ -87,7 +87,7 @@ contract TradingPool721 is
         uint256 tokenId
     ) public view override lpExists(tokenId) returns (string memory) {
         return
-            ILiquidityPairMetadata(_addressProvider.getLiquidityPairMetadata())
+            IPositionMetadata(_addressProvider.getLiquidityPairMetadata())
                 .tokenURI(address(this), tokenId);
     }
 

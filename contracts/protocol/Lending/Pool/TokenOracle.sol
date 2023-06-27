@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import {ITokenOracle} from "../../interfaces/ITokenOracle.sol";
+import {ITokenOracle} from "../../../interfaces/ITokenOracle.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title TokenOracle

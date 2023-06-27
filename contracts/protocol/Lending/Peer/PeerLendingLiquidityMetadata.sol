@@ -9,15 +9,14 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import {ISwapPool} from "../../interfaces/ISwapPool.sol";
-import {ISwapLiquidityMetadata} from "../../interfaces/ISwapLiquidityMetadata.sol";
-import {DataTypes} from "../../libraries/types/DataTypes.sol";
+import {IPositionMetadata} from "../../../interfaces/IPositionMetadata.sol";
+import {DataTypes} from "../../../libraries/types/DataTypes.sol";
 
 /// @title LiquidityPair Metadata
 /// @author leNFT (thanks to out.eth (@outdoteth))
 /// @notice This contract is used to generate a liquidity pair's metadata.
 /// @dev Fills the metadata with dynamic data from the liquidity pair.
-contract PeerLendingLiquidityMetadata is ISwapLiquidityMetadata {
+contract LendingLiquidityMetadata is IPositionMetadata {
     modifier slExists(address swapPool, uint256 tokenId) {
         _requireSlExists(swapPool, tokenId);
         _;

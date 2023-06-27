@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.8.19;
 
-import {INFTOracle} from "../../interfaces/INFTOracle.sol";
-import {DataTypes} from "../../libraries/types/DataTypes.sol";
+import {INFTOracle} from "../../../interfaces/INFTOracle.sol";
+import {DataTypes} from "../../../libraries/types/DataTypes.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Trustus} from "../Trustus/Trustus.sol";
+import {Trustus} from "../../Trustus/Trustus.sol";
 
 /// @title NFTOracle contract
 /// @author leNFT

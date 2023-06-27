@@ -148,7 +148,7 @@ library DataTypes {
         ERC1155
     }
 
-    struct PeerLendingLiquidity {
+    struct LendingLiquidity {
         address owner;
         uint256 loanCount;
         uint256 tokenAmount;
@@ -166,6 +166,9 @@ library DataTypes {
         uint256[] tokenAmounts; // Only used for ERC1155 loans
         address asset;
         uint256 borrowRate;
+        uint256 expiryTimestamp;
+        uint256 lendingLiquidity;
+        TokenStandard collateralType;
         LoanState state;
     }
 
@@ -227,7 +230,7 @@ library DataTypes {
         TokenStandard collateralType;
         address tokenAddress;
         uint256[] tokenIds;
-        uint256[] tokenAmounts;
+        uint256[] tokenAmounts; // Only used for ERC1155 loans
         uint256 liquidityId;
     }
 
@@ -250,7 +253,7 @@ library DataTypes {
         TokenStandard collateralType;
         address tokenAddress;
         uint256[] tokenIds;
-        uint256[] tokenAmounts;
+        uint256[] tokenAmounts; // Only used for ERC1155 loans
         uint256 genesisNFTId;
         bytes32 request;
         Trustus.TrustusPacket packet;

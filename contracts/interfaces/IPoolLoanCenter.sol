@@ -19,7 +19,7 @@ interface IPoolLoanCenter {
 
     function getLoan(
         uint256 loanId
-    ) external view returns (DataTypes.LoanData memory);
+    ) external view returns (DataTypes.PoolLoanData memory);
 
     function getLoanState(
         uint256 loanId

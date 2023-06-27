@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.8.19;
 
-import {IInterestRate} from "../../interfaces/IInterestRate.sol";
-import {ConfigTypes} from "../../libraries/types/ConfigTypes.sol";
-import {PercentageMath} from "../../libraries/utils/PercentageMath.sol";
+import {IInterestRate} from "../../../interfaces/IInterestRate.sol";
+import {ConfigTypes} from "../../../libraries/types/ConfigTypes.sol";
+import {PercentageMath} from "../../../libraries/utils/PercentageMath.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {SafeCast} from "../../libraries/utils/SafeCast.sol";
+import {SafeCast} from "../../../libraries/utils/SafeCast.sol";
 
 /// @title InterestRate
 /// @author leNFT

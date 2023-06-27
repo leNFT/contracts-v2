@@ -2,11 +2,11 @@
 pragma solidity 0.8.19;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
-import {ISwapPool} from "../../interfaces/ISwapPool.sol";
-import {ISwapPoolFactory} from "../../interfaces/ISwapPoolFactory.sol";
-import {SwapPool} from "./SwapPool.sol";
-import {ISwapRouter} from "../../interfaces/ISwapRouter.sol";
+import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
+import {ISwapPool} from "../../../interfaces/ISwapPool.sol";
+import {ISwapPoolFactory} from "../../../interfaces/ISwapPoolFactory.sol";
+import {SwapPool721} from "../Pools/SwapPool721.sol";
+import {ISwapRouter} from "../../../interfaces/ISwapRouter.sol";
 import {IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import {IERC721MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
 import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";

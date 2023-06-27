@@ -5,7 +5,7 @@ import {DataTypes} from "../types/DataTypes.sol";
 import {PercentageMath} from "../utils/PercentageMath.sol";
 import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
 import {IFeeDistributor} from "../../interfaces/IFeeDistributor.sol";
-import {ILoanCenter} from "../../interfaces/ILoanCenter.sol";
+import {IPoolLoanCenter} from "../../interfaces/IPoolLoanCenter.sol";
 import {ILendingPool} from "../../interfaces/ILendingPool.sol";
 import {ITokenOracle} from "../../interfaces/ITokenOracle.sol";
 import {IGenesisNFT} from "../../interfaces/IGenesisNFT.sol";

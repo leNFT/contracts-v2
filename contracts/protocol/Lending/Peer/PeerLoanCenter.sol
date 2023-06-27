@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.8.19;
 
-import {IPeerLoanCenter} from "../../interfaces/IPeerLoanCenter.sol";
-import {PercentageMath} from "../../libraries/utils/PercentageMath.sol";
-import {DataTypes} from "../../libraries/types/DataTypes.sol";
+import {IPeerLoanCenter} from "../../../interfaces/IPeerLoanCenter.sol";
+import {PercentageMath} from "../../../libraries/utils/PercentageMath.sol";
+import {DataTypes} from "../../../libraries/types/DataTypes.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
-import {SafeCast} from "../../libraries/utils/SafeCast.sol";
-import {ILendingPool} from "../../interfaces/ILendingPool.sol";
+import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
+import {SafeCast} from "../../../libraries/utils/SafeCast.sol";
+import {ILendingPool} from "../../../interfaces/ILendingPool.sol";
 
 /// @title LoanCenter contract
 /// @author leNFT
@@ -18,7 +18,7 @@ contract PeerLoanCenter is IPeerLoanCenter, OwnableUpgradeable {
     mapping(address => mapping(uint256 => uint256)) private _nftToLoanId;
 
     // Loan ID to loan info mapping
-    mapping(uint256 => DataTypes.LoanData) private _loans;
+    mapping(uint256 => DataTypes.PeerLoanData) private _loans;
 
     uint256 private _loansCount;
     IAddressProvider private immutable _addressProvider;
@@ -55,8 +55,12 @@ contract PeerLoanCenter is IPeerLoanCenter, OwnableUpgradeable {
         uint256 defaultMaxLTV
     ) external initializer {
         __Ownable_init();
-        _defaultLiquidationThreshold = defaultLiquidationThreshold;
-        _defaultMaxLTV = defaultMaxLTV;
+    }
+
+    function createLoan() external {}
+
+    function activateLoan(uint256 loanId) external {
+        _loans[loanId].state = DataTypes.LoanState.Active;
     }
 
     function _requireOnlyMarket() internal view {

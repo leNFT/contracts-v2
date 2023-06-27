@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.8.19;
 
-import {ISwapPool} from "../../interfaces/ISwapPool.sol";
-import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
-import {IFeeDistributor} from "../../interfaces/IFeeDistributor.sol";
-import {ISwapPoolFactory} from "../../interfaces/ISwapPoolFactory.sol";
+import {ISwapPool} from "../../../interfaces/ISwapPool.sol";
+import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
+import {IFeeDistributor} from "../../../interfaces/IFeeDistributor.sol";
+import {ISwapPoolFactory} from "../../../interfaces/ISwapPoolFactory.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -14,9 +14,9 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import {DataTypes} from "../../libraries/types/DataTypes.sol";
-import {PercentageMath} from "../../libraries/utils/PercentageMath.sol";
-import {ISwapLiquidityMetadata} from "../../interfaces/ISwapLiquidityMetadata.sol";
+import {DataTypes} from "../../../libraries/types/DataTypes.sol";
+import {PercentageMath} from "../../../libraries/utils/PercentageMath.sol";
+import {IPositionMetadata} from "../../../interfaces/IPositionMetadata.sol";
 
 /// @title Swap Pool Contract
 /// @author leNFT

@@ -2,9 +2,9 @@
 pragma solidity 0.8.19;
 
 import {IWETH} from "../interfaces/IWETH.sol";
-import {ILendingMarket} from "../interfaces/ILendingMarket.sol";
+import {IPoolLendingMarket} from "../interfaces/IPoolLendingMarket.sol";
 import {DataTypes} from "../libraries/types/DataTypes.sol";
-import {ILoanCenter} from "../interfaces/ILoanCenter.sol";
+import {IPoolLoanCenter} from "../interfaces/IPoolLoanCenter.sol";
 import {IBribes} from "../interfaces/IBribes.sol";
 import {ISwapRouter} from "../interfaces/ISwapRouter.sol";
 import {ITradingPool} from "../interfaces/ITradingPool.sol";
