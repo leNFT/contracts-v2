@@ -14,6 +14,22 @@ import "hardhat/console.sol";
 contract LinearInterestRateCurve is IInterestRateCurve, ERC165 {
     uint256 private constant PRECISION = 1e18;
 
+    function getNextInterestRate(
+        uint256 loanAmount,
+        uint256 baseInterestRate,
+        uint256 delta,
+        uint256 loanCount,
+        uint256 resetPeriod,
+        uint256 lastLoanTimestamp
+    )
+        external
+        pure
+        override
+        returns (uint256 nextInterestRate, uint256 loanInterestRate)
+    {
+        return (0, 0);
+    }
+
     function supportsInterface(
         bytes4 interfaceId
     ) public view override returns (bool) {

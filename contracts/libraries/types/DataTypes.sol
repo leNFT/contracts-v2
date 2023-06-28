@@ -152,9 +152,11 @@ library DataTypes {
         uint256 tokenAmount;
         uint256 maxBorrowableAmount;
         uint256 maxDuration;
+        uint256 baseInterestRate;
         address interestRateCurve;
         uint256 delta;
         uint256 resetPeriod;
+        uint256 lastLoanTimestamp;
     }
 
     struct PeerLoanData {
@@ -165,6 +167,7 @@ library DataTypes {
         address asset;
         uint256 borrowRate;
         uint256 initTimestamp;
+        uint256 debtTimestamp;
         uint256 lendingLiquidity;
         TokenStandard collateralType;
         LoanState state;

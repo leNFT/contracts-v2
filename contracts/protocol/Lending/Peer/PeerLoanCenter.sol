@@ -70,9 +70,14 @@ contract PeerLoanCenter is IPeerLoanCenter, OwnableUpgradeable {
         _closeLoan(loanId);
     }
 
+    function updateLoanAmount(
+        uint256 loanId,
+        uint256 amount
+    ) external onlyMarket {}
+
     function _requireOnlyMarket() internal view {
         require(
-            msg.sender == _addressProvider.getLendingMarket(),
+            msg.sender == _addressProvider.getPeerLendingMarket(),
             "LC:NOT_MARKET"
         );
     }

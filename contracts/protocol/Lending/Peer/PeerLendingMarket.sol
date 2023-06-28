@@ -2,8 +2,8 @@
 pragma solidity 0.8.19;
 
 import {IPeerLendingMarket} from "../../../interfaces/IPeerLendingMarket.sol";
-import {PeerBorrowLogic} from "../../../libraries/logic/PeerBorrowLogic.sol";
 import {IPeerLoanCenter} from "../../../interfaces/IPeerLoanCenter.sol";
+import {IInterestRateCurve} from "../../../interfaces/IInterestRateCurve.sol";
 import {DataTypes} from "../../../libraries/types/DataTypes.sol";
 import {ConfigTypes} from "../../../libraries/types/ConfigTypes.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -37,6 +37,14 @@ contract PeerLendingMarket is
     uint256 private _liquidityCount;
 
     mapping(address => bool) private _isInterestRateCurve;
+
+    // Supported collections for ERC721 liquidity
+    mapping(uint256 => mapping(address => bool))
+        private _supportedERC721Collections;
+
+    // Supported tokens for ERC1155 liquidity
+    mapping(uint256 => mapping(address => mapping(uint256 => bool)))
+        private _supportedERC1155Tokens;
 
     // PeerLendingLiquidity
     mapping(uint256 => DataTypes.LendingLiquidity) private _lendingLiquidity;
@@ -75,12 +83,14 @@ contract PeerLendingMarket is
         _isInterestRateCurve[priceCurve] = valid;
     }
 
-    function addLiquidity(
+    function addLiquidity721(
         address onBehalfOf,
         address asset,
         uint256 amount,
+        address supportedNft,
         uint256 maxBorrowableAmount,
         uint256 maxDuration,
+        uint256 baseInterestRate,
         address interestRateCurve,
         uint256 delta,
         uint256 resetPeriod
@@ -103,6 +113,70 @@ contract PeerLendingMarket is
             tokenAmount: amount,
             maxBorrowableAmount: maxBorrowableAmount,
             maxDuration: maxDuration,
+            baseInterestRate: baseInterestRate,
+            interestRateCurve: interestRateCurve,
+            delta: delta,
+            resetPeriod: resetPeriod
+        });
+
+        // Increase the liquidity count
+        _liquidityCount++;
+
+        // Transfer the asset to the contract
+        IERC20Upgradeable(asset).safeTransferFrom(
+            onBehalfOf,
+            address(this),
+            amount
+        );
+
+        _safeMint(onBehalfOf, _liquidityCount);
+    }
+
+    function addLiquidity1155(
+        address onBehalfOf,
+        address asset,
+        uint256 amount,
+        address supportedToken,
+        uint256[] supportedTokenIds,
+        uint256[] maxBorrowableAmounts,
+        uint256 maxDuration,
+        uint256 baseInterestRate,
+        address interestRateCurve,
+        uint256 delta,
+        uint256 resetPeriod
+    ) external override {
+        require(amount > 0, "PLM:AL:AMOUNT_ZERO");
+        require(maxDuration > 0, "PLM:AL:MAX_DURATION_ZERO");
+        require(resetPeriod > 0, "PLM:AL:RESET_PERIOD_ZERO");
+        require(
+            supportedTokenIds.length == maxBorrowableAmounts.length,
+            "PLM:AL:INVALID_LENGTH"
+        );
+        // Make sure there are no duplicate token ids and all the max borrowable amounts are greater than 0
+        for (uint256 i = 0; i < supportedTokenIds.length; i++) {
+            require(maxBorrowableAmounts[i] > 0, "PLM:AL:MAX_AMOUNT_ZERO");
+            for (uint256 j = i + 1; j < supportedTokenIds.length; j++) {
+                require(
+                    supportedTokenIds[i] != supportedTokenIds[j],
+                    "PLM:AL:DUPLICATE_TOKEN_ID"
+                );
+            }
+        }
+
+        // Make sure the price curve is valid
+        require(
+            priceCurve.supportsInterface(type(IInterestRateCurve).interfaceId),
+            "PLM:AL:NOT_IRC"
+        );
+
+        // Save a new peer lending liquidity struct
+        _lendingLiquidity[_liquidityCount] = DataTypes.LendingLiquidity({
+            owner: onBehalfOf,
+            loanCount: 0,
+            tokenAmount: amount,
+            maxBorrowableAmount: maxBorrowableAmount,
+            maxDuration: maxDuration,
+            baseInterestRate: baseInterestRate,
             interestRateCurve: interestRateCurve,
             delta: delta,
             resetPeriod: resetPeriod
@@ -169,6 +243,39 @@ contract PeerLendingMarket is
         // Validate the borrow parameters
         _validateBorrow(addressProvider, address(loanCenter), params);
 
+        (
+            uint256 nextInterestRate,
+            uint256 loanInterestRate
+        ) = IInterestRateCurve(_lendingLiquidity[liquidityId].interestRateCurve)
+                .getNextInterestRate(
+                    amount,
+                    _lendingLiquidity[liquidityId].baseInterestRate,
+                    _lendingLiquidity[liquidityId].delta,
+                    _lendingLiquidity[liquidityId].loanCount,
+                    _lendingLiquidity[liquidityId].resetPeriod,
+                    _lendingLiquidity[liquidityId].lastLoanTimestamp
+                );
+
+        // Create the loan
+        loanCenter.createLoan(
+            onBehalfOf,
+            asset,
+            amount,
+            borrowRate,
+            tokenAddress,
+            [], // tokenAmounts
+            tokenIds,
+            liquidityId
+        );
+
+        // Update the lending liquidity
+        _lendingLiquidity[liquidityId].tokenAmount -= amount;
+        _lendingLiquidity[liquidityId].loanCount++;
+        _lendingLiquidity[liquidityId].lastLoanTimestamp = block.timestamp;
+
+        // Send the asset to the borrower
+        IERC20Upgradeable(asset).safeTransfer(onBehalfOf, amount);
+
         emit Borrow721(
             onBehalfOf,
             asset,
@@ -184,8 +291,8 @@ contract PeerLendingMarket is
         address asset,
         uint256 amount,
         address tokenAddress,
-        uint256[] tokenIds,
-        uint256[] tokenAmounts,
+        uint256 tokenId,
+        uint256 tokenAmount,
         uint256 liquidityId
     ) external override {
         IPeerLoanCenter loanCenter = IPeerLoanCenter(
@@ -194,6 +301,39 @@ contract PeerLendingMarket is
 
         // Validate the borrow parameters
         _validateBorrow(addressProvider, address(loanCenter), params);
+
+        (
+            uint256 nextInterestRate,
+            uint256 loanInterestRate
+        ) = IInterestRateCurve(_lendingLiquidity[liquidityId].interestRateCurve)
+                .getNextInterestRate(
+                    amount,
+                    _lendingLiquidity[liquidityId].baseInterestRate,
+                    _lendingLiquidity[liquidityId].delta,
+                    _lendingLiquidity[liquidityId].loanCount,
+                    _lendingLiquidity[liquidityId].resetPeriod,
+                    _lendingLiquidity[liquidityId].lastLoanTimestamp
+                );
+
+        // Create the loan
+        loanCenter.createLoan(
+            onBehalfOf,
+            asset,
+            amount,
+            loanInterestRate,
+            tokenAddress,
+            tokenAmounts,
+            tokenIds,
+            liquidityId
+        );
+
+        // Update the lending liquidity
+        _lendingLiquidity[liquidityId].tokenAmount -= amount;
+        _lendingLiquidity[liquidityId].loanCount++;
+        _lendingLiquidity[liquidityId].lastLoanTimestamp = block.timestamp;
+
+        // Send the asset to the borrower
+        IERC20Upgradeable(asset).safeTransfer(onBehalfOf, amount);
 
         emit Borrow1155(
             onBehalfOf,
@@ -217,17 +357,80 @@ contract PeerLendingMarket is
         DataTypes.PeerLoanData memory loanData = loanCenter.getLoan(
             params.loanId
         );
+        uint256 interest = loanCenter.getLoanInterest(params.loanId);
+        uint256 loanDebt = interest + loanData.amount;
 
         // Validate the repay parameters
         _validateRepay(amount, loanData.state, loanDebt);
 
-        if (
-            amount == loanData.amount &&
-            exists(loanData.liquidityId) &&
-            _lendingLiquidity[loanData.lendingLiquidity].loanAmount - 1 == 0
-        ) {
-            delete _lendingLiquidity[loanData.lendingLiquidity];
-            loanCenter
+        // If we are paying the entire loan debt
+        if (amount == loanDebt) {
+            // Delete the lending liquidity if it has been removed and has no more loans
+            if (
+                !exists(loanData.liquidityId) &&
+                _lendingLiquidity[loanData.lendingLiquidity].loanAmount == 1
+            ) {
+                delete _lendingLiquidity[loanData.lendingLiquidity];
+            }
+
+            // Mark the loan as repaid
+            loanCenter.repayLoan(loanId);
+
+            // Update the lending liquidity object
+            _lendingLiquidity[loanData.lendingLiquidity].loanAmount--;
+            _lendingLiquidity[loanData.lendingLiquidity].tokenAmount += loanData
+                .amount;
+
+            // Send the collateral back to the borrower
+            if (loanData.collateralType == DataTypes.CollateralType.ERC721) {
+                for (uint256 i = 0; i < loanData.tokenIds.length; i++) {
+                    IERC721Upgradeable(loanData.tokenAddress).safeTransferFrom(
+                        address(this),
+                        loanData.owner,
+                        loanData.tokenIds[i]
+                    );
+                }
+            } else {
+                IERC1155Upgradeable(loanData.tokenAddress)
+                    .safeBatchTransferFrom(
+                        address(this),
+                        loanData.owner,
+                        loanData.tokenIds,
+                        loanData.tokenAmounts,
+                        ""
+                    );
+            }
+        }
+        // User is sending less than the total debt
+        else {
+            // User is sending less than interest or the interest entirely
+            if (amount <= interest) {
+                IERC20Upgradeable(loanData.asset).safeTransferFrom(
+                    msg.sender,
+                    address(this),
+                    amount
+                );
+
+                // Calculate how much time the user has paid off with sent amount
+                loanCenter.updateLoanDebtTimestamp(
+                    loanId,
+                    uint256(loanData.debtTimestamp) +
+                        ((365 days *
+                            amount *
+                            PercentageMath.PERCENTAGE_FACTOR) /
+                            (amount * uint256(loanData.borrowRate)))
+                );
+            }
+            // User is sending the full interest and closing part of the loan
+            else {
+                IERC20Upgradeable(loanData.asset).safeTransferFrom(
+                    msg.sender,
+                    address(this),
+                    amount
+                );
+                loanCenter.updateLoanDebtTimestamp(loanId, block.timestamp);
+                loanCenter.updateLoanAmount(loanId, amount - amount + interest);
+            }
         }
 
         emit Repay(msg.sender, loanId);
