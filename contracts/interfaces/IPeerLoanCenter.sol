@@ -7,4 +7,8 @@ interface IPeerLoanCenter {
     function getLoan(
         uint256 loanId
     ) external view returns (DataTypes.PeerLoanData memory);
+
+    function repayLoan(uint256 loanId) external;
+
+    function liquidateLoan(uint256 loanId) external;
 }

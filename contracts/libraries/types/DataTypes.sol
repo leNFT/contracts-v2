@@ -127,7 +127,10 @@ library DataTypes {
     }
 
     /// @notice Enum of all the states a loan can be in
-    /// @dev State change flow: None -> Created -> Active -> Repaid -> Auction -> Liquidated
+    /// @dev Pool Loan State change flow 1: None -> Active -> Repaid
+    /// @dev Pool Loan State change flow 2: None -> Active -> Auctioned -> Liquidated
+    /// @dev Peer Loan State change flow 1: None -> Active -> Repaid
+    /// @dev Peer Loan State change flow 2: None -> Active -> Liquidated
     /// @dev None (Default Value): We need a default that is not 'Active' - this is the zero value
     /// @dev Active: The loan has been initialized; funds have been delivered to the borrower and the collateral is held.
     /// @dev Repaid: The loan has been repaid; and the collateral has been returned to the borrower.
@@ -149,8 +152,8 @@ library DataTypes {
     struct LendingLiquidity {
         address owner;
         uint256 loanCount;
+        address token;
         uint256 tokenAmount;
-        uint256 maxBorrowableAmount;
         uint256 maxDuration;
         uint256 baseInterestRate;
         address interestRateCurve;

@@ -45,14 +45,55 @@ library PoolBorrowLogic {
                 );
         }
 
-        // Validate the borrow parameters
-        _validateBorrow(
-            addressProvider,
-            lendingPool,
-            address(loanCenter),
-            maxLTVBoost,
-            params
+        // ------------------------- VALIDATION ------------------------- //
+
+        // Check if borrow amount is bigger than 0
+        require(params.amount > 0, "VL:VB:AMOUNT_0");
+
+        // Check if theres at least one asset to use as collateral
+        require(params.tokenIds.length > 0, "VL:VB:NO_NFTS");
+
+        // If its an ERC1155 loan, check if the token amounts are the same length as the token ids
+        if (params.tokenStandard == DataTypes.TokenStandard.ERC1155) {
+            require(
+                params.tokenIds.length == params.tokenAmounts.length,
+                "VL:VB:LENGTH_MISMATCH"
+            );
+        }
+
+        // Check if the lending pool exists
+        require(lendingPool != address(0), "VL:VB:INVALID_LENDING_POOL");
+
+        // Check if borrow amount exceeds allowed amount
+        (uint256 ethPrice, uint256 precision) = ITokenOracle(
+            addressProvider.getTokenOracle()
+        ).getTokenETHPrice(params.asset);
+
+        require(
+            params.amount <=
+                (PercentageMath.percentMul(
+                    INFTOracle(addressProvider.getNFTOracle())
+                        .getTokensETHPrice(
+                            params.tokenAddress,
+                            params.tokenIds,
+                            params.request,
+                            params.packet
+                        ),
+                    ILoanCenter(loanCenter).getCollectionMaxLTV(
+                        params.nftAddress
+                    ) + maxLTVBoost
+                ) * precision) /
+                    ethPrice,
+            "VL:VB:MAX_LTV_EXCEEDED"
         );
+
+        // Check if the pool has enough underlying to borrow
+        require(
+            params.amount <= ILendingPool(lendingPool).getUnderlyingBalance(),
+            "VL:VB:INSUFFICIENT_UNDERLYING"
+        );
+
+        // ------------------------- END VALIDATION ------------------------- //
 
         // Transfer the collateral to the the lending market
         if (params.collateralType == DataTypes.TokenStandard.ERC1155) {
@@ -110,8 +151,30 @@ library PoolBorrowLogic {
         uint256 interest = loanCenter.getLoanInterest(params.loanId);
         uint256 loanDebt = interest + loanData.amount;
 
-        // Validate the repay parameters
-        _validateRepay(params.amount, loanData.state, loanDebt);
+        // ------------------------- VALIDATION ------------------------- //
+
+        // Check if borrow amount is bigger than 0
+        require(repayAmount > 0, "VL:VR:AMOUNT_0");
+
+        //Require that loan exists
+        require(
+            loanState == DataTypes.LoanState.Active ||
+                loanState == DataTypes.LoanState.Auctioned,
+            "VL:VR:LOAN_NOT_FOUND"
+        );
+
+        // Check if user is over-paying
+        require(repayAmount <= loanDebt, "VL:VR:AMOUNT_EXCEEDS_DEBT");
+
+        // Can only do partial repayments if the loan is not being auctioned
+        if (repayAmount < loanDebt) {
+            require(
+                loanState != DataTypes.LoanState.Auctioned,
+                "VL:VR:PARTIAL_REPAY_AUCTIONED"
+            );
+        }
+
+        // ------------------------- END VALIDATION ------------------------- //
 
         // If we are paying the entire loan debt
         if (params.amount == loanDebt) {
@@ -213,97 +276,6 @@ library PoolBorrowLogic {
                     loanData.amount - params.amount + interest
                 );
             }
-        }
-    }
-
-    /// @notice Validates the parameters of the borrow function
-    /// @param addressProvider The address of the addresses provider
-    /// @param lendingPool The address of the lending pool
-    /// @param loanCenter The address loan center
-    /// @param params A struct with the parameters of the borrow function
-    function _validateBorrow(
-        IAddressProvider addressProvider,
-        address lendingPool,
-        address loanCenter,
-        uint256 maxLTVBoost,
-        DataTypes.PoolBorrowParams memory params
-    ) internal view {
-        // Check if borrow amount is bigger than 0
-        require(params.amount > 0, "VL:VB:AMOUNT_0");
-
-        // Check if theres at least one asset to use as collateral
-        require(params.tokenIds.length > 0, "VL:VB:NO_NFTS");
-
-        // If its an ERC1155 loan, check if the token amounts are the same length as the token ids
-        if (params.tokenStandard == DataTypes.TokenStandard.ERC1155) {
-            require(
-                params.tokenIds.length == params.tokenAmounts.length,
-                "VL:VB:LENGTH_MISMATCH"
-            );
-        }
-
-        // Check if the lending pool exists
-        require(lendingPool != address(0), "VL:VB:INVALID_LENDING_POOL");
-
-        // Check if borrow amount exceeds allowed amount
-        (uint256 ethPrice, uint256 precision) = ITokenOracle(
-            addressProvider.getTokenOracle()
-        ).getTokenETHPrice(params.asset);
-
-        require(
-            params.amount <=
-                (PercentageMath.percentMul(
-                    INFTOracle(addressProvider.getNFTOracle())
-                        .getTokensETHPrice(
-                            params.tokenAddress,
-                            params.tokenIds,
-                            params.request,
-                            params.packet
-                        ),
-                    ILoanCenter(loanCenter).getCollectionMaxLTV(
-                        params.nftAddress
-                    ) + maxLTVBoost
-                ) * precision) /
-                    ethPrice,
-            "VL:VB:MAX_LTV_EXCEEDED"
-        );
-
-        // Check if the pool has enough underlying to borrow
-        require(
-            params.amount <= ILendingPool(lendingPool).getUnderlyingBalance(),
-            "VL:VB:INSUFFICIENT_UNDERLYING"
-        );
-    }
-
-    /// @notice Validates the parameters of the repay function
-    /// @param repayAmount The amount to repay
-    /// @param loanState The state of the loan
-    /// @param loanDebt The debt of the loan
-    function _validateRepay(
-        uint256 repayAmount,
-        DataTypes.LoanState loanState,
-        uint256 loanDebt
-    ) internal pure {
-        // Validate the movement
-        // Check if borrow amount is bigger than 0
-        require(repayAmount > 0, "VL:VR:AMOUNT_0");
-
-        //Require that loan exists
-        require(
-            loanState == DataTypes.LoanState.Active ||
-                loanState == DataTypes.LoanState.Auctioned,
-            "VL:VR:LOAN_NOT_FOUND"
-        );
-
-        // Check if user is over-paying
-        require(repayAmount <= loanDebt, "VL:VR:AMOUNT_EXCEEDS_DEBT");
-
-        // Can only do partial repayments if the loan is not being auctioned
-        if (repayAmount < loanDebt) {
-            require(
-                loanState != DataTypes.LoanState.Auctioned,
-                "VL:VR:PARTIAL_REPAY_AUCTIONED"
-            );
         }
     }
 }

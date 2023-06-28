@@ -37,18 +37,64 @@ library PoolLiquidationLogic {
         // Get the loan
         DataTypes.LoanData memory loanData = loanCenter.getLoan(params.loanId);
 
-        // Validate the auction creation
-        _validateCreateLiquidationAuction(
-            addressProvider,
-            address(loanCenter),
-            params,
-            loanData.state,
-            loanData.collateralType,
-            loanData.pool,
-            loanData.asset,
-            loanData.tokenIds,
-            loanData.tokenAmounts
+        // ------------------------- VALIDATION ------------------------- //
+
+        // Verify if liquidation conditions are met
+        //Require the loan exists
+        require(
+            loanState == DataTypes.LoanState.Active,
+            "VL:VCLA:LOAN_NOT_FOUND"
         );
+
+        // Check if collateral / debt relation allows for liquidation
+        (uint256 ethPrice, uint256 precision) = ITokenOracle(
+            addressProvider.getTokenOracle()
+        ).getTokenETHPrice(IERC4626(lendingPool).asset());
+
+        uint256 collateralETHPrice;
+        if (tokenStandard == DataTypes.TokenStandard.ERC721) {
+            collateralETHPrice = INFTOracle(addressProvider.getNFTOracle())
+                .getTokens721ETHPrice(
+                    loanNFTAsset,
+                    loanNFTTokenIds,
+                    params.request,
+                    params.packet
+                );
+        } else {
+            collateralETHPrice = INFTOracle(addressProvider.getNFTOracle())
+                .getTokens1155ETHPrice(
+                    loanNFTAsset,
+                    loanNFTTokenIds,
+                    loanTokenAmounts,
+                    params.request,
+                    params.packet
+                );
+        }
+
+        require(
+            (ILoanCenter(loanCenter).getLoanMaxDebt(
+                params.loanId,
+                collateralETHPrice
+            ) * precision) /
+                ethPrice <
+                ILoanCenter(loanCenter).getLoanDebt(params.loanId),
+            "VL:VCLA:MAX_DEBT_NOT_EXCEEDED"
+        );
+
+        // Check if bid is large enough
+        require(
+            (ethPrice * params.bid) / precision >=
+                PercentageMath.percentMul(
+                    collateralETHPrice,
+                    (PercentageMath.PERCENTAGE_FACTOR -
+                        ILendingPool(lendingPool)
+                            .getPoolConfig()
+                            .maxLiquidatorDiscount)
+                ),
+            "VL:VCLA:BID_TOO_LOW"
+        );
+
+        // ------------------------- END VALIDATION ------------------------- //
 
         // Add auction to the loan
         loanCenter.auctionLoan(params.loanId, params.onBehalfOf, params.bid);
@@ -77,12 +123,29 @@ library PoolLiquidationLogic {
         DataTypes.LoanLiquidationData memory loanLiquidationData = loanCenter
             .getLoanLiquidationData(params.loanId);
 
-        // validate the auction bid
-        _validateBidLiquidationAuction(
-            params.bid,
-            loanState,
-            loanLiquidationData
+        // ------------------------- VALIDATION ------------------------- //
+
+        // Check if the auction exists
+        require(
+            loanState == DataTypes.LoanState.Auctioned,
+            "VL:VBLA:AUCTION_NOT_FOUND"
         );
+
+        // Check if the auction is still active
+        require(
+            block.timestamp <
+                loanLiquidationData.auctionStartTimestamp +
+                    LIQUIDATION_AUCTION_PERIOD,
+            "VL:VBLA:AUCTION_NOT_ACTIVE"
+        );
+
+        // Check if bid is higher than current bid
+        require(
+            currentBid > loanLiquidationData.auctionMaxBid,
+            "VL:VBLA:BID_TOO_LOW"
+        );
+
+        // ------------------------- END VALIDATION ------------------------- //
 
         // Get the address of this asset's lending pool
         address poolAsset = IERC4626(loanLendingPool).asset();
@@ -123,11 +186,22 @@ library PoolLiquidationLogic {
         DataTypes.LoanLiquidationData memory loanLiquidationData = loanCenter
             .getLoanLiquidationData(params.loanId);
 
-        // Validate the auction claim
-        _validateClaimLiquidation(
-            loanData.state,
-            loanLiquidationData.auctionStartTimestamp
+        // ------------------------- VALIDATION ------------------------- //
+
+        // Check if the loan is being auctioned
+        require(
+            loanState == DataTypes.LoanState.Auctioned,
+            "VL:VCLA:AUCTION_NOT_FOUND"
         );
+
+        // Check if the auction is still active
+        require(
+            block.timestamp >
+                loanAuctionStartTimestamp + LIQUIDATION_AUCTION_PERIOD,
+            "VL:VCLA:AUCTION_NOT_FINISHED"
+        );
+
+        // ------------------------- END VALIDATION ------------------------- //
 
         // Get the address of this asset's pool
         address poolAsset = IERC4626(loanData.pool).asset();
@@ -219,128 +293,5 @@ library PoolLiquidationLogic {
                 uint256(loanData.genesisNFTId)
             );
         }
-    }
-
-    /// @notice Validate the parameters of the create liquidation auction function
-    /// @param addressProvider The address of the addresses provider
-    /// @param loanCenter The loan center
-    /// @param params A struct with the parameters of the create liquidation auction function
-    /// @param loanState The state of the loan
-    /// @param lendingPool The address of the lending pool
-    /// @param loanNFTAsset The address of the loan NFT asset
-    /// @param loanNFTTokenIds The token ids of the loan NFT
-    function _validateCreateLiquidationAuction(
-        IAddressProvider addressProvider,
-        address loanCenter,
-        DataTypes.CreateAuctionParams memory params,
-        DataTypes.LoanState loanState,
-        DataTypes.TokenStandard tokenStandard,
-        address lendingPool,
-        address loanNFTAsset,
-        uint256[] memory loanNFTTokenIds,
-        uint256[] memory loanTokenAmounts
-    ) internal view {
-        // Verify if liquidation conditions are met
-        //Require the loan exists
-        require(
-            loanState == DataTypes.LoanState.Active,
-            "VL:VCLA:LOAN_NOT_FOUND"
-        );
-
-        // Check if collateral / debt relation allows for liquidation
-        (uint256 ethPrice, uint256 precision) = ITokenOracle(
-            addressProvider.getTokenOracle()
-        ).getTokenETHPrice(IERC4626(lendingPool).asset());
-
-        uint256 collateralETHPrice;
-        if (tokenStandard == DataTypes.TokenStandard.ERC721) {
-            collateralETHPrice = INFTOracle(addressProvider.getNFTOracle())
-                .getTokens721ETHPrice(
-                    loanNFTAsset,
-                    loanNFTTokenIds,
-                    params.request,
-                    params.packet
-                );
-        } else {
-            collateralETHPrice = INFTOracle(addressProvider.getNFTOracle())
-                .getTokens1155ETHPrice(
-                    loanNFTAsset,
-                    loanNFTTokenIds,
-                    loanTokenAmounts,
-                    params.request,
-                    params.packet
-                );
-        }
-
-        require(
-            (ILoanCenter(loanCenter).getLoanMaxDebt(
-                params.loanId,
-                collateralETHPrice
-            ) * precision) /
-                ethPrice <
-                ILoanCenter(loanCenter).getLoanDebt(params.loanId),
-            "VL:VCLA:MAX_DEBT_NOT_EXCEEDED"
-        );
-
-        // Check if bid is large enough
-        require(
-            (ethPrice * params.bid) / precision >=
-                PercentageMath.percentMul(
-                    collateralETHPrice,
-                    (PercentageMath.PERCENTAGE_FACTOR -
-                        ILendingPool(lendingPool)
-                            .getPoolConfig()
-                            .maxLiquidatorDiscount)
-                ),
-            "VL:VCLA:BID_TOO_LOW"
-        );
-    }
-
-    /// @notice Validate the parameters of the bid liquidation auction function
-    /// @param currentBid The current bid of the auction
-    /// @param loanState The state of the loan
-    /// @param loanLiquidationData The liquidation data of the loan
-    function _validateBidLiquidationAuction(
-        uint256 currentBid,
-        DataTypes.LoanState loanState,
-        DataTypes.LoanLiquidationData memory loanLiquidationData
-    ) internal view {
-        // Check if the auction exists
-        require(
-            loanState == DataTypes.LoanState.Auctioned,
-            "VL:VBLA:AUCTION_NOT_FOUND"
-        );
-
-        // Check if the auction is still active
-        require(
-            block.timestamp <
-                loanLiquidationData.auctionStartTimestamp +
-                    LIQUIDATION_AUCTION_PERIOD,
-            "VL:VBLA:AUCTION_NOT_ACTIVE"
-        );
-
-        // Check if bid is higher than current bid
-        require(
-            currentBid > loanLiquidationData.auctionMaxBid,
-            "VL:VBLA:BID_TOO_LOW"
-        );
-    }
-
-    function _validateClaimLiquidation(
-        DataTypes.LoanState loanState,
-        uint256 loanAuctionStartTimestamp
-    ) internal view {
-        // Check if the loan is being auctioned
-        require(
-            loanState == DataTypes.LoanState.Auctioned,
-            "VL:VCLA:AUCTION_NOT_FOUND"
-        );
-
-        // Check if the auction is still active
-        require(
-            block.timestamp >
-                loanAuctionStartTimestamp + LIQUIDATION_AUCTION_PERIOD,
-            "VL:VCLA:AUCTION_NOT_FINISHED"
-        );
     }
 }

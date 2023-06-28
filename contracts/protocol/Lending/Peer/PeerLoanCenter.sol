@@ -48,16 +48,20 @@ contract PeerLoanCenter is IPeerLoanCenter, OwnableUpgradeable {
     }
 
     /// @notice Initializes the contract
-    /// @param defaultLiquidationThreshold The default liquidation threshold
-    /// @param defaultMaxLTV The default max LTV
-    function initialize(
-        uint256 defaultLiquidationThreshold,
-        uint256 defaultMaxLTV
-    ) external initializer {
+    function initialize() external initializer {
         __Ownable_init();
     }
 
-    function createLoan() external {}
+    function createLoan(
+        address onBehalfOf,
+        address asset,
+        uint256 amount,
+        uint256 borrowRate,
+        address tokenAddress,
+        uint256[] tokenIds,
+        uint256[] tokenAmounts,
+        uint256 liquidityId
+    ) external {}
 
     /// @notice Repay a loan by setting its state to Repaid
     /// @dev Only the market contract can call this function
@@ -65,15 +69,65 @@ contract PeerLoanCenter is IPeerLoanCenter, OwnableUpgradeable {
     function repayLoan(uint256 loanId) external override onlyMarket {
         // Update loan state
         _loans[loanId].state = DataTypes.LoanState.Repaid;
+    }
 
-        // Close the loan
-        _closeLoan(loanId);
+    function liquidateLoan(uint256 loanId) external override onlyMarket {
+        // Update loan state
+        _loans[loanId].state = DataTypes.LoanState.Liquidated;
     }
 
     function updateLoanAmount(
         uint256 loanId,
         uint256 amount
-    ) external onlyMarket {}
+    ) external onlyMarket {
+        _loans[loanId].amount = amount;
+    }
+
+    /// @notice Get the debt owed on a loan
+    /// @param loanId The ID of the loan
+    /// @return The total amount of debt owed on the loan quoted in the same asset of the loan's lending pool
+    function getLoanDebt(
+        uint256 loanId
+    ) external view override loanExists(loanId) returns (uint256) {
+        return _getLoanDebt(loanId);
+    }
+
+    /// @notice Get the interest owed on a loan
+    /// @param loanId The ID of the loan
+    /// @return The amount of interest owed on the loan
+    function getLoanInterest(
+        uint256 loanId
+    ) external view override loanExists(loanId) returns (uint256) {
+        return _getLoanInterest(loanId, block.timestamp);
+    }
+
+    /// @notice GEts the loan interest for a given timestamp
+    /// @param loanId The ID of the loan
+    /// @param timestamp The timestamp to get the interest for
+    /// @return The amount of interest owed on the loan
+    function _getLoanInterest(
+        uint256 loanId,
+        uint256 timestamp
+    ) internal view returns (uint256) {
+        //Interest increases every 30 minutes
+        uint256 incrementalTimestamp = (((timestamp - 1) / (30 * 60)) + 1) *
+            (30 * 60);
+        DataTypes.PeerLoanData memory loan = _loans[loanId];
+
+        return
+            (loan.amount *
+                uint256(loan.borrowRate) *
+                (incrementalTimestamp - uint256(loan.debtTimestamp))) /
+            (PercentageMath.PERCENTAGE_FACTOR * 365 days);
+    }
+
+    /// @notice Internal function to get the debt owed on a loan
+    /// @param loanId The ID of the loan
+    /// @return The total amount of debt owed on the loan
+    function _getLoanDebt(uint256 loanId) internal view returns (uint256) {
+        return
+            _getLoanInterest(loanId, block.timestamp) + _loans[loanId].amount;
+    }
 
     function _requireOnlyMarket() internal view {
         require(
