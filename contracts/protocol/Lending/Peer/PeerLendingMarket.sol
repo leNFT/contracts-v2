@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import {IPeerLendingMarket} from "../../../interfaces/IPeerLendingMarket.sol";
+import {PercentageMath} from "../../../libraries/utils/PercentageMath.sol";
 import {IPeerLoanCenter} from "../../../interfaces/IPeerLoanCenter.sol";
 import {IInterestRateCurve} from "../../../interfaces/IInterestRateCurve.sol";
 import {DataTypes} from "../../../libraries/types/DataTypes.sol";
@@ -174,7 +175,9 @@ contract PeerLendingMarket is
 
         // Make sure the price curve is valid
         require(
-            priceCurve.supportsInterface(type(IInterestRateCurve).interfaceId),
+            interestRateCurve.supportsInterface(
+                type(IInterestRateCurve).interfaceId
+            ),
             "PLM:AL:NOT_IRC"
         );
 
@@ -182,7 +185,6 @@ contract PeerLendingMarket is
         _lendingLiquidity[_liquidityCount] = DataTypes.LendingLiquidity({
             owner: onBehalfOf,
             tokenAmount: amount,
-            maxBorrowableAmount: maxBorrowableAmount,
             maxDuration: maxDuration,
             baseInterestRate: baseInterestRate,
             interestRateCurve: interestRateCurve,
@@ -252,46 +254,36 @@ contract PeerLendingMarket is
         uint256 liquidityId
     ) external override {
         IPeerLoanCenter loanCenter = IPeerLoanCenter(
-            addressProvider.getLoanCenter()
+            _addressProvider.getLoanCenter()
         );
 
         // Check if borrow amount is bigger than 0
-        require(params.amount > 0, "VL:VB:AMOUNT_0");
+        require(amount > 0, "VL:VB:AMOUNT_0");
 
         // Check if theres at least one asset to use as collateral
-        require(params.tokenIds.length > 0, "VL:VB:NO_NFTS");
-
-        // If its an ERC1155 loan, check if the token amounts are the same length as the token ids
-        if (params.tokenStandard == DataTypes.TokenStandard.ERC1155) {
-            require(
-                params.tokenIds.length == params.tokenAmounts.length,
-                "VL:VB:LENGTH_MISMATCH"
-            );
-        }
+        require(tokenIds.length > 0, "VL:VB:NO_NFTS");
 
         // Check if the loan amount exceeds the maximum loan amount
 
         // Check if the loan amount exceeds the available tokens in the liquidity
 
-        (
-            uint256 nextInterestRate,
-            uint256 loanInterestRate
-        ) = IInterestRateCurve(_lendingLiquidity[liquidityId].interestRateCurve)
-                .getNextInterestRate(
-                    amount,
-                    _lendingLiquidity[liquidityId].baseInterestRate,
-                    _lendingLiquidity[liquidityId].delta,
-                    _lendingLiquidity[liquidityId].loanCount,
-                    _lendingLiquidity[liquidityId].resetPeriod,
-                    _lendingLiquidity[liquidityId].lastLoanTimestamp
-                );
+        uint256 loanInterestRate = IInterestRateCurve(
+            _lendingLiquidity[liquidityId].interestRateCurve
+        ).getLoanInterestRate(
+                amount,
+                _lendingLiquidity[liquidityId].baseInterestRate,
+                _lendingLiquidity[liquidityId].delta,
+                _lendingLiquidity[liquidityId].loanCount,
+                _lendingLiquidity[liquidityId].resetPeriod,
+                _lendingLiquidity[liquidityId].lastLoanTimestamp
+            );
 
         // Create the loan
         loanCenter.createLoan(
             onBehalfOf,
             asset,
             amount,
-            borrowRate,
+            loanInterestRate,
             tokenAddress,
             tokenIds,
             [], // tokenAmounts
@@ -326,39 +318,35 @@ contract PeerLendingMarket is
         uint256 liquidityId
     ) external override {
         IPeerLoanCenter loanCenter = IPeerLoanCenter(
-            addressProvider.getLoanCenter()
+            _addressProvider.getLoanCenter()
         );
 
         // Check if borrow amount is bigger than 0
-        require(params.amount > 0, "VL:VB:AMOUNT_0");
+        require(amount > 0, "VL:VB:AMOUNT_0");
 
         // Check if theres at least one asset to use as collateral
-        require(params.tokenIds.length > 0, "VL:VB:NO_NFTS");
+        require(tokenIds.length > 0, "VL:VB:NO_NFTS");
 
-        // If its an ERC1155 loan, check if the token amounts are the same length as the token ids
-        if (params.tokenStandard == DataTypes.TokenStandard.ERC1155) {
-            require(
-                params.tokenIds.length == params.tokenAmounts.length,
-                "VL:VB:LENGTH_MISMATCH"
-            );
-        }
+        // Check if the token amounts are the same length as the token ids
+        require(
+            tokenIds.length == tokenAmounts.length,
+            "VL:VB:LENGTH_MISMATCH"
+        );
 
         // Check if the loan amount exceeds the maximum loan amount
 
         // Check if the loan amount exceeds the available tokens in the liquidity
 
-        (
-            uint256 nextInterestRate,
-            uint256 loanInterestRate
-        ) = IInterestRateCurve(_lendingLiquidity[liquidityId].interestRateCurve)
-                .getNextInterestRate(
-                    amount,
-                    _lendingLiquidity[liquidityId].baseInterestRate,
-                    _lendingLiquidity[liquidityId].delta,
-                    _lendingLiquidity[liquidityId].loanCount,
-                    _lendingLiquidity[liquidityId].resetPeriod,
-                    _lendingLiquidity[liquidityId].lastLoanTimestamp
-                );
+        uint256 loanInterestRate = IInterestRateCurve(
+            _lendingLiquidity[liquidityId].interestRateCurve
+        ).getNextInterestRate(
+                amount,
+                _lendingLiquidity[liquidityId].baseInterestRate,
+                _lendingLiquidity[liquidityId].delta,
+                _lendingLiquidity[liquidityId].loanCount,
+                _lendingLiquidity[liquidityId].resetPeriod,
+                _lendingLiquidity[liquidityId].lastLoanTimestamp
+            );
 
         // Create the loan
         loanCenter.createLoan(
@@ -397,33 +385,31 @@ contract PeerLendingMarket is
     ) external override nonReentrant {
         // Get the loan
         IPeerLoanCenter loanCenter = IPeerLoanCenter(
-            addressProvider.getLoanCenter()
+            _addressProvider.getLoanCenter()
         );
-        DataTypes.PeerLoanData memory loanData = loanCenter.getLoan(
-            params.loanId
-        );
-        uint256 interest = loanCenter.getLoanInterest(params.loanId);
+        DataTypes.PeerLoanData memory loanData = loanCenter.getLoan(loanId);
+        uint256 interest = loanCenter.getLoanInterest(loanId);
         uint256 loanDebt = interest + loanData.amount;
 
         // Validate the repay parameters
         // Validate the movement
         // Check if borrow amount is bigger than 0
-        require(repayAmount > 0, "VL:VR:AMOUNT_0");
+        require(amount > 0, "VL:VR:AMOUNT_0");
 
         //Require that loan exists
         require(
-            loanState == DataTypes.LoanState.Active ||
-                loanState == DataTypes.LoanState.Auctioned,
+            loanData.state == DataTypes.LoanState.Active ||
+                loanData.state == DataTypes.LoanState.Auctioned,
             "VL:VR:LOAN_NOT_FOUND"
         );
 
         // Check if user is over-paying
-        require(repayAmount <= loanDebt, "VL:VR:AMOUNT_EXCEEDS_DEBT");
+        require(amount <= loanDebt, "VL:VR:AMOUNT_EXCEEDS_DEBT");
 
         // Can only do partial repayments if the loan is not being auctioned
-        if (repayAmount < loanDebt) {
+        if (amount < loanDebt) {
             require(
-                loanState != DataTypes.LoanState.Auctioned,
+                loanData.state != DataTypes.LoanState.Auctioned,
                 "VL:VR:PARTIAL_REPAY_AUCTIONED"
             );
         }

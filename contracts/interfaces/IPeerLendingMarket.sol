@@ -22,4 +22,6 @@ interface IPeerLendingMarket {
         uint256 liquidityId,
         uint256 amount
     );
+
+    event Repay(address indexed user, uint256 indexed loanId);
 }

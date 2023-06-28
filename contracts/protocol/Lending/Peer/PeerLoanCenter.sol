@@ -58,8 +58,8 @@ contract PeerLoanCenter is IPeerLoanCenter, OwnableUpgradeable {
         uint256 amount,
         uint256 borrowRate,
         address tokenAddress,
-        uint256[] tokenIds,
-        uint256[] tokenAmounts,
+        uint256[] calldata tokenIds,
+        uint256[] calldata tokenAmounts,
         uint256 liquidityId
     ) external {}
 

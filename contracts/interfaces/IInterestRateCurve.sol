@@ -9,5 +9,5 @@ interface IInterestRateCurve {
         uint256 loanCount,
         uint256 resetPeriod,
         uint256 lastLoanTimestamp
-    ) external returns (uint256 nextInterestRate, uint256 loanInterestRate);
+    ) external returns (uint256 loanInterestRate);
 }
