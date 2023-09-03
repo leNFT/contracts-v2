@@ -1,10 +1,11 @@
 const { expect } = require("chai");
-const load = require("../helpers/_loadTest.js");
 const { ethers } = require("hardhat");
-const { time } = require("@nomicfoundation/hardhat-network-helpers");
 const { BigNumber } = require("ethers");
+const load = require("../helpers/_loadTest.js");
+const { getPriceSig } = require("../helpers/getPriceSig.js");
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("TradingPool721Factory", () => {
+describe("TradingVault", function () {
   load.loadTest(false);
 
   before(async function () {
@@ -20,14 +21,5 @@ describe("TradingPool721Factory", () => {
     snapshotId = await ethers.provider.send("evm_snapshot", []);
   });
 
-  it("Should create a trading pool", async function () {
-    const createTx = await tradingPool721Factory.create(
-      testERC721.address,
-      wethAddress
-    );
-    await createTx.wait();
-    expect(
-      await tradingPoolRegistry.getTradingPool(testERC721.address, wethAddress)
-    ).to.be.not.equal(ethers.constants.AddressZero);
-  });
+  it("Should be able to add liquidity to a trading pool", async function () {});
 });

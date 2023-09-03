@@ -9,39 +9,48 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import {ISwapPool} from "../../../interfaces/ISwapPool.sol";
-import {IPositionMetadata} from "../../../interfaces/IPositionMetadata.sol";
 import {DataTypes} from "../../../libraries/types/DataTypes.sol";
+import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
+import {ITradingVault} from "../../../interfaces/ITradingVault.sol";
 
 /// @title LiquidityPair Metadata
 /// @author leNFT (thanks to out.eth (@outdoteth))
 /// @notice This contract is used to generate a liquidity pair's metadata.
 /// @dev Fills the metadata with dynamic data from the liquidity pair.
-contract SwapLiquidityMetadata is IPositionMetadata {
-    modifier slExists(address swapPool, uint256 tokenId) {
-        _requireSlExists(swapPool, tokenId);
+contract SwapLiquidityMetadata {
+    IAddressProvider private immutable _addressProvider;
+
+    modifier slExists(uint256 liquidityId) {
+        _requireSlExists(liquidityId);
         _;
     }
 
+    constructor(IAddressProvider addressProvider) {
+        _addressProvider = addressProvider;
+    }
+
     /// @notice Returns the metadata for a liquidity pair
-    /// @param swapPool The address of the trading pool of the liquidity pair.
-    /// @param tokenId The liquidity pair's token ID.
+    /// @param liquidityId The liquidity pair's token ID.
     /// @return The encoded metadata for the liquidity pair.
     function tokenURI(
-        address swapPool,
-        uint256 tokenId
-    ) public view override slExists(swapPool, tokenId) returns (string memory) {
+        uint256 liquidityId
+    ) public view override slExists(liquidityId) returns (string memory) {
         bytes memory metadata;
+        DataTypes.SwapLiquidity memory lp = ITradingVault(
+            _addressProvider.getTradingVault()
+        ).getSL(liquidityId);
+        address swapPool = ITradingVault(_addressProvider.getTradingVault())
+            .getPoolAddress(liquidityId);
 
         {
             // scope to avoid stack too deep errors
             metadata = abi.encodePacked(
                 "{",
                 '"name": "Liquidity Pair ',
-                IERC721Metadata(ISwapPool(swapPool).getNFT()).symbol(),
-                IERC20Metadata(ISwapPool(swapPool).getFeeToken()).symbol(),
+                IERC721Metadata(lp.nft).symbol(),
+                IERC20Metadata(lp.token).symbol(),
                 " #",
-                Strings.toString(tokenId),
+                Strings.toString(liquidityId),
                 '",'
             );
         }
@@ -52,10 +61,10 @@ contract SwapLiquidityMetadata is IPositionMetadata {
                 '"description": "leNFT trading liquidity pair.",',
                 '"image": ',
                 '"data:image/svg+xml;base64,',
-                Base64.encode(svg(swapPool, tokenId)),
+                Base64.encode(svg(swapPool, liquidityId)),
                 '",',
                 '"attributes": [',
-                attributes(swapPool, tokenId),
+                attributes(swapPool, liquidityId),
                 "]",
                 "}"
             );
@@ -71,14 +80,16 @@ contract SwapLiquidityMetadata is IPositionMetadata {
     }
 
     /// @notice Returns the attributes for a liquidity pair encoded as json.
-    /// @param swapPool The address of the trading pool of the liquidity pair.
-    /// @param tokenId The liquidity pair's token ID.
+    /// @param liquidityId The liquidity pair's token ID.
     /// @return The encoded attributes for the liquidity pair.
     function attributes(
-        address swapPool,
-        uint256 tokenId
-    ) public view slExists(swapPool, tokenId) returns (string memory) {
-        DataTypes.SwapLiquidity memory sl = ISwapPool(swapPool).getSL(tokenId);
+        uint256 liquidityId
+    ) public view slExists(liquidityId) returns (string memory) {
+        DataTypes.SwapLiquidity memory sl = ITradingVault(
+            _addressProvider.getTradingVault()
+        ).getSL(liquidityId);
+        address swapPool = ITradingVault(_addressProvider.getTradingVault())
+            .getPoolAddress(liquidityId);
 
         bytes memory _attributes;
 
@@ -87,16 +98,9 @@ contract SwapLiquidityMetadata is IPositionMetadata {
             _attributes = abi.encodePacked(
                 trait("Pool address", Strings.toHexString(swapPool)),
                 ",",
-                trait(
-                    "Token",
-                    Strings.toHexString(ISwapPool(swapPool).getToken())
-                ),
+                trait("Token", Strings.toHexString(sl.token)),
                 ",",
-                trait("NFT", Strings.toHexString(ISwapPool(swapPool).getNFT())),
-                ",",
-                trait("Price", Strings.toString(lp.spotPrice)),
-                ",",
-                trait("Token balance", Strings.toString(lp.tokenAmount)),
+                trait("NFT", Strings.toHexString(sl.nft)),
                 ","
             );
         }
@@ -104,15 +108,11 @@ contract SwapLiquidityMetadata is IPositionMetadata {
         {
             _attributes = abi.encodePacked(
                 _attributes,
-                trait("NFT balance", Strings.toString(lp.nftIds.length)),
+                trait("NFT balance", Strings.toString(sl.nftIds.length)),
                 ",",
-                trait("Curve", Strings.toHexString(lp.curve)),
+                trait("Fee", Strings.toString(sl.fee)),
                 ",",
-                trait("Delta", Strings.toString(lp.delta)),
-                ",",
-                trait("Fee", Strings.toString(lp.fee)),
-                ",",
-                trait("Type", Strings.toString(uint256(lp.lpType)))
+                trait("Type", Strings.toString(uint256(sl.lpType)))
             );
         }
 
@@ -120,16 +120,16 @@ contract SwapLiquidityMetadata is IPositionMetadata {
     }
 
     /// @notice Returns an svg image for a liquidity pair.
-    /// @param swapPool The address of the trading pool of the liquidity pair.
-    /// @param tokenId The liquidity pair's token ID.
+    /// @param liquidityId The liquidity pair's token ID.
     /// @return _svg The svg image for the liquidity pair.
     function svg(
-        address swapPool,
-        uint256 tokenId
-    ) public view slExists(swapPool, tokenId) returns (bytes memory _svg) {
-        DataTypes.LiquidityPair memory lp = ISwapPool(swapPool).getLP(tokenId);
-        IERC721Metadata nft = IERC721Metadata(ISwapPool(swapPool).getNFT());
-        IERC20Metadata token = IERC20Metadata(ISwapPool(swapPool).getToken());
+        uint256 liquidityId
+    ) public view slExists(liquidityId) returns (bytes memory _svg) {
+        DataTypes.SwapLiquidity memory sl = ITradingVault(
+            _addressProvider.getTradingVault()
+        ).getSL(liquidityId);
+        IERC721Metadata nft = IERC721Metadata(sl.nft);
+        IERC20Metadata token = IERC20Metadata(sl.token);
 
         // break up svg building into multiple scopes to avoid stack too deep errors
         {
@@ -140,7 +140,7 @@ contract SwapLiquidityMetadata is IPositionMetadata {
                 nft.symbol(),
                 token.symbol(),
                 " #",
-                Strings.toString(tokenId),
+                Strings.toString(liquidityId),
                 "</text>",
                 '<text x="24px" y="72px" font-size="8">'
             );
@@ -150,7 +150,12 @@ contract SwapLiquidityMetadata is IPositionMetadata {
             _svg = abi.encodePacked(
                 _svg,
                 "Trading pool: ",
-                Strings.toHexString(address(swapPool)),
+                Strings.toHexString(
+                    address(
+                        ITradingVault(_addressProvider.getTradingVault())
+                            .getPoolAddress(liquidityId)
+                    )
+                ),
                 "</text>",
                 '<text x="24px" y="90px" font-size="8">',
                 "NFT: ",
@@ -166,17 +171,13 @@ contract SwapLiquidityMetadata is IPositionMetadata {
         {
             _svg = abi.encodePacked(
                 _svg,
-                '<text x="24px" y="126px" font-size="8">',
-                "Price: ",
-                Strings.toString(lp.spotPrice),
-                "</text>",
                 '<text x="24px" y="144px" font-size="8">',
                 "NFT Balance: ",
-                Strings.toString(lp.nftIds.length),
+                Strings.toString(sl.nftIds.length),
                 "</text>",
                 '<text x="24px" y="162px" font-size="8">',
                 "Token Balance: ",
-                Strings.toString(lp.tokenAmount),
+                Strings.toString(sl.tokenAmount),
                 "</text>"
             );
         }
@@ -186,15 +187,7 @@ contract SwapLiquidityMetadata is IPositionMetadata {
                 _svg,
                 '<text x="24px" y="180px" font-size="8">',
                 "Fee: ",
-                Strings.toString(lp.fee),
-                "</text>",
-                '<text x="24px" y="198px" font-size="8">',
-                "Curve: ",
-                Strings.toHexString(lp.curve),
-                "</text>",
-                '<text x="24px" y="216px" font-size="8">',
-                "Delta: ",
-                Strings.toString(lp.delta),
+                Strings.toString(sl.fee),
                 "</text>",
                 "</svg>"
             );
@@ -222,11 +215,7 @@ contract SwapLiquidityMetadata is IPositionMetadata {
             );
     }
 
-    function _requireSlExists(address swapPool, uint256 tokenId) internal view {
-        try
-            IERC721(swapPool).ownerOf(tokenId) // solhint-disable-next-line no-empty-blocks
-        {} catch {
-            revert("SPM:SL_NOT_FOUND");
-        }
+    function _requireSlExists(uint256 slId) internal view {
+        require(ITradingVault(slId).getSl(slId), "SL_DOES_NOT_EXIST");
     }
 }

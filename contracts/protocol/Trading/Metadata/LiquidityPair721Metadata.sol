@@ -9,45 +9,46 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import {ITradingPool721} from "../../../interfaces/ITradingPool721.sol";
-import {IPositionMetadata} from "../../../interfaces/IPositionMetadata.sol";
 import {DataTypes} from "../../../libraries/types/DataTypes.sol";
+import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
+import {ITradingVault} from "../../../interfaces/ITradingVault.sol";
 
 /// @title LiquidityPair Metadata
 /// @author leNFT. Based on out.eth (@outdoteth) work.
 /// @notice This contract is used to generate a liquidity pair's metadata.
 /// @dev Fills the metadata with dynamic data from the liquidity pair.
-contract LiquidityPair721Metadata is IPositionMetadata {
-    modifier lpExists(address tradingPool, uint256 tokenId) {
-        _requireLpExists(tradingPool, tokenId);
+contract LiquidityPair721Metadata {
+    IAddressProvider private immutable _addressProvider;
+
+    modifier lpExists(uint256 liquidityId) {
+        _requireLpExists(liquidityId);
         _;
     }
 
+    constructor(IAddressProvider addressProvider) {
+        _addressProvider = addressProvider;
+    }
+
     /// @notice Returns the metadata for a liquidity pair
-    /// @param tradingPool The address of the trading pool of the liquidity pair.
-    /// @param tokenId The liquidity pair's token ID.
+    /// @param liquidityId The address of the trading pool of the liquidity pair.
     /// @return The encoded metadata for the liquidity pair.
     function tokenURI(
-        address tradingPool,
-        uint256 tokenId
-    )
-        public
-        view
-        override
-        lpExists(tradingPool, tokenId)
-        returns (string memory)
-    {
+        uint256 liquidityId
+    ) public view override lpExists(liquidityId) returns (string memory) {
         bytes memory metadata;
+        DataTypes.LiquidityPair721 memory lp = ITradingVault(
+            _addressProvider.getTradingVault()
+        ).getLP721(liquidityId);
 
         {
             // scope to avoid stack too deep errors
             metadata = abi.encodePacked(
                 "{",
                 '"name": "Liquidity Pair ',
-                IERC721Metadata(ITradingPool721(tradingPool).getNFT()).symbol(),
-                IERC20Metadata(ITradingPool721(tradingPool).getToken()).symbol(),
+                IERC721Metadata(lp.nft).symbol(),
+                IERC20Metadata(lp.token).symbol(),
                 " #",
-                Strings.toString(tokenId),
+                Strings.toString(liquidityId),
                 '",'
             );
         }
@@ -58,10 +59,10 @@ contract LiquidityPair721Metadata is IPositionMetadata {
                 '"description": "leNFT trading liquidity pair.",',
                 '"image": ',
                 '"data:image/svg+xml;base64,',
-                Base64.encode(svg(tradingPool, tokenId)),
+                Base64.encode(svg(liquidityId)),
                 '",',
                 '"attributes": [',
-                attributes(tradingPool, tokenId),
+                attributes(liquidityId),
                 "]",
                 "}"
             );
@@ -77,32 +78,30 @@ contract LiquidityPair721Metadata is IPositionMetadata {
     }
 
     /// @notice Returns the attributes for a liquidity pair encoded as json.
-    /// @param tradingPool The address of the trading pool of the liquidity pair.
-    /// @param tokenId The liquidity pair's token ID.
+    /// @param liquidityId The address of the trading pool of the liquidity pair.
     /// @return The encoded attributes for the liquidity pair.
     function attributes(
-        address tradingPool,
-        uint256 tokenId
-    ) public view lpExists(tradingPool, tokenId) returns (string memory) {
-        DataTypes.LiquidityPair721 memory lp = ITradingPool721(tradingPool)
-            .getLP(tokenId);
-
+        uint256 liquidityId
+    ) public view lpExists(liquidityId) returns (string memory) {
+        DataTypes.LiquidityPair721 memory lp = ITradingVault(
+            _addressProvider.getTradingVault()
+        ).getLP721(liquidityId);
         bytes memory _attributes;
 
         {
             // scope to avoid stack too deep errors
             _attributes = abi.encodePacked(
-                _trait("Pool address", Strings.toHexString(tradingPool)),
-                ",",
                 _trait(
-                    "Token",
-                    Strings.toHexString(ITradingPool721(tradingPool).getToken())
+                    "Pool address",
+                    Strings.toHexString(
+                        ITradingVault(_addressProvider.getTradingVault())
+                            .getPoolAddress(lp.nft, lp.token)
+                    )
                 ),
                 ",",
-                _trait(
-                    "NFT",
-                    Strings.toHexString(ITradingPool721(tradingPool).getNFT())
-                ),
+                _trait("Token", Strings.toHexString(lp.token)),
+                ",",
+                _trait("NFT", Strings.toHexString(lp.nft)),
                 ",",
                 _trait("Price", Strings.toString(lp.spotPrice)),
                 ",",
@@ -130,21 +129,16 @@ contract LiquidityPair721Metadata is IPositionMetadata {
     }
 
     /// @notice Returns an svg image for a liquidity pair.
-    /// @param tradingPool The address of the trading pool of the liquidity pair.
-    /// @param tokenId The liquidity pair's token ID.
+    /// @param liquidityId The address of the trading pool of the liquidity pair.
     /// @return _svg The svg image for the liquidity pair.
     function svg(
-        address tradingPool,
-        uint256 tokenId
-    ) public view lpExists(tradingPool, tokenId) returns (bytes memory _svg) {
-        DataTypes.LiquidityPair721 memory lp = ITradingPool721(tradingPool)
-            .getLP(tokenId);
-        IERC721Metadata nft = IERC721Metadata(
-            ITradingPool721(tradingPool).getNFT()
-        );
-        IERC20Metadata token = IERC20Metadata(
-            ITradingPool721(tradingPool).getToken()
-        );
+        uint256 liquidityId
+    ) public view lpExists(liquidityId) returns (bytes memory _svg) {
+        DataTypes.LiquidityPair721 memory lp = ITradingVault(
+            _addressProvider.getTradingVault()
+        ).getLP721(liquidityId);
+        IERC721Metadata nft = IERC721Metadata(lp.nft);
+        IERC20Metadata token = IERC20Metadata(lp.token);
 
         // break up svg building into multiple scopes to avoid stack too deep errors
         {
@@ -155,7 +149,7 @@ contract LiquidityPair721Metadata is IPositionMetadata {
                 nft.symbol(),
                 token.symbol(),
                 " #",
-                Strings.toString(tokenId),
+                Strings.toString(liquidityId),
                 "</text>",
                 '<text x="24px" y="72px" font-size="8">'
             );
@@ -165,7 +159,10 @@ contract LiquidityPair721Metadata is IPositionMetadata {
             _svg = abi.encodePacked(
                 _svg,
                 "Trading pool: ",
-                Strings.toHexString(address(tradingPool)),
+                Strings.toHexString(
+                    ITradingVault(_addressProvider.getTradingVault())
+                        .getPoolAddress(lp.nft, lp.token)
+                ),
                 "</text>",
                 '<text x="24px" y="90px" font-size="8">',
                 "NFT: ",
@@ -237,14 +234,10 @@ contract LiquidityPair721Metadata is IPositionMetadata {
             );
     }
 
-    function _requireLpExists(
-        address tradingPool,
-        uint256 tokenId
-    ) internal view {
-        try
-            IERC721(tradingPool).ownerOf(tokenId) // solhint-disable-next-line no-empty-blocks
-        {} catch {
-            revert("LPM:LP_NOT_FOUND");
-        }
+    function _requireLpExists(uint256 liquidityId) internal view {
+        require(
+            ITradingVault(liquidityId).getLP721(liquidityId),
+            "LP_DOES_NOT_EXIST"
+        );
     }
 }
