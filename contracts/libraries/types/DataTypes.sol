@@ -1,29 +1,11 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity 0.8.19;
 
-
 /// @title DataTypes library
 /// @author leNFT
 /// @notice Defines the data types used in the protocol
 /// @dev Library with the data types used in the protocol
 library DataTypes {
-    /// @notice Struct to store the price data of an array of assets from the same collection
-    /// @param collection The address of the collection
-    /// @param tokenIds The tokenIds of the assets
-    /// @param amount The price of the assets
-    struct Assets721Price {
-        address collection;
-        uint256[] tokenIds;
-        uint256 amount;
-    }
-
-    struct Assets1155Price {
-        address collection;
-        uint256[] tokenIds;
-        uint256[] tokenAmounts;
-        uint256 amount;
-    }
-
     /// @notice Enum of the liquidity pair types
     /// @dev Trade: Can buy and sell and price can increase and decrease
     /// @dev TradeUp: Can buy and sell and price can only increase
@@ -79,22 +61,6 @@ library DataTypes {
         uint256 balance;
     }
 
-    /// @notice Struct serving as a pointer from an NFT to a liquidity pair
-    /// @param liquidityPair The index of the liquidity pair
-    /// @param index The index of the NFT in the liquidity pair
-    struct NftToLp {
-        uint128 liquidityPair;
-        uint128 index;
-    }
-
-    /// @notice Struct serving as a pointer from an NFT to a swap liquidity object
-    /// @param swapLiquidity The index of the swap Liquidity
-    /// @param index The index of the NFT in the swap Liquidity
-    struct NftToSl {
-        uint128 swapLiquidity;
-        uint128 index;
-    }
-
     /// @notice Struct to store the working balance in gauges
     /// @param amount The amount of tokens
     /// @param weight The weight of the tokens
@@ -131,6 +97,29 @@ library DataTypes {
     enum LiquidityType {
         LP721,
         LP1155,
-        SL721
+        SL
+    }
+
+    struct SellRequest {
+        uint256[] liquidityIds;
+        uint256[] tokenIds721;
+        uint256[] tokenAmounts1155;
+        uint256 minimumPrice;
+    }
+
+    struct BuyRequest {
+        uint256[] liquidityIds;
+        uint256[] lp721Indexes;
+        uint256[] lp721TokenIds;
+        uint256[] lp1155Amounts;
+        uint256 maximumPrice;
+    }
+
+    struct SwapRequest {
+        uint256[] liquidityIds;
+        uint256[] fromTokenIds721;
+        uint256[] boughtLp721Indexes;
+        uint256[] toTokenIds721;
+        uint256[] toTokenIds721Indexes;
     }
 }

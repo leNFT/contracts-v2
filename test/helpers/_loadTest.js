@@ -1,7 +1,5 @@
 const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
-const { priceSigner } = require("./getPriceSig.js");
-const { time } = require("@nomicfoundation/hardhat-network-helpers");
 require("dotenv").config();
 
 let loadEnv = async function (isMainnetFork) {
@@ -43,6 +41,13 @@ let loadEnv = async function (isMainnetFork) {
     console.log("Deployed WETH:", wethAddress);
   }
 
+  //Deploy libraries
+
+  VaultValidationLogicLib = await ethers.getContractFactory(
+    "VaultValidationLogic"
+  );
+  vaultValidationLogicLib = await VaultValidationLogicLib.deploy();
+
   /****************************************************************
   DEPLOY PROXIES
   They will serve as an entry point for the upgraded contracts
@@ -54,16 +59,28 @@ let loadEnv = async function (isMainnetFork) {
 
   console.log("Deployed addressProvider");
 
+  // Deploy and initialize trading vault proxy
+  const TradingVault = await ethers.getContractFactory("TradingVault", {
+    libraries: {
+      VaultValidationLogic: vaultValidationLogicLib.address,
+    },
+  });
+  tradingVault = await upgrades.deployProxy(
+    TradingVault,
+    [addressProvider.address],
+    {
+      unsafeAllow: ["external-library-linking", "state-variable-immutable"],
+      timeout: 0,
+      constructorArgs: [addressProvider.address],
+    }
+  );
+
   console.log("Deployed All Proxies");
 
   /****************************************************************
   DEPLOY NON-PROXY CONTRACTS
   Deploy contracts that are not updatable
   ******************************************************************/
-
-  // Deploy and initialize trading vault
-  const TradingVault = await ethers.getContractFactory("TradingVault");
-  tradingVault = await TradingVault.deploy();
 
   // Deploy liquidity position metadata contracts
   const LiquidityPair721Metadata = await ethers.getContractFactory(

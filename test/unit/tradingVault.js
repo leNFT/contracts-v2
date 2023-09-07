@@ -2,7 +2,6 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
 const load = require("../helpers/_loadTest.js");
-const { getPriceSig } = require("../helpers/getPriceSig.js");
 const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("TradingVault", function () {

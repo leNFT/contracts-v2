@@ -10,7 +10,7 @@ import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {DataTypes} from "../../../libraries/types/DataTypes.sol";
 import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
-import {ITradingVault} from "../../../interfaces/ITradingVault.sol";
+import {IVault} from "../../../interfaces/IVault.sol";
 
 /// @title LiquidityPair Metadata
 /// @author leNFT. Based on out.eth (@outdoteth) work.
@@ -36,7 +36,7 @@ contract LiquidityPair1155Metadata {
     ) public view lpExists(liquidityId) returns (string memory) {
         bytes memory metadata;
         string memory nftSymbol;
-        DataTypes.LiquidityPair1155 memory lp = ITradingVault(
+        DataTypes.LiquidityPair1155 memory lp = IVault(
             _addressProvider.getTradingVault()
         ).getLP1155(liquidityId);
 
@@ -94,7 +94,7 @@ contract LiquidityPair1155Metadata {
     function attributes(
         uint256 liquidityId
     ) public view lpExists(liquidityId) returns (string memory) {
-        DataTypes.LiquidityPair1155 memory lp = ITradingVault(
+        DataTypes.LiquidityPair1155 memory lp = IVault(
             _addressProvider.getTradingVault()
         ).getLP1155(liquidityId);
 
@@ -106,8 +106,8 @@ contract LiquidityPair1155Metadata {
                 trait(
                     "Pool address",
                     Strings.toHexString(
-                        ITradingVault(_addressProvider.getTradingVault())
-                            .getPoolAddress(lp.nft, lp.token)
+                        IVault(_addressProvider.getTradingVault())
+                            .getPoolAddress(liquidityId)
                     )
                 ),
                 ",",
@@ -146,7 +146,7 @@ contract LiquidityPair1155Metadata {
     function svg(
         uint256 liquidityId
     ) public view lpExists(liquidityId) returns (bytes memory _svg) {
-        DataTypes.LiquidityPair1155 memory lp = ITradingVault(
+        DataTypes.LiquidityPair1155 memory lp = IVault(
             _addressProvider.getTradingVault()
         ).getLP1155(liquidityId);
         string memory nftSymbol;
@@ -196,7 +196,10 @@ contract LiquidityPair1155Metadata {
                 _svg,
                 "Trading pool: ",
                 Strings.toHexString(
-                    address(ITradingVault().getPoolAddress(lp.nft, lp.token))
+                    address(
+                        IVault(_addressProvider.getTradingVault())
+                            .getPoolAddress(liquidityId)
+                    )
                 ),
                 "</text>",
                 '<text x="24px" y="90px" font-size="8">',
@@ -271,7 +274,11 @@ contract LiquidityPair1155Metadata {
 
     function _requireLpExists(uint256 liquidityId) internal view {
         require(
-            ITradingVault(liquidityId).getLP1155(liquidityId),
+            IERC721(
+                IVault(_addressProvider.getTradingVault()).getPoolAddress(
+                    liquidityId
+                )
+            ).ownerOf(liquidityId) != address(0),
             "LP_DOES_NOT_EXIST"
         );
     }

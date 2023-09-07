@@ -10,7 +10,10 @@ import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 // solhint-disable-next-line max-states-count
 contract AddressProvider is OwnableUpgradeable, IAddressProvider {
     address private _liquidityPair721Metadata;
+    address private _liquidityPair1155Metadata;
+    address private _votingEscrow;
     address private _tradingVault;
+    address private _feeDistributor;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -37,5 +40,33 @@ contract AddressProvider is OwnableUpgradeable, IAddressProvider {
 
     function getLiquidityPair721Metadata() external view returns (address) {
         return _liquidityPair721Metadata;
+    }
+
+    function setLiquidityPair1155Metadata(
+        address liquidityPair1155Metadata
+    ) external override {
+        _liquidityPair1155Metadata = liquidityPair1155Metadata;
+    }
+
+    function getLiquidityPair1155Metadata() external view returns (address) {
+        return _liquidityPair1155Metadata;
+    }
+
+    function setVotingEscrow(address votingEscrow) external override onlyOwner {
+        _votingEscrow = votingEscrow;
+    }
+
+    function getVotingEscrow() external view returns (address) {
+        return _votingEscrow;
+    }
+
+    function setFeeDistributor(
+        address feeDistributor
+    ) external override onlyOwner {
+        _feeDistributor = feeDistributor;
+    }
+
+    function getFeeDistributor() external view returns (address) {
+        return _feeDistributor;
     }
 }

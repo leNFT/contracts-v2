@@ -14,8 +14,8 @@ contract LiquidityPoolToken is ERC165, IERC721Metadata, ERC721Enumerable {
         string memory symbol // solhint-disable-next-line no-empty-blocks
     ) ERC721(name, symbol) {}
 
-    function mint(address owner, uint256 tokenId) external returns (uint256) {
-        super._mint(owner, tokenId);
+    function mint(address to, uint256 tokenId) external returns (uint256) {
+        super._mint(to, tokenId);
 
         return tokenId;
     }
