@@ -371,7 +371,7 @@ contract Vault is
             );
 
             // Transfer the NFTs to the pool
-            for (uint i = 0; i < sellRequest.tokenIds721.length; i++) {
+            for (uint i = 0; i < sellRequest.liquidityIds.length; i++) {
                 if (i < sellRequest.tokenIds721.length) {
                     uint256 tokenId721 = sellRequest.tokenIds721[i];
                     DataTypes.LiquidityPair721
@@ -430,6 +430,8 @@ contract Vault is
                     );
 
                     // Update total price quote and fee sum
+                    console.log("lp1155.spotPrice", lp1155.spotPrice);
+                    console.log("lp1155.fee", lp1155.fee);
                     sellPrice += (lp1155.spotPrice -
                         PercentageMath.percentMul(
                             lp1155.spotPrice,
@@ -460,6 +462,11 @@ contract Vault is
 
             // Make sure the final price is greater than or equal to the minimum price set by the user
             if (sellPrice < sellRequest.minimumPrice) {
+                console.log("sellPrice", sellPrice);
+                console.log(
+                    "sellRequest.minimumPrice",
+                    sellRequest.minimumPrice
+                );
                 revert MinPriceNotReached();
             }
         }
