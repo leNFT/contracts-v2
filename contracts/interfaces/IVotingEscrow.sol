@@ -2,7 +2,6 @@
 pragma solidity 0.8.19;
 
 import {DataTypes} from "../libraries/types/DataTypes.sol";
-import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 
 interface IVotingEscrow {
     event CreateLock(

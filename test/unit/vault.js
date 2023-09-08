@@ -121,7 +121,6 @@ describe("Vault", function () {
       ethers.utils.parseEther("0.01").toString()
     );
   });
-
   it("Should be able to buy an erc721 asset", async function () {
     // Mint a test NFT
     const mintTestNFTTx = await testERC721.mint(owner.address);
@@ -181,5 +180,126 @@ describe("Vault", function () {
     await swapTx.wait();
 
     expect(await testERC721.ownerOf(0)).to.equal(owner.address);
+  });
+  it("Should be able to buy an erc1155 asset", async function () {
+    // Mint a test NFT
+    const mintTestNFTTx = await testERC1155.mint(owner.address, 0, 1);
+    await mintTestNFTTx.wait();
+    const approveNFTTx = await testERC1155.setApprovalForAll(
+      vault.address,
+      true
+    );
+    await approveNFTTx.wait();
+
+    // Add liquidity to the vault
+    const addLiquidityTx = await vault.addLiquidityPair1155(
+      owner.address,
+      0,
+      testERC1155.address,
+      0,
+      1,
+      ethers.constants.AddressZero,
+      ethers.utils.parseEther("1"),
+      ethers.utils.parseEther("0.1"),
+      exponentialCurve.address,
+      100,
+      1000,
+      {
+        value: ethers.utils.parseEther("1"),
+      }
+    );
+    await addLiquidityTx.wait();
+
+    const swapTx = await vault.swap(
+      owner.address,
+      {
+        liquidityIds: [],
+        tokenIds721: [],
+        tokenAmounts1155: [],
+        minimumPrice: ethers.utils.parseEther("0"),
+      },
+      {
+        liquidityIds: [0],
+        lp721Indexes: [],
+        lp721TokenIds: [],
+        lp1155Amounts: [1],
+        maximumPrice: ethers.utils.parseEther("1"),
+      },
+      {
+        liquidityIds: [],
+        fromTokenIds721: [],
+        boughtLp721Indexes: [],
+        toTokenIds721: [],
+        toTokenIds721Indexes: [],
+      },
+      ethers.constants.AddressZero,
+      {
+        value: ethers.utils.parseEther("0.11"),
+      }
+    );
+    await swapTx.wait();
+
+    expect((await testERC1155.balanceOf(owner.address, 0)).toNumber()).to.equal(
+      1
+    );
+  });
+  it("Should be able to sell an erc721 asset", async function () {
+    // Mint a test NFT
+    const mintTestNFTTx = await testERC721.mint(owner.address);
+    await mintTestNFTTx.wait();
+    const approveNFTTx = await testERC721.setApprovalForAll(
+      vault.address,
+      true
+    );
+    await approveNFTTx.wait();
+
+    // Add liquidity to the vault
+    const addLiquidityTx = await vault.addLiquidityPair721(
+      owner.address,
+      0,
+      testERC721.address,
+      [],
+      ethers.constants.AddressZero,
+      ethers.utils.parseEther("1"),
+      ethers.utils.parseEther("0.1"),
+      exponentialCurve.address,
+      100,
+      1000,
+      {
+        value: ethers.utils.parseEther("1"),
+      }
+    );
+    await addLiquidityTx.wait();
+
+    const swapTx = await vault.swap(
+      owner.address,
+      {
+        liquidityIds: [0],
+        tokenIds721: [0],
+        tokenAmounts1155: [],
+        minimumPrice: ethers.utils.parseEther("0.5"),
+      },
+      {
+        liquidityIds: [],
+        lp721Indexes: [],
+        lp721TokenIds: [],
+        lp1155Amounts: [],
+        maximumPrice: ethers.utils.parseEther("0"),
+      },
+      {
+        liquidityIds: [],
+        fromTokenIds721: [],
+        boughtLp721Indexes: [],
+        toTokenIds721: [],
+        toTokenIds721Indexes: [],
+      },
+      ethers.constants.AddressZero,
+      {
+        value: ethers.utils.parseEther("0.11"),
+      }
+    );
+    await swapTx.wait();
+
+    expect(await testERC721.ownerOf(0)).to.equal(vault.address);
   });
 });

@@ -9,7 +9,7 @@ let loadEnv = async function (isMainnetFork) {
     console.log("Resetting the mainnet fork...");
     await helpers.reset(
       "https://mainnet.infura.io/v3/" + process.env.INFURA_API_KEY,
-      17253963 // Block number 13/05/2023
+      18085987
     );
   } else {
     console.log("Resetting the local fork...");
