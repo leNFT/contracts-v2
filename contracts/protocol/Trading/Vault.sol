@@ -18,7 +18,6 @@ import {VaultValidationLogic} from "../../libraries/logic/VaultValidationLogic.s
 import {VaultGeneralLogic} from "../../libraries/logic/VaultGeneralLogic.sol";
 import {IERC721ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 import {IERC1155ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155ReceiverUpgradeable.sol";
-import "hardhat/console.sol";
 
 contract Vault is
     OwnableUpgradeable,
@@ -383,6 +382,7 @@ contract Vault is
                         lp721.token,
                         token,
                         lp721.lpType,
+                        lp721.nft,
                         lp721.spotPrice,
                         lp721.tokenAmount,
                         PercentageMath.percentMul(lp721.spotPrice, lp721.fee),
@@ -423,6 +423,7 @@ contract Vault is
                         lp1155.token,
                         token,
                         lp1155.lpType,
+                        lp1155.nft,
                         lp1155.spotPrice,
                         lp1155.tokenAmount,
                         PercentageMath.percentMul(lp1155.spotPrice, lp1155.fee),
@@ -430,8 +431,6 @@ contract Vault is
                     );
 
                     // Update total price quote and fee sum
-                    console.log("lp1155.spotPrice", lp1155.spotPrice);
-                    console.log("lp1155.fee", lp1155.fee);
                     sellPrice += (lp1155.spotPrice -
                         PercentageMath.percentMul(
                             lp1155.spotPrice,
@@ -462,11 +461,6 @@ contract Vault is
 
             // Make sure the final price is greater than or equal to the minimum price set by the user
             if (sellPrice < sellRequest.minimumPrice) {
-                console.log("sellPrice", sellPrice);
-                console.log(
-                    "sellRequest.minimumPrice",
-                    sellRequest.minimumPrice
-                );
                 revert MinPriceNotReached();
             }
         }
@@ -487,7 +481,8 @@ contract Vault is
                     VaultValidationLogic.validateBuyLP(
                         lp721.token,
                         token,
-                        lp721.lpType
+                        lp721.lpType,
+                        lp721.nft
                     );
 
                     if (
@@ -530,7 +525,8 @@ contract Vault is
                     VaultValidationLogic.validateBuyLP(
                         lp1155.token,
                         token,
-                        lp1155.lpType
+                        lp1155.lpType,
+                        lp1155.nft
                     );
 
                     // Increase total price and fee sum
@@ -570,17 +566,13 @@ contract Vault is
             VaultValidationLogic.validateSwap(
                 swapRequest.liquidityIds,
                 swapRequest.fromTokenIds721,
+                swapRequest.boughtLp721Indexes,
                 swapRequest.toTokenIds721
             );
             DataTypes.SwapLiquidity memory sl;
             for (uint i = 0; i < swapRequest.liquidityIds.length; i++) {
                 sl = _swapLiquidity[swapRequest.liquidityIds[i]];
-                VaultValidationLogic.validateSwapSL(
-                    sl.nft,
-                    sl.token,
-                    address(this),
-                    token
-                );
+                VaultValidationLogic.validateSwapSL(sl.token, token, sl.nft);
                 _swapLiquidity[swapRequest.liquidityIds[i]].balance += SafeCast
                     .toUint128(sl.fee);
                 buyPrice += (sl.fee +
@@ -629,20 +621,20 @@ contract Vault is
                     _swapLiquidity[swapRequest.liquidityIds[i]].nftIds[
                             swapRequest.toTokenIds721Indexes[i]
                         ] = boughtToken.tokenId;
+
                     boughtTokens721[
                         swapRequest.boughtLp721Indexes[
                             i - swapRequest.fromTokenIds721.length
                         ]
                     ] = BoughtToken721({
                         token: sl.nft,
-                        tokenId: swapRequest.fromTokenIds721[i]
+                        tokenId: swapRequest.toTokenIds721[i]
                     });
                 }
             }
         }
 
         for (uint i = 0; i < boughtTokens721.length; i++) {
-            console.log("token", boughtTokens721[i].token);
             IERC721Upgradeable(boughtTokens721[i].token).safeTransferFrom(
                 address(this),
                 recipient,
@@ -652,6 +644,9 @@ contract Vault is
 
         // Get tokens from user or send ETH back
         if (buyPrice > sellPrice) {
+            if (token == address(0) && msg.value < buyPrice - sellPrice) {
+                revert WrongMessageValue();
+            }
             _receiveToken(token, buyPrice - sellPrice);
         } else if (sellPrice > buyPrice) {
             _sendToken(token, recipient, sellPrice - buyPrice);
@@ -682,10 +677,11 @@ contract Vault is
 
     function _receiveToken(address token, uint256 amount) internal {
         if (token == address(0)) {
-            console.log("1", amount);
-            console.log("2", msg.value);
-            if (msg.value != amount) {
-                revert WrongMessageValue();
+            if (msg.value > amount) {
+                (bool sent, ) = msg.sender.call{value: msg.value - amount}("");
+                if (!sent) {
+                    revert ETHTransferFailed();
+                }
             }
         } else {
             IERC20Upgradeable(token).safeTransferFrom(
@@ -698,8 +694,6 @@ contract Vault is
 
     function _sendToken(address token, address to, uint256 amount) internal {
         if (token == address(0)) {
-            console.log("amount", amount);
-            console.log("to", to);
             (bool sent, ) = to.call{value: amount}("");
             if (!sent) {
                 revert ETHTransferFailed();

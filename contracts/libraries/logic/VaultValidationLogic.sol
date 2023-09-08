@@ -23,6 +23,7 @@ error NFTsOnly();
 error InvalidDelta();
 error InvalidCurve();
 error InvalidFee();
+error NonexistentLiquidity();
 
 library VaultValidationLogic {
     uint256 constant MAX_FEE = 8000;
@@ -101,13 +102,12 @@ library VaultValidationLogic {
     }
 
     function validateSwapSL(
-        address slNft,
         address slToken,
-        address nft,
-        address token
+        address token,
+        address slNft
     ) external pure {
-        if (slNft != nft) {
-            revert NFTMismatch();
+        if (slNft == address(0)) {
+            revert NonexistentLiquidity();
         }
         if (slToken != token) {
             revert TokenMismatch();
@@ -118,11 +118,15 @@ library VaultValidationLogic {
         address lpToken,
         address sellToken,
         DataTypes.LPType lpType,
+        address lpNft,
         uint256 spotPrice,
         uint256 tokenAmount,
         uint256 fee,
         uint256 protocolFeePercentage
     ) external pure {
+        if (lpNft == address(0)) {
+            revert NonexistentLiquidity();
+        }
         // Can't sell to sell LP
         if (lpType == DataTypes.LPType.Sell) {
             revert IsSellLP();
@@ -145,8 +149,12 @@ library VaultValidationLogic {
     function validateBuyLP(
         address lpToken,
         address buyToken,
-        DataTypes.LPType lpType
+        DataTypes.LPType lpType,
+        address lpNft
     ) external pure {
+        if (lpNft == address(0)) {
+            revert NonexistentLiquidity();
+        }
         // Make sure the token for the LP is the same
         if (lpToken != buyToken) {
             revert TokenMismatch();
@@ -192,13 +200,15 @@ library VaultValidationLogic {
     function validateSwap(
         uint256[] calldata slLiquidityIds,
         uint256[] calldata fromTokenIds,
+        uint256[] calldata boughtLp721Indexes,
         uint256[] calldata toTokenIndexes
     ) external pure {
         if (slLiquidityIds.length == 0) {
             revert EmptyLiquidity();
         }
         if (
-            slLiquidityIds.length != fromTokenIds.length ||
+            slLiquidityIds.length !=
+            fromTokenIds.length + boughtLp721Indexes.length ||
             slLiquidityIds.length != toTokenIndexes.length
         ) {
             revert LiquidityMismatch();

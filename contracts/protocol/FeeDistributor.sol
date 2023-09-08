@@ -8,7 +8,6 @@ import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ER
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import {DataTypes} from "../libraries/types/DataTypes.sol";
-import "hardhat/console.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 /// @title FeeDistributor
@@ -61,15 +60,8 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuardUpgradeable {
     /// @param token Token address
     function checkpoint(address token) external override {
         // Find epoch we're in
-        console.log("checkpoint");
-        console.log("block.timestamp: ", block.timestamp);
-        console.log(
-            "_addressProvider.getVotingEscrow(): ",
-            _addressProvider.getVotingEscrow()
-        );
         uint256 currentEpoch = IVotingEscrow(_addressProvider.getVotingEscrow())
             .getEpoch(block.timestamp);
-        console.log("currentEpoch: ", currentEpoch);
         uint256 balance;
         if (token == address(0)) {
             // Find the current balance of the token in question
@@ -78,8 +70,6 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuardUpgradeable {
             // Find the current balance of the token in question
             balance = IERC20Upgradeable(token).balanceOf(address(this));
         }
-
-        console.log("balance: ", balance);
 
         // Add unaccounted fees to current epoch
         _epochFees[token][currentEpoch] += balance - _accountedFees[token];
