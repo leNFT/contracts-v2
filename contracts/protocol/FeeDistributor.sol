@@ -62,8 +62,14 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuardUpgradeable {
         // Find epoch we're in
         uint256 currentEpoch = IVotingEscrow(_addressProvider.getVotingEscrow())
             .getEpoch(block.timestamp);
-        // Find the current balance of the token in question
-        uint256 balance = IERC20Upgradeable(token).balanceOf(address(this));
+        uint256 balance;
+        if (token == address(0)) {
+            // Find the current balance of the token in question
+            balance = address(this).balance;
+        } else {
+            // Find the current balance of the token in question
+            balance = IERC20Upgradeable(token).balanceOf(address(this));
+        }
 
         // Add unaccounted fees to current epoch
         _epochFees[token][currentEpoch] += balance - _accountedFees[token];
@@ -251,9 +257,17 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuardUpgradeable {
 
         if (amountToClaim > 0) {
             _accountedFees[token] -= amountToClaim;
-            IERC20Upgradeable(token).safeTransfer(lockOwner, amountToClaim);
+            if (token == address(0)) {
+                (bool sent, ) = lockOwner.call{value: amountToClaim}("");
+                require(sent, "FD:C:ETH_TRANSFER_FAILED");
+            } else {
+                // Transfer the fees to the lock owner (the user
+                IERC20Upgradeable(token).safeTransfer(lockOwner, amountToClaim);
+            }
 
             emit ClaimFees(msg.sender, token, tokenId, amountToClaim);
         }
     }
+
+    receive() external payable {}
 }

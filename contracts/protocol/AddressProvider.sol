@@ -11,6 +11,7 @@ import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 contract AddressProvider is OwnableUpgradeable, IAddressProvider {
     address private _liquidityPair721Metadata;
     address private _liquidityPair1155Metadata;
+    address private _swapLiquidityMetadata;
     address private _votingEscrow;
     address private _tradingVault;
     address private _feeDistributor;
@@ -50,6 +51,16 @@ contract AddressProvider is OwnableUpgradeable, IAddressProvider {
 
     function getLiquidityPair1155Metadata() external view returns (address) {
         return _liquidityPair1155Metadata;
+    }
+
+    function setSwapLiquidityMetadata(
+        address swapLiquidityMetadata
+    ) external override {
+        _swapLiquidityMetadata = swapLiquidityMetadata;
+    }
+
+    function getSwapLiquidityMetadata() external view returns (address) {
+        return _swapLiquidityMetadata;
     }
 
     function setVotingEscrow(address votingEscrow) external override onlyOwner {

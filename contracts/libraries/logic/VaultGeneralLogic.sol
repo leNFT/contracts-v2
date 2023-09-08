@@ -8,6 +8,7 @@ import {IPricingCurve} from "../../interfaces/IPricingCurve.sol";
 import {IERC721MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
 import {IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import {LiquidityPoolToken} from "../../protocol/Trading/LiquidityPoolToken.sol";
+import "hardhat/console.sol";
 
 library VaultGeneralLogic {
     function updateLp721AfterBuy(
@@ -17,6 +18,10 @@ library VaultGeneralLogic {
         uint256 protocolFeePercentage,
         uint256 lp721Index
     ) external {
+        console.log("lp721Index: ", lp721Index);
+        console.log("fee: ", fee);
+        console.log("protocolFeePercentage: ", protocolFeePercentage);
+        // Update token amount in liquidity pair
         liquidityPairPointer.tokenAmount += SafeCast.toUint128(
             (liquidityPair.spotPrice +
                 fee -
@@ -130,8 +135,9 @@ library VaultGeneralLogic {
             string memory name;
             string memory symbol;
             string memory nftSymbol = IERC721MetadataUpgradeable(nft).symbol();
-            string memory tokenSymbol = IERC20MetadataUpgradeable(token)
-                .symbol();
+            string memory tokenSymbol = token != address(0)
+                ? IERC20MetadataUpgradeable(token).symbol()
+                : "ETH";
 
             if (
                 liquidityType == DataTypes.LiquidityType.LP721 ||

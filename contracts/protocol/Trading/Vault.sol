@@ -16,8 +16,16 @@ import {PercentageMath} from "../../libraries/utils/PercentageMath.sol";
 import {IPricingCurve} from "../../interfaces/IPricingCurve.sol";
 import {VaultValidationLogic} from "../../libraries/logic/VaultValidationLogic.sol";
 import {VaultGeneralLogic} from "../../libraries/logic/VaultGeneralLogic.sol";
+import {IERC721ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+import {IERC1155ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155ReceiverUpgradeable.sol";
+import "hardhat/console.sol";
 
-contract Vault is OwnableUpgradeable, IVault {
+contract Vault is
+    OwnableUpgradeable,
+    IVault,
+    IERC721ReceiverUpgradeable,
+    IERC1155ReceiverUpgradeable
+{
     IAddressProvider private immutable _addressProvider;
     // mapping of valid price curves
     mapping(address => bool) private _isPriceCurve;
@@ -117,7 +125,7 @@ contract Vault is OwnableUpgradeable, IVault {
         }
 
         // Send user token to the pool
-        _receiveToken(token, tokenAmount, 0);
+        _receiveToken(token, tokenAmount);
 
         uint256 liquidityCount = _liquidityCount;
 
@@ -188,7 +196,7 @@ contract Vault is OwnableUpgradeable, IVault {
         }
 
         // Send user token to the pool
-        _receiveToken(token, tokenAmount, 0);
+        _receiveToken(token, tokenAmount);
 
         uint256 liquidityCount = _liquidityCount;
 
@@ -236,7 +244,7 @@ contract Vault is OwnableUpgradeable, IVault {
         uint256[] calldata nftIds,
         address token,
         uint256 fee
-    ) external notPaused {
+    ) external payable notPaused {
         address liquidityToken = _slPoolTokens[nft][token];
 
         if (liquidityToken == address(0)) {
@@ -476,7 +484,7 @@ contract Vault is OwnableUpgradeable, IVault {
                     );
 
                     if (
-                        buyRequest.lp721TokenIds[i] ==
+                        buyRequest.lp721TokenIds[i] !=
                         lp721.nftIds[buyRequest.lp721Indexes[i]]
                     ) {
                         revert NFTMismatch();
@@ -492,7 +500,7 @@ contract Vault is OwnableUpgradeable, IVault {
 
                     // Save the bought token
                     boughtTokens721[i] = BoughtToken721({
-                        token: lp721.token,
+                        token: lp721.nft,
                         tokenId: lp721.nftIds[buyRequest.lp721Indexes[i]]
                     });
 
@@ -531,7 +539,7 @@ contract Vault is OwnableUpgradeable, IVault {
 
                     IERC1155Upgradeable(lp1155.nft).safeTransferFrom(
                         address(this),
-                        msg.sender,
+                        recipient,
                         lp1155.nftId,
                         tokenAmount1155,
                         ""
@@ -596,7 +604,7 @@ contract Vault is OwnableUpgradeable, IVault {
 
                     IERC721Upgradeable(sl.nft).safeTransferFrom(
                         address(this),
-                        msg.sender,
+                        recipient,
                         swapRequest.toTokenIds721[i]
                     );
                 } else {
@@ -627,18 +635,19 @@ contract Vault is OwnableUpgradeable, IVault {
         }
 
         for (uint i = 0; i < boughtTokens721.length; i++) {
+            console.log("token", boughtTokens721[i].token);
             IERC721Upgradeable(boughtTokens721[i].token).safeTransferFrom(
                 address(this),
-                msg.sender,
+                recipient,
                 boughtTokens721[i].tokenId
             );
         }
 
         // Get tokens from user or send ETH back
         if (buyPrice > sellPrice) {
-            _receiveToken(token, buyPrice - sellPrice, msg.value);
-        } else {
-            _sendToken(token, msg.sender, sellPrice - buyPrice);
+            _receiveToken(token, buyPrice - sellPrice);
+        } else if (sellPrice > buyPrice) {
+            _sendToken(token, recipient, sellPrice - buyPrice);
         }
 
         // Send protocol fee to protocol fee distributor and call a checkpoint
@@ -664,15 +673,12 @@ contract Vault is OwnableUpgradeable, IVault {
         }
     }
 
-    function _receiveToken(
-        address token,
-        uint256 amount,
-        uint256 amoutReceived
-    ) internal {
+    function _receiveToken(address token, uint256 amount) internal {
         if (token == address(0)) {
-            (bool sent, ) = msg.sender.call{value: amoutReceived - amount}("");
-            if (!sent) {
-                revert ETHTransferFailed();
+            console.log("1", amount);
+            console.log("2", msg.value);
+            if (msg.value != amount) {
+                revert WrongMessageValue();
             }
         } else {
             IERC20Upgradeable(token).safeTransferFrom(
@@ -685,7 +691,9 @@ contract Vault is OwnableUpgradeable, IVault {
 
     function _sendToken(address token, address to, uint256 amount) internal {
         if (token == address(0)) {
-            (bool sent, ) = payable(to).call{value: amount}("");
+            console.log("amount", amount);
+            console.log("to", to);
+            (bool sent, ) = to.call{value: amount}("");
             if (!sent) {
                 revert ETHTransferFailed();
             }
@@ -698,5 +706,42 @@ contract Vault is OwnableUpgradeable, IVault {
         if (_paused) {
             revert Paused();
         }
+    }
+
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return IERC721ReceiverUpgradeable.onERC721Received.selector;
+    }
+
+    function onERC1155Received(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return IERC1155ReceiverUpgradeable.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return IERC1155ReceiverUpgradeable.onERC1155BatchReceived.selector;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) external pure override returns (bool) {
+        return
+            interfaceId == type(IERC721ReceiverUpgradeable).interfaceId ||
+            interfaceId == type(IERC1155ReceiverUpgradeable).interfaceId;
     }
 }

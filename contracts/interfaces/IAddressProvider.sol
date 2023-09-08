@@ -14,6 +14,10 @@ interface IAddressProvider {
 
     function getLiquidityPair1155Metadata() external view returns (address);
 
+    function setSwapLiquidityMetadata(address swapLiquidityMetadata) external;
+
+    function getSwapLiquidityMetadata() external view returns (address);
+
     function setTradingVault(address tradingVault) external;
 
     function getTradingVault() external view returns (address);

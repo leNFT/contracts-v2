@@ -42,11 +42,12 @@ let loadEnv = async function (isMainnetFork) {
   }
 
   //Deploy libraries
-
   VaultValidationLogicLib = await ethers.getContractFactory(
     "VaultValidationLogic"
   );
   vaultValidationLogicLib = await VaultValidationLogicLib.deploy();
+  VaultGeneralLogicLib = await ethers.getContractFactory("VaultGeneralLogic");
+  vaultGeneralLogicLib = await VaultGeneralLogicLib.deploy();
 
   /****************************************************************
   DEPLOY PROXIES
@@ -60,20 +61,26 @@ let loadEnv = async function (isMainnetFork) {
   console.log("Deployed addressProvider");
 
   // Deploy and initialize trading vault proxy
-  const TradingVault = await ethers.getContractFactory("TradingVault", {
+  const Vault = await ethers.getContractFactory("Vault", {
     libraries: {
       VaultValidationLogic: vaultValidationLogicLib.address,
+      VaultGeneralLogic: vaultGeneralLogicLib.address,
     },
   });
-  tradingVault = await upgrades.deployProxy(
-    TradingVault,
-    [addressProvider.address],
-    {
-      unsafeAllow: ["external-library-linking", "state-variable-immutable"],
-      timeout: 0,
-      constructorArgs: [addressProvider.address],
-    }
-  );
+  vault = await upgrades.deployProxy(Vault, [addressProvider.address], {
+    unsafeAllow: ["external-library-linking", "state-variable-immutable"],
+    timeout: 0,
+    constructorArgs: [addressProvider.address],
+  });
+
+  // Deploy and initialize Fee distributor
+  const FeeDistributor = await ethers.getContractFactory("FeeDistributor");
+  feeDistributor = await upgrades.deployProxy(FeeDistributor, [], {
+    unsafeAllow: ["state-variable-immutable"],
+    constructorArgs: [addressProvider.address],
+  });
+
+  console.log("Deployed FeeDistributor");
 
   console.log("Deployed All Proxies");
 
@@ -86,13 +93,23 @@ let loadEnv = async function (isMainnetFork) {
   const LiquidityPair721Metadata = await ethers.getContractFactory(
     "LiquidityPair721Metadata"
   );
-  liquidityPair721Metadata = await LiquidityPair721Metadata.deploy();
+  liquidityPair721Metadata = await LiquidityPair721Metadata.deploy(
+    addressProvider.address
+  );
   await liquidityPair721Metadata.deployed();
   const LiquidityPair1155Metadata = await ethers.getContractFactory(
     "LiquidityPair1155Metadata"
   );
-  liquidityPair1155Metadata = await LiquidityPair1155Metadata.deploy();
+  liquidityPair1155Metadata = await LiquidityPair1155Metadata.deploy(
+    addressProvider.address
+  );
   await liquidityPair1155Metadata.deployed();
+  const SwapLiquidityMetadata = await ethers.getContractFactory(
+    "SwapLiquidityMetadata"
+  );
+  swapLiquidityMetadata = await SwapLiquidityMetadata.deploy(
+    addressProvider.address
+  );
 
   // Deploy Test NFT contracts
   const TestERC721 = await ethers.getContractFactory("TestERC721");
@@ -126,21 +143,32 @@ let loadEnv = async function (isMainnetFork) {
       liquidityPair1155Metadata.address
     );
   await setLiquidityPair1155MetadataTx.wait();
+  const setSwapLiquidityMetadataTx =
+    await addressProvider.setSwapLiquidityMetadata(
+      swapLiquidityMetadata.address
+    );
+  await setSwapLiquidityMetadataTx.wait();
+  const setFeeDistributorTx = await addressProvider.setFeeDistributor(
+    feeDistributor.address
+  );
+  await setFeeDistributorTx.wait();
 
-  const setWETHTx = await addressProvider.setWETH(weth.address);
-  await setWETHTx.wait();
+  const setVotingEscrowTx = await addressProvider.setVotingEscrow(
+    "0x3c5ebA0872ABcA4D6BD5ecADada8Bc5f12cD4c76"
+  );
+  await setVotingEscrowTx.wait();
 
   // Set price curves
-  const setExponentialCurveTx = await tradingPoolRegistry.setPriceCurve(
+  const setExponentialCurveTx = await vault.setPriceCurve(
     exponentialCurve.address,
     true
   );
   await setExponentialCurveTx.wait();
-  const setLinearCurveTx = await tradingPoolRegistry.setPriceCurve(
-    linearCurve.address,
-    true
-  );
+  const setLinearCurveTx = await vault.setPriceCurve(linearCurve.address, true);
   await setLinearCurveTx.wait();
+
+  const setProtocolFeePercentageTx = await vault.setProtocolFeePercentage(1000);
+  await setProtocolFeePercentageTx.wait();
 
   console.log("loaded");
 };

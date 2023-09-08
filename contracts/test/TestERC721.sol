@@ -4,10 +4,9 @@ pragma solidity 0.8.19;
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-contract TestERC721 is ERC165, IERC721Metadata, ERC721Enumerable {
+contract TestERC721 is IERC165, IERC721Metadata, ERC721Enumerable {
     event Mint(address owner, uint256 tokenId);
 
     constructor(
@@ -33,7 +32,7 @@ contract TestERC721 is ERC165, IERC721Metadata, ERC721Enumerable {
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(ERC165, ERC721Enumerable, IERC165) returns (bool) {
+    ) public view override(ERC721Enumerable, IERC165) returns (bool) {
         return
             interfaceId == type(IERC721Metadata).interfaceId ||
             super.supportsInterface(interfaceId);
