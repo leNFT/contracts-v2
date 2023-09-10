@@ -174,7 +174,7 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
                 "</text>",
                 '<text x="24px" y="162px" font-size="8">',
                 "Token Balance: ",
-                Strings.toString(sl.balance),
+                Strings.toString(sl.tokenAmount),
                 "</text>"
             );
         }

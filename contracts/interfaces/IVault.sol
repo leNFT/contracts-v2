@@ -24,6 +24,7 @@ interface IVault {
     error ETHTransferFailed();
     error NFTMismatch();
     error Paused();
+    error NonexistentLiquidity();
     event AddLiquidity(
         address indexed user,
         DataTypes.LiquidityType indexed liquidityType,

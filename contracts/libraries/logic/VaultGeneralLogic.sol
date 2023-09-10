@@ -18,9 +18,6 @@ library VaultGeneralLogic {
         uint256 protocolFeePercentage,
         uint256 lp721Index
     ) external {
-        console.log("lp721Index: ", lp721Index);
-        console.log("fee: ", fee);
-        console.log("protocolFeePercentage: ", protocolFeePercentage);
         // Update token amount in liquidity pair
         liquidityPairPointer.tokenAmount += SafeCast.toUint128(
             (liquidityPair.spotPrice +
@@ -105,7 +102,7 @@ library VaultGeneralLogic {
         uint256 tokenAmount1155
     ) external {
         // Add token amount to liquidity pair token amount
-        liquidityPairPointer.tokenAmount += tokenAmount1155;
+        liquidityPairPointer.tokenAmount += SafeCast.toUint128(tokenAmount1155);
 
         // Update token amount in liquidity pair
         liquidityPairPointer.tokenAmount -= SafeCast.toUint128(

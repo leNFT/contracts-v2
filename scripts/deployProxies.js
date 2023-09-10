@@ -15,7 +15,7 @@ async function main() {
   // If this script is run directly using `node` you may want to call compile
   // manually to make sure everything is compiled
   // await hre.run('compile');
-  var contractAddresses = require("../../lenft-interface/contractAddresses.json");
+  var contractAddresses = require("../../lenft-interface-v2/contractAddresses.json");
   let chainID = hre.network.config.chainId;
   console.log("chainID: ", chainID.toString());
   var addresses = contractAddresses[chainID.toString()];
@@ -125,16 +125,9 @@ async function main() {
 
   var fs = require("fs");
   contractAddresses[chainID.toString()] = addresses;
+  console.log("contractAddresses: ", contractAddresses);
   fs.writeFileSync(
     "../lenft-interface-v2/contractAddresses.json",
-    JSON.stringify(contractAddresses),
-    function (err) {
-      if (err) throw err;
-      console.log("File written to interface folder");
-    }
-  );
-  fs.writeFileSync(
-    "../lenft-interface/contractAddresses.json",
     JSON.stringify(contractAddresses),
     function (err) {
       if (err) throw err;

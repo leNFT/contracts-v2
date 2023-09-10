@@ -41,24 +41,24 @@ library DataTypes {
     }
 
     struct LiquidityPair1155 {
-        LPType lpType;
         address token;
         address nft;
         uint256 nftId;
-        uint256 nftAmount;
-        uint256 tokenAmount;
-        uint256 spotPrice;
+        uint128 nftAmount;
+        uint128 tokenAmount;
+        uint128 spotPrice;
+        uint128 delta;
         address curve;
-        uint256 delta;
-        uint256 fee;
+        uint16 fee;
+        LPType lpType;
     }
 
     struct SwapLiquidity {
         address token;
         address nft;
         uint256[] nftIds;
-        uint256 fee;
-        uint256 balance;
+        uint128 fee;
+        uint128 tokenAmount;
     }
 
     /// @notice Struct to store the working balance in gauges
