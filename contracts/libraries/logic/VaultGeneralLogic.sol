@@ -11,6 +11,12 @@ import {LiquidityPoolToken} from "../../protocol/Trading/LiquidityPoolToken.sol"
 import "hardhat/console.sol";
 
 library VaultGeneralLogic {
+    event CreateLiquidityPoolToken(
+        address indexed nft,
+        address indexed token,
+        address indexed liquidityPoolToken
+    );
+
     function updateLp721AfterBuy(
         DataTypes.LiquidityPair721 memory liquidityPair,
         DataTypes.LiquidityPair721 storage liquidityPairPointer,
@@ -128,32 +134,32 @@ library VaultGeneralLogic {
         address token
     ) external returns (address liquidityPoolToken) {
         // Create the NFT LP contract if it doesn't exist
-        if (liquidityPoolToken == address(0)) {
-            string memory name;
-            string memory symbol;
-            string memory nftSymbol = IERC721MetadataUpgradeable(nft).symbol();
-            string memory tokenSymbol = token != address(0)
-                ? IERC20MetadataUpgradeable(token).symbol()
-                : "ETH";
+        string memory name;
+        string memory symbol;
+        string memory nftSymbol = IERC721MetadataUpgradeable(nft).symbol();
+        string memory tokenSymbol = token != address(0)
+            ? IERC20MetadataUpgradeable(token).symbol()
+            : "ETH";
 
-            if (
-                liquidityType == DataTypes.LiquidityType.LP721 ||
-                liquidityType == DataTypes.LiquidityType.LP1155
-            ) {
-                name = "leNFT2 Trading Pool ";
-                symbol = "leT2";
-            } else {
-                name = "leNFT2 Swap Pool ";
-                symbol = "leS2";
-            }
-
-            // Deploy ERC721 LP contract
-            liquidityPoolToken = address(
-                new LiquidityPoolToken(
-                    string.concat(name, nftSymbol, " - ", tokenSymbol),
-                    string.concat(symbol, nftSymbol, "-", tokenSymbol)
-                )
-            );
+        if (
+            liquidityType == DataTypes.LiquidityType.LP721 ||
+            liquidityType == DataTypes.LiquidityType.LP1155
+        ) {
+            name = "leNFT2 Trading Pool ";
+            symbol = "leT2";
+        } else {
+            name = "leNFT2 Swap Pool ";
+            symbol = "leS2";
         }
+
+        // Deploy ERC721 LP contract
+        liquidityPoolToken = address(
+            new LiquidityPoolToken(
+                string.concat(name, nftSymbol, " - ", tokenSymbol),
+                string.concat(symbol, nftSymbol, "-", tokenSymbol)
+            )
+        );
+
+        emit CreateLiquidityPoolToken(nft, token, liquidityPoolToken);
     }
 }

@@ -33,29 +33,34 @@ interface IVault {
     );
 
     event RemoveLiquity(address indexed user, uint256 indexed liquidityId);
-
-    event Buy(
-        address indexed user,
-        uint256[] indexed liquidityIds,
-        uint256[] lp721Indexes,
-        uint256[] lp1155Amounts,
-        uint256 finalPrice
+    event CreateLiquidityPoolToken(
+        address indexed nft,
+        address indexed token,
+        address indexed liquidityPoolToken
     );
 
     event Sell(
         address indexed user,
-        uint256[] indexed liquidityIds,
+        uint256[] liquidityIds,
         uint256[] tokenIds721,
         uint256[] tokenAmounts1155,
-        uint256 finalPrice
+        uint256 price
+    );
+
+    event Buy(
+        address indexed user,
+        uint256[] liquidityIds,
+        uint256[] tokenIds721,
+        uint256[] tokenAmounts1155,
+        uint256 price
     );
 
     event Swap(
         address indexed user,
-        uint256[] indexed liquidityIds,
-        uint256[] fromTokenIds,
-        uint256[] toTokenIndexes,
-        uint256 finalPrice
+        uint256[] liquidityIds,
+        uint256[] fromTokenIds721,
+        uint256[] boughtLp721Indexes,
+        uint256[] toTokenIds721
     );
 
     function getPoolAddress(

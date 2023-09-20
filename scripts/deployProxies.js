@@ -118,6 +118,29 @@ async function main() {
   await linearCurve.deployed();
   addresses["LinearPriceCurve"] = linearCurve.address;
 
+  console.log("Deployed Non-Proxy Contracts");
+
+  /****************************************************************
+  DEPLOY TEST CONTRACTS
+  Deploy contracts that are used or testing
+  ******************************************************************/
+
+  // Deploy Test NFT contracts
+  const TestERC721 = await ethers.getContractFactory("TestERC721");
+  testERC721 = await TestERC721.deploy("Test 721", "T721");
+  await testERC721.deployed();
+  addresses["Test"]["ERC721"] = testERC721.address;
+  testERC721_2 = await TestERC721.deploy("Test 721 2", "TNFT721_2");
+  await testERC721_2.deployed();
+  addresses["Test"]["ERC721_2"] = testERC721_2.address;
+  const TestERC1155 = await ethers.getContractFactory("TestERC1155");
+  testERC1155 = await TestERC1155.deploy("Test 1155", "T1155");
+  await testERC1155.deployed();
+  addresses["Test"]["ERC1155"] = testERC1155.address;
+  testERC1155_2 = await TestERC1155.deploy("Test 1155 2", "T1155_2");
+  await testERC1155_2.deployed();
+  addresses["Test"]["ERC1155_2"] = testERC1155_2.address;
+
   /****************************************************************
   SAVE TO DISK
   Write contract addresses to file

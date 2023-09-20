@@ -354,7 +354,7 @@ contract Vault is
     }
 
     function swap(
-        address recipient,
+        address receiver,
         DataTypes.SellRequest calldata sellRequest,
         DataTypes.BuyRequest calldata buyRequest,
         DataTypes.SwapRequest calldata swapRequest,
@@ -512,6 +512,14 @@ contract Vault is
             if (sellPrice < sellRequest.minimumPrice) {
                 revert MinPriceNotReached();
             }
+
+            emit Sell(
+                receiver,
+                sellRequest.liquidityIds,
+                sellRequest.tokenIds721,
+                sellRequest.tokenAmounts1155,
+                sellPrice
+            );
         }
 
         BoughtToken721[] memory boughtTokens721 = new BoughtToken721[](
@@ -623,7 +631,7 @@ contract Vault is
 
                     IERC1155Upgradeable(lp1155.nft).safeTransferFrom(
                         address(this),
-                        recipient,
+                        receiver,
                         lp1155.nftId,
                         tokenAmount1155,
                         ""
@@ -641,6 +649,14 @@ contract Vault is
             if (buyPrice > buyRequest.maximumPrice) {
                 revert MaxPriceExceeded();
             }
+
+            emit Buy(
+                receiver,
+                buyRequest.liquidityIds,
+                buyRequest.lp721TokenIds,
+                buyRequest.lp1155Amounts,
+                buyPrice
+            );
         }
 
         if (swapRequest.liquidityIds.length > 0) {
@@ -694,7 +710,7 @@ contract Vault is
 
                     IERC721Upgradeable(sl.nft).safeTransferFrom(
                         address(this),
-                        recipient,
+                        receiver,
                         swapRequest.toTokenIds721[i]
                     );
                 } else {
@@ -723,12 +739,20 @@ contract Vault is
                     });
                 }
             }
+
+            emit Swap(
+                receiver,
+                swapRequest.liquidityIds,
+                swapRequest.fromTokenIds721,
+                swapRequest.boughtLp721Indexes,
+                swapRequest.toTokenIds721
+            );
         }
 
         for (uint i = 0; i < boughtTokens721.length; i++) {
             IERC721Upgradeable(boughtTokens721[i].token).safeTransferFrom(
                 address(this),
-                recipient,
+                receiver,
                 boughtTokens721[i].tokenId
             );
         }
@@ -740,7 +764,7 @@ contract Vault is
             }
             _receiveToken(token, buyPrice - sellPrice);
         } else if (sellPrice > buyPrice) {
-            _sendToken(token, recipient, sellPrice - buyPrice);
+            _sendToken(token, receiver, sellPrice - buyPrice);
         }
 
         // Send protocol fee to protocol fee distributor and call a checkpoint
