@@ -37,7 +37,7 @@ contract LiquidityPair1155Metadata {
         bytes memory metadata;
         string memory nftSymbol;
         DataTypes.LiquidityPair1155 memory lp = IVault(
-            _addressProvider.getTradingVault()
+            _addressProvider.getVault()
         ).getLP1155(liquidityId);
 
         // Make an external call to get the ERC1155 token's symbol
@@ -95,7 +95,7 @@ contract LiquidityPair1155Metadata {
         uint256 liquidityId
     ) public view lpExists(liquidityId) returns (string memory) {
         DataTypes.LiquidityPair1155 memory lp = IVault(
-            _addressProvider.getTradingVault()
+            _addressProvider.getVault()
         ).getLP1155(liquidityId);
 
         bytes memory _attributes;
@@ -106,8 +106,9 @@ contract LiquidityPair1155Metadata {
                 trait(
                     "Pool address",
                     Strings.toHexString(
-                        IVault(_addressProvider.getTradingVault())
-                            .getPoolAddress(liquidityId)
+                        IVault(_addressProvider.getVault()).getLiquidityToken(
+                            liquidityId
+                        )
                     )
                 ),
                 ",",
@@ -147,7 +148,7 @@ contract LiquidityPair1155Metadata {
         uint256 liquidityId
     ) public view lpExists(liquidityId) returns (bytes memory _svg) {
         DataTypes.LiquidityPair1155 memory lp = IVault(
-            _addressProvider.getTradingVault()
+            _addressProvider.getVault()
         ).getLP1155(liquidityId);
         string memory nftSymbol;
         string memory nftName;
@@ -197,8 +198,9 @@ contract LiquidityPair1155Metadata {
                 "Trading pool: ",
                 Strings.toHexString(
                     address(
-                        IVault(_addressProvider.getTradingVault())
-                            .getPoolAddress(liquidityId)
+                        IVault(_addressProvider.getVault()).getLiquidityToken(
+                            liquidityId
+                        )
                     )
                 ),
                 "</text>",
@@ -275,7 +277,7 @@ contract LiquidityPair1155Metadata {
     function _requireLpExists(uint256 liquidityId) internal view {
         require(
             IERC721(
-                IVault(_addressProvider.getTradingVault()).getPoolAddress(
+                IVault(_addressProvider.getVault()).getLiquidityToken(
                     liquidityId
                 )
             ).ownerOf(liquidityId) != address(0),

@@ -13,7 +13,7 @@ contract AddressProvider is OwnableUpgradeable, IAddressProvider {
     address private _liquidityPair1155Metadata;
     address private _swapLiquidityMetadata;
     address private _votingEscrow;
-    address private _tradingVault;
+    address private _vault;
     address private _feeDistributor;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -25,12 +25,12 @@ contract AddressProvider is OwnableUpgradeable, IAddressProvider {
         __Ownable_init();
     }
 
-    function setTradingVault(address tradingVault) external override onlyOwner {
-        _tradingVault = tradingVault;
+    function setVault(address vault) external override onlyOwner {
+        _vault = vault;
     }
 
-    function getTradingVault() external view returns (address) {
-        return _tradingVault;
+    function getVault() external view returns (address) {
+        return _vault;
     }
 
     function setLiquidityPair721Metadata(

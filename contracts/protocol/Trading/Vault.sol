@@ -10,7 +10,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {DataTypes} from "../../libraries/types/DataTypes.sol";
 import {SafeCast} from "../../libraries/utils/SafeCast.sol";
 import {IVault} from "../../interfaces/IVault.sol";
-import {ILiquidityPoolToken} from "../../interfaces/ILiquidityPoolToken.sol";
+import {ILiquidityToken} from "../../interfaces/ILiquidityToken.sol";
 import {IFeeDistributor} from "../../interfaces/IFeeDistributor.sol";
 import {PercentageMath} from "../../libraries/utils/PercentageMath.sol";
 import {IPricingCurve} from "../../interfaces/IPricingCurve.sol";
@@ -30,9 +30,9 @@ contract Vault is
     IAddressProvider private immutable _addressProvider;
     // mapping of valid price curves
     mapping(address => bool) private _isPriceCurve;
-    mapping(address => mapping(address => address)) private _lpPoolTokens;
-    mapping(address => mapping(address => address)) private _slPoolTokens;
-    mapping(uint256 => address) private _liquidityIdPool;
+    mapping(address => mapping(address => address)) private _lpLiquidityTokens;
+    mapping(address => mapping(address => address)) private _slLiquidityTokens;
+    mapping(uint256 => address) private _liquidityIdToken;
     uint256 private _liquidityCount;
     mapping(uint256 => DataTypes.LiquidityPair721) private _liquidityPairs721;
     mapping(uint256 => DataTypes.LiquidityPair1155) private _liquidityPairs1155;
@@ -59,10 +59,10 @@ contract Vault is
         _protocolFeePercentage = protocolFeePercentage;
     }
 
-    function getPoolAddress(
+    function getLiquidityToken(
         uint256 liquidityId
     ) external view override returns (address) {
-        return _liquidityIdPool[liquidityId];
+        return _liquidityIdToken[liquidityId];
     }
 
     function getLP721(
@@ -114,18 +114,18 @@ contract Vault is
             fee
         );
 
-        address liquidityToken = _lpPoolTokens[nft][token];
+        address liquidityToken = _lpLiquidityTokens[nft][token];
 
         if (liquidityToken == address(0)) {
-            liquidityToken = VaultGeneralLogic.initLiquidityPoolToken(
+            liquidityToken = VaultGeneralLogic.initLiquidityToken(
                 DataTypes.LiquidityType.LP721,
                 nft,
                 token
             );
-            _lpPoolTokens[nft][token] = liquidityToken;
+            _lpLiquidityTokens[nft][token] = liquidityToken;
         }
 
-        // Send user token to the pool
+        // Send user token to the vault
         _receiveToken(token, tokenAmount);
 
         uint256 liquidityCount = _liquidityCount;
@@ -143,14 +143,14 @@ contract Vault is
             fee: SafeCast.toUint16(fee)
         });
         _liquidityType[liquidityCount] = DataTypes.LiquidityType.LP721;
-        _liquidityIdPool[liquidityCount] = liquidityToken;
+        _liquidityIdToken[liquidityCount] = liquidityToken;
 
         // Mint liquidity position NFT
-        ILiquidityPoolToken(liquidityToken).mint(receiver, liquidityCount);
+        ILiquidityToken(liquidityToken).mint(receiver, liquidityCount);
 
         _liquidityCount++;
 
-        // Add user nfts to the pool
+        // Add user nfts to the vault
         _transfer721Batch(msg.sender, address(this), nft, nftIds);
 
         emit AddLiquidity(
@@ -185,18 +185,18 @@ contract Vault is
             fee
         );
 
-        address liquidityToken = _lpPoolTokens[nft][token];
+        address liquidityToken = _lpLiquidityTokens[nft][token];
 
         if (liquidityToken == address(0)) {
-            liquidityToken = VaultGeneralLogic.initLiquidityPoolToken(
+            liquidityToken = VaultGeneralLogic.initLiquidityToken(
                 DataTypes.LiquidityType.LP1155,
                 nft,
                 token
             );
-            _lpPoolTokens[nft][token] = liquidityToken;
+            _lpLiquidityTokens[nft][token] = liquidityToken;
         }
 
-        // Send user token to the pool
+        // Send user token to the vault
         _receiveToken(token, tokenAmount);
 
         uint256 liquidityCount = _liquidityCount;
@@ -215,14 +215,14 @@ contract Vault is
             fee: SafeCast.toUint16(fee)
         });
         _liquidityType[liquidityCount] = DataTypes.LiquidityType.LP1155;
-        _liquidityIdPool[liquidityCount] = liquidityToken;
+        _liquidityIdToken[liquidityCount] = liquidityToken;
 
         // Mint liquidity position NFT
-        ILiquidityPoolToken(liquidityToken).mint(receiver, liquidityCount);
+        ILiquidityToken(liquidityToken).mint(receiver, liquidityCount);
 
         _liquidityCount++;
 
-        // Add user nfts to the pool
+        // Add user nfts to the vault
         IERC1155Upgradeable(nft).safeTransferFrom(
             msg.sender,
             address(this),
@@ -246,15 +246,15 @@ contract Vault is
         address token,
         uint256 fee
     ) external payable notPaused {
-        address liquidityToken = _slPoolTokens[nft][token];
+        address liquidityToken = _slLiquidityTokens[nft][token];
 
         if (liquidityToken == address(0)) {
-            liquidityToken = VaultGeneralLogic.initLiquidityPoolToken(
+            liquidityToken = VaultGeneralLogic.initLiquidityToken(
                 DataTypes.LiquidityType.SL,
                 nft,
                 token
             );
-            _slPoolTokens[nft][token] = liquidityToken;
+            _slLiquidityTokens[nft][token] = liquidityToken;
         }
 
         uint256 liquidityCount = _liquidityCount;
@@ -268,14 +268,14 @@ contract Vault is
             tokenAmount: 0
         });
         _liquidityType[liquidityCount] = DataTypes.LiquidityType.SL;
-        _liquidityIdPool[liquidityCount] = liquidityToken;
+        _liquidityIdToken[liquidityCount] = liquidityToken;
 
         // Mint liquidity position NFT
-        ILiquidityPoolToken(liquidityToken).mint(receiver, liquidityCount);
+        ILiquidityToken(liquidityToken).mint(receiver, liquidityCount);
 
         _liquidityCount++;
 
-        // Add user nfts to the pool_liquidityPairs721
+        // Add user nfts to the vault
         _transfer721Batch(msg.sender, address(this), nft, nftIds);
 
         emit AddLiquidity(
@@ -299,14 +299,14 @@ contract Vault is
     /// @notice Private function that removes a liquidity pair, sending back deposited tokens and transferring the NFTs to the user
     /// @param liquidityId The ID of the LP token to remove
     function _removeLiquidity(uint256 liquidityId) internal {
-        address liquidityToken = _liquidityIdPool[liquidityId];
+        address liquidityToken = _liquidityIdToken[liquidityId];
         //Require the caller owns LP
         VaultValidationLogic.validateRemoveLiquidity(
             liquidityToken,
             liquidityId
         );
 
-        // Send pool nfts to the user
+        // Send vault nfts to the user
         address token;
         uint256 tokenAmount;
         if (_liquidityType[liquidityId] == DataTypes.LiquidityType.LP721) {
@@ -343,9 +343,9 @@ contract Vault is
         _sendToken(token, msg.sender, tokenAmount);
 
         // Burn liquidity position NFT
-        ILiquidityPoolToken(liquidityToken).burn(liquidityId);
+        ILiquidityToken(liquidityToken).burn(liquidityId);
 
-        emit RemoveLiquity(msg.sender, liquidityId);
+        emit RemoveLiquity(msg.sender, liquidityToken, liquidityId);
     }
 
     struct BoughtToken721 {
@@ -379,7 +379,7 @@ contract Vault is
                 revert LiquidityMismatch();
             }
 
-            // Transfer the NFTs to the pool
+            // Transfer the NFTs to the vault
             for (uint i = 0; i < sellRequest.liquidityIds.length; i++) {
                 if (i < sellRequest.tokenIds721.length) {
                     uint256 tokenId721 = sellRequest.tokenIds721[i];

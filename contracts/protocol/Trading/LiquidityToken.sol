@@ -8,7 +8,7 @@ import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {ERC721Burnable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
-contract LiquidityPoolToken is ERC165, IERC721Metadata, ERC721Enumerable {
+contract LiquidityToken is ERC165, IERC721Metadata, ERC721Enumerable {
     constructor(
         string memory name,
         string memory symbol // solhint-disable-next-line no-empty-blocks

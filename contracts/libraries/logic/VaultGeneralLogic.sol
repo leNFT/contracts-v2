@@ -7,14 +7,14 @@ import {SafeCast} from "../utils/SafeCast.sol";
 import {IPricingCurve} from "../../interfaces/IPricingCurve.sol";
 import {IERC721MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
 import {IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
-import {LiquidityPoolToken} from "../../protocol/Trading/LiquidityPoolToken.sol";
+import {LiquidityToken} from "../../protocol/Trading/LiquidityToken.sol";
 import "hardhat/console.sol";
 
 library VaultGeneralLogic {
-    event CreateLiquidityPoolToken(
+    event CreateLiquidityToken(
         address indexed nft,
         address indexed token,
-        address indexed liquidityPoolToken
+        address indexed liquidityToken
     );
 
     function updateLp721AfterBuy(
@@ -128,11 +128,11 @@ library VaultGeneralLogic {
         }
     }
 
-    function initLiquidityPoolToken(
+    function initLiquidityToken(
         DataTypes.LiquidityType liquidityType,
         address nft,
         address token
-    ) external returns (address liquidityPoolToken) {
+    ) external returns (address liquidityToken) {
         // Create the NFT LP contract if it doesn't exist
         string memory name;
         string memory symbol;
@@ -153,13 +153,13 @@ library VaultGeneralLogic {
         }
 
         // Deploy ERC721 LP contract
-        liquidityPoolToken = address(
-            new LiquidityPoolToken(
+        liquidityToken = address(
+            new LiquidityToken(
                 string.concat(name, nftSymbol, " - ", tokenSymbol),
                 string.concat(symbol, nftSymbol, "-", tokenSymbol)
             )
         );
 
-        emit CreateLiquidityPoolToken(nft, token, liquidityPoolToken);
+        emit CreateLiquidityToken(nft, token, liquidityToken);
     }
 }

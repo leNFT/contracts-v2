@@ -109,7 +109,7 @@ library DataTypes {
 
     struct BuyRequest {
         uint256[] liquidityIds;
-        uint256[] lp721Indexes;
+        uint256[] lp721Indexes; // Must be decreasing order or same Liquidity
         uint256[] lp721TokenIds;
         uint256[] lp1155Amounts;
         uint256 maximumPrice;

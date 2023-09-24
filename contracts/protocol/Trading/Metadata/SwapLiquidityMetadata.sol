@@ -37,9 +37,8 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
         uint256 liquidityId
     ) public view override slExists(liquidityId) returns (string memory) {
         bytes memory metadata;
-        DataTypes.SwapLiquidity memory sl = IVault(
-            _addressProvider.getTradingVault()
-        ).getSL(liquidityId);
+        DataTypes.SwapLiquidity memory sl = IVault(_addressProvider.getVault())
+            .getSL(liquidityId);
 
         {
             // scope to avoid stack too deep errors
@@ -84,11 +83,10 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
     function attributes(
         uint256 liquidityId
     ) public view slExists(liquidityId) returns (string memory) {
-        DataTypes.SwapLiquidity memory sl = IVault(
-            _addressProvider.getTradingVault()
-        ).getSL(liquidityId);
-        address swapPool = IVault(_addressProvider.getTradingVault())
-            .getPoolAddress(liquidityId);
+        DataTypes.SwapLiquidity memory sl = IVault(_addressProvider.getVault())
+            .getSL(liquidityId);
+        address swapPool = IVault(_addressProvider.getVault())
+            .getLiquidityToken(liquidityId);
 
         bytes memory _attributes;
 
@@ -122,9 +120,8 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
     function svg(
         uint256 liquidityId
     ) public view slExists(liquidityId) returns (bytes memory _svg) {
-        DataTypes.SwapLiquidity memory sl = IVault(
-            _addressProvider.getTradingVault()
-        ).getSL(liquidityId);
+        DataTypes.SwapLiquidity memory sl = IVault(_addressProvider.getVault())
+            .getSL(liquidityId);
         IERC721Metadata nft = IERC721Metadata(sl.nft);
         IERC20Metadata token = IERC20Metadata(sl.token);
 
@@ -149,8 +146,9 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
                 "Trading pool: ",
                 Strings.toHexString(
                     address(
-                        IVault(_addressProvider.getTradingVault())
-                            .getPoolAddress(liquidityId)
+                        IVault(_addressProvider.getVault()).getLiquidityToken(
+                            liquidityId
+                        )
                     )
                 ),
                 "</text>",
@@ -215,7 +213,7 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
     function _requireSlExists(uint256 liquidityId) internal view {
         require(
             IERC721(
-                IVault(_addressProvider.getTradingVault()).getPoolAddress(
+                IVault(_addressProvider.getVault()).getLiquidityToken(
                     liquidityId
                 )
             ).ownerOf(liquidityId) != address(0),

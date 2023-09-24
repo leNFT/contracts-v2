@@ -11,6 +11,22 @@
     "ETH": {
       "address": "0xf531B8F309Be94191af87605CfBf600D71C2cFe0",
       "decimals": 18
-    }
+    },
+    "Test": {
+      "Blue721": "0xF050B6e8c3EDcd2843E950ac0618333305c32a20",
+      "Red721": "0xf44a5D81554Bec7fB7dbB062A5cf60c777B00578",
+      "Green721": "0xcfAA6B5870328Dbbe0fFeD42aC3be8874926D5ca",
+      "Blue1155": "0x6aBD50E2c3EdcCaD052fD6cb1e47DE8dCeEF87Fa"
+    },
+    "VaultValidationLogic": "0x7C020Fe037ac8C123683cD295f1Efc13e96063C9",
+    "VaultGeneralLogic": "0xaF8E79da29fb4893FE8A72Cf9E33383dcA76dD7B",
+    "AddressProvider": "0xbC981F02d12C815C8775EFbb934347E1c2F7C49b",
+    "Vault": "0x943b3Ac089012dcfD13DfBA400aD69bF3198A0d7",
+    "FeeDistributor": "0x06738c58AEFAA87fD317FD003C8a96aE68b10a61",
+    "LiquidityPair721Metadata": "0x61A402d6F653caf37c6dF9db910e31C9073d6da5",
+    "LiquidityPair1155Metadata": "0xff71a1514DD6DF2Dd0B78B3DcCa7C81fAa10F9C6",
+    "SwapLiquidityMetadata": "0x8Bf8c46a95c627013fb83e4Ab7B4c308f46A1bBC",
+    "ExponentialPriceCurve": "0x0B076603A503D78476c697987c900AA69DDfbFBd",
+    "LinearPriceCurve": "0xD0Ebd5226f68683Ae042504cc8ddd584010c6627"
   }
 }

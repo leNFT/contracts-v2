@@ -9,12 +9,9 @@ contract TestERC1155 is ERC1155 {
 
     constructor(
         string memory name_,
-        string memory symbol_
-    )
-        ERC1155(
-            "https://raw.githubusercontent.com/leNFT/interface/main/public/lettering_logo_square_small.png"
-        )
-    {
+        string memory symbol_,
+        string memory baseURI_
+    ) ERC1155(baseURI_) {
         _name = name_;
         _symbol = symbol_;
     }

@@ -9,10 +9,15 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 contract TestERC721 is IERC165, IERC721Metadata, ERC721Enumerable {
     event Mint(address owner, uint256 tokenId);
 
+    string private baseURI_;
+
     constructor(
         string memory name,
-        string memory symbol // solhint-disable-next-line no-empty-blocks
-    ) ERC721(name, symbol) {}
+        string memory symbol, // solhint-disable-next-line no-empty-blocks
+        string memory baseURI
+    ) ERC721(name, symbol) {
+        baseURI_ = baseURI;
+    }
 
     function mint(address owner) external returns (uint256) {
         uint256 tokenId = super.totalSupply();
@@ -25,9 +30,8 @@ contract TestERC721 is IERC165, IERC721Metadata, ERC721Enumerable {
 
     function tokenURI(
         uint256
-    ) public pure override(ERC721, IERC721Metadata) returns (string memory) {
-        return
-            "https://raw.githubusercontent.com/leNFT/interface/main/public/lettering_logo_square_small.png";
+    ) public view override(ERC721, IERC721Metadata) returns (string memory) {
+        return baseURI_;
     }
 
     function supportsInterface(

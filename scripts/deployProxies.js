@@ -124,22 +124,42 @@ async function main() {
   DEPLOY TEST CONTRACTS
   Deploy contracts that are used or testing
   ******************************************************************/
+  if (chainID != 1) {
+    console.log("Deploying Test Contracts");
+    // Deploy Test NFT contracts
+    const TestERC721 = await ethers.getContractFactory("TestERC721");
+    blueTestERC721 = await TestERC721.deploy(
+      "Blue Test 721",
+      "BT721",
+      "https://upload.wikimedia.org/wikipedia/commons/f/fd/000080_Navy_Blue_Square.svg"
+    );
+    await blueTestERC721.deployed();
+    addresses["Test"]["Blue721"] = blueTestERC721.address;
+    redTestERC721 = await TestERC721.deploy(
+      "Red Test 721",
+      "RT721",
+      "https://upload.wikimedia.org/wikipedia/commons/6/62/Solid_red.svg"
+    );
+    await redTestERC721.deployed();
+    addresses["Test"]["Red721"] = redTestERC721.address;
+    greenTestERC721 = await TestERC721.deploy(
+      "Green Test 721",
+      "GT721",
+      "https://upload.wikimedia.org/wikipedia/commons/2/29/Solid_green.svg"
+    );
+    await greenTestERC721.deployed();
+    addresses["Test"]["Green721"] = greenTestERC721.address;
+    const TestERC1155 = await ethers.getContractFactory("TestERC1155");
+    blueTestERC1155 = await TestERC1155.deploy(
+      "Blue Test 1155",
+      "BT1155",
+      "https://upload.wikimedia.org/wikipedia/commons/f/fd/000080_Navy_Blue_Square.svg"
+    );
+    await blueTestERC1155.deployed();
+    addresses["Test"]["Blue1155"] = blueTestERC1155.address;
 
-  // Deploy Test NFT contracts
-  const TestERC721 = await ethers.getContractFactory("TestERC721");
-  testERC721 = await TestERC721.deploy("Test 721", "T721");
-  await testERC721.deployed();
-  addresses["Test"]["ERC721"] = testERC721.address;
-  testERC721_2 = await TestERC721.deploy("Test 721 2", "TNFT721_2");
-  await testERC721_2.deployed();
-  addresses["Test"]["ERC721_2"] = testERC721_2.address;
-  const TestERC1155 = await ethers.getContractFactory("TestERC1155");
-  testERC1155 = await TestERC1155.deploy("Test 1155", "T1155");
-  await testERC1155.deployed();
-  addresses["Test"]["ERC1155"] = testERC1155.address;
-  testERC1155_2 = await TestERC1155.deploy("Test 1155 2", "T1155_2");
-  await testERC1155_2.deployed();
-  addresses["Test"]["ERC1155_2"] = testERC1155_2.address;
+    console.log("Deployed Test Contracts");
+  }
 
   /****************************************************************
   SAVE TO DISK
@@ -162,6 +182,8 @@ async function main() {
   SETUP TRANSACTIONS
   Broadcast transactions whose purpose is to setup the protocol for use
   ******************************************************************/
+
+  console.log("Setting up protocol");
 
   const setLiquidityPair721MetadataTx =
     await addressProvider.setLiquidityPair721Metadata(
@@ -199,6 +221,8 @@ async function main() {
 
   const setProtocolFeePercentageTx = await vault.setProtocolFeePercentage(1000);
   await setProtocolFeePercentageTx.wait();
+
+  console.log("Protocol setup complete");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -32,11 +32,15 @@ interface IVault {
         uint256 liquidityId
     );
 
-    event RemoveLiquity(address indexed user, uint256 indexed liquidityId);
-    event CreateLiquidityPoolToken(
+    event RemoveLiquity(
+        address indexed user,
+        address indexed liquidityToken,
+        uint256 indexed liquidityId
+    );
+    event CreateLiquidityToken(
         address indexed nft,
         address indexed token,
-        address indexed liquidityPoolToken
+        address indexed liquidityToken
     );
 
     event Sell(
@@ -63,7 +67,7 @@ interface IVault {
         uint256[] toTokenIds721
     );
 
-    function getPoolAddress(
+    function getLiquidityToken(
         uint256 liquidityId
     ) external view returns (address);
 

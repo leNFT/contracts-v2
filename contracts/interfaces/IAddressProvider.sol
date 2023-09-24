@@ -18,9 +18,9 @@ interface IAddressProvider {
 
     function getSwapLiquidityMetadata() external view returns (address);
 
-    function setTradingVault(address tradingVault) external;
+    function setVault(address vault) external;
 
-    function getTradingVault() external view returns (address);
+    function getVault() external view returns (address);
 
     function setVotingEscrow(address votingEscrow) external;
 
