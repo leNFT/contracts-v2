@@ -12,35 +12,39 @@ library DataTypes {
     /// @dev TradeDown: Can buy and sell and price can only decrease
     /// @dev Buy: Can only buy (price will only decrease)
     /// @dev Sell: Can only sell (price will only increase)
-    enum LPType {
+    /// @dev Swap: Can only swap NFT for NFT
+    enum LiquidityType {
         Trade,
         TradeUp,
         TradeDown,
         Buy,
-        Sell
+        Sell,
+        Swap
     }
 
-    /// @notice Struct to store the liquidity pair data
-    /// @param lpType The type of liquidity pair
+    /// @notice Struct to store the liquidity for a 721 liquidity pair
+    /// @param liquidityType The type of liquidity pair
     /// @param nftIds The tokenIds of the assets
+    /// @param swapFee The fee for the swap trades
     /// @param tokenAmount The amount of tokens in the liquidity pair
     /// @param spotPrice The spot price of the liquidity pair
     /// @param curve The address of the curve
     /// @param delta The delta of the curve
     /// @param fee The fee for the buy/sell trades
-    struct LiquidityPair721 {
+    struct Liquidity721 {
         uint256[] nftIds;
         address token;
         address nft;
+        uint128 swapFee;
         uint128 tokenAmount;
         uint128 spotPrice;
         uint128 delta;
         address curve;
         uint16 fee;
-        LPType lpType;
+        LiquidityType liquidityType;
     }
 
-    struct LiquidityPair1155 {
+    struct Liquidity1155 {
         address token;
         address nft;
         uint256 nftId;
@@ -50,15 +54,7 @@ library DataTypes {
         uint128 delta;
         address curve;
         uint16 fee;
-        LPType lpType;
-    }
-
-    struct SwapLiquidity {
-        address token;
-        address nft;
-        uint256[] nftIds;
-        uint128 fee;
-        uint128 tokenAmount;
+        LiquidityType liquidityType;
     }
 
     /// @notice Struct to store the working balance in gauges
@@ -94,12 +90,6 @@ library DataTypes {
         ERC1155
     }
 
-    enum LiquidityType {
-        LP721,
-        LP1155,
-        SL
-    }
-
     struct SellRequest {
         uint256[] liquidityIds;
         uint256[] tokenIds721;
@@ -118,7 +108,7 @@ library DataTypes {
     struct SwapRequest {
         uint256[] liquidityIds;
         uint256[] fromTokenIds721;
-        uint256[] boughtLp721Indexes;
+        uint256[] bought721Indexes;
         uint256[] toTokenIds721;
         uint256[] toTokenIds721Indexes;
     }

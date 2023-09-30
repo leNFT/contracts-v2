@@ -123,7 +123,7 @@ contract LiquidityPair721Metadata is ILiquidityMetadata {
                 ",",
                 _trait("Fee", Strings.toString(lp.fee)),
                 ",",
-                _trait("Type", Strings.toString(uint256(lp.lpType)))
+                _trait("Type", Strings.toString(uint256(lp.liquidityType)))
             );
         }
 

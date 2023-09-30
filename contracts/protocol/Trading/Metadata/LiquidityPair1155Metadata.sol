@@ -134,7 +134,7 @@ contract LiquidityPair1155Metadata {
                 ",",
                 trait("Fee", Strings.toString(lp.fee)),
                 ",",
-                trait("Type", Strings.toString(uint256(lp.lpType)))
+                trait("Type", Strings.toString(uint256(lp.liquidityType)))
             );
         }
 

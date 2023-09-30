@@ -10,6 +10,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {DataTypes} from "../../libraries/types/DataTypes.sol";
 import {SafeCast} from "../../libraries/utils/SafeCast.sol";
 import {IVault} from "../../interfaces/IVault.sol";
+import {IWETH} from "../../interfaces/IWETH.sol";
 import {ILiquidityToken} from "../../interfaces/ILiquidityToken.sol";
 import {IFeeDistributor} from "../../interfaces/IFeeDistributor.sol";
 import {PercentageMath} from "../../libraries/utils/PercentageMath.sol";
@@ -28,16 +29,15 @@ contract Vault is
     ReentrancyGuardUpgradeable
 {
     IAddressProvider private immutable _addressProvider;
+    IWETH private immutable _weth;
     // mapping of valid price curves
     mapping(address => bool) private _isPriceCurve;
-    mapping(address => mapping(address => address)) private _lpLiquidityTokens;
-    mapping(address => mapping(address => address)) private _slLiquidityTokens;
+    mapping(address => mapping(address => address)) private _liquidityTokens;
     mapping(uint256 => address) private _liquidityIdToken;
     uint256 private _liquidityCount;
-    mapping(uint256 => DataTypes.LiquidityPair721) private _liquidityPairs721;
-    mapping(uint256 => DataTypes.LiquidityPair1155) private _liquidityPairs1155;
-    mapping(uint256 => DataTypes.SwapLiquidity) private _swapLiquidity;
-    mapping(uint256 => DataTypes.LiquidityType) _liquidityType;
+    mapping(uint256 => DataTypes.Liquidity721) private _liquidity721;
+    mapping(uint256 => DataTypes.Liquidity1155) private _liquidity1155;
+    mapping(uint256 => DataTypes.TokenStandard) _liquidityTokenStandard;
     bool private _paused;
     uint256 private _protocolFeePercentage;
 
@@ -49,8 +49,9 @@ contract Vault is
     }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(IAddressProvider addressProvider) {
+    constructor(IAddressProvider addressProvider, IWETH weth) initializer {
         _addressProvider = addressProvider;
+        _weth = weth;
         _disableInitializers();
     }
 
@@ -65,22 +66,16 @@ contract Vault is
         return _liquidityIdToken[liquidityId];
     }
 
-    function getLP721(
+    function getLiquidity721(
         uint256 liquidityId
-    ) external view override returns (DataTypes.LiquidityPair721 memory) {
-        return _liquidityPairs721[liquidityId];
+    ) external view override returns (DataTypes.Liquidity721 memory) {
+        return _liquidity721[liquidityId];
     }
 
-    function getLP1155(
+    function getLiquidity1155(
         uint256 liquidityId
-    ) external view override returns (DataTypes.LiquidityPair1155 memory) {
-        return _liquidityPairs1155[liquidityId];
-    }
-
-    function getSL(
-        uint256 liquidityId
-    ) external view returns (DataTypes.SwapLiquidity memory) {
-        return _swapLiquidity[liquidityId];
+    ) external view override returns (DataTypes.Liquidity1155 memory) {
+        return _liquidity1155[liquidityId];
     }
 
     function isPriceCurve(address priceCurve) public view returns (bool) {
@@ -91,9 +86,9 @@ contract Vault is
         _isPriceCurve[priceCurve] = valid;
     }
 
-    function addLiquidityPair721(
+    function addLiquidity721(
         address receiver,
-        DataTypes.LPType lpType,
+        DataTypes.LiquidityType liquidityType,
         address nft,
         uint256[] calldata nftIds,
         address token,
@@ -101,28 +96,31 @@ contract Vault is
         uint256 spotPrice,
         address curve,
         uint256 delta,
-        uint256 fee
+        uint256 fee,
+        uint256 swapFee
     ) external payable notPaused {
         VaultValidationLogic.validateAddLiquidityPair(
-            lpType,
+            liquidityType,
+            DataTypes.TokenStandard.ERC721,
             nftIds.length,
             token,
             tokenAmount,
             spotPrice,
             curve,
             delta,
-            fee
+            fee,
+            swapFee
         );
-
-        address liquidityToken = _lpLiquidityTokens[nft][token];
+        address erc20Token = token == address(0) ? address(_weth) : token;
+        address liquidityToken = _liquidityTokens[nft][erc20Token];
 
         if (liquidityToken == address(0)) {
             liquidityToken = VaultGeneralLogic.initLiquidityToken(
-                DataTypes.LiquidityType.LP721,
+                DataTypes.TokenStandard.ERC721,
                 nft,
-                token
+                erc20Token
             );
-            _lpLiquidityTokens[nft][token] = liquidityToken;
+            _liquidityTokens[nft][erc20Token] = liquidityToken;
         }
 
         // Send user token to the vault
@@ -131,18 +129,21 @@ contract Vault is
         uint256 liquidityCount = _liquidityCount;
 
         // Save the user deposit info
-        _liquidityPairs721[liquidityCount] = DataTypes.LiquidityPair721({
-            lpType: lpType,
+        _liquidity721[liquidityCount] = DataTypes.Liquidity721({
+            liquidityType: liquidityType,
             nftIds: nftIds,
-            token: token,
+            token: erc20Token,
             nft: nft,
             tokenAmount: SafeCast.toUint128(tokenAmount),
             spotPrice: SafeCast.toUint128(spotPrice),
             curve: curve,
             delta: SafeCast.toUint128(delta),
-            fee: SafeCast.toUint16(fee)
+            fee: SafeCast.toUint16(fee),
+            swapFee: SafeCast.toUint128(swapFee)
         });
-        _liquidityType[liquidityCount] = DataTypes.LiquidityType.LP721;
+        _liquidityTokenStandard[liquidityCount] = DataTypes
+            .TokenStandard
+            .ERC721;
         _liquidityIdToken[liquidityCount] = liquidityToken;
 
         // Mint liquidity position NFT
@@ -155,15 +156,15 @@ contract Vault is
 
         emit AddLiquidity(
             receiver,
-            DataTypes.LiquidityType.LP721,
+            DataTypes.TokenStandard.ERC721,
             liquidityToken,
             liquidityCount
         );
     }
 
-    function addLiquidityPair1155(
+    function addLiquidity1155(
         address receiver,
-        DataTypes.LPType lpType,
+        DataTypes.LiquidityType liquidityType,
         address nft,
         uint256 nftId,
         uint256 nftAmount,
@@ -175,25 +176,28 @@ contract Vault is
         uint256 fee
     ) external payable notPaused {
         VaultValidationLogic.validateAddLiquidityPair(
-            lpType,
+            liquidityType,
+            DataTypes.TokenStandard.ERC1155,
             nftAmount,
             token,
             tokenAmount,
             spotPrice,
             curve,
             delta,
-            fee
+            fee,
+            0
         );
 
-        address liquidityToken = _lpLiquidityTokens[nft][token];
+        address erc20Token = token == address(0) ? address(_weth) : token;
+        address liquidityToken = _liquidityTokens[nft][erc20Token];
 
         if (liquidityToken == address(0)) {
             liquidityToken = VaultGeneralLogic.initLiquidityToken(
-                DataTypes.LiquidityType.LP1155,
+                DataTypes.TokenStandard.ERC1155,
                 nft,
-                token
+                erc20Token
             );
-            _lpLiquidityTokens[nft][token] = liquidityToken;
+            _liquidityTokens[nft][erc20Token] = liquidityToken;
         }
 
         // Send user token to the vault
@@ -202,11 +206,11 @@ contract Vault is
         uint256 liquidityCount = _liquidityCount;
 
         // Save the user deposit info
-        _liquidityPairs1155[liquidityCount] = DataTypes.LiquidityPair1155({
-            lpType: lpType,
+        _liquidity1155[liquidityCount] = DataTypes.Liquidity1155({
+            liquidityType: liquidityType,
             nftId: nftId,
             nft: nft,
-            token: token,
+            token: erc20Token,
             nftAmount: SafeCast.toUint128(nftAmount),
             tokenAmount: SafeCast.toUint128(tokenAmount),
             spotPrice: SafeCast.toUint128(spotPrice),
@@ -214,7 +218,9 @@ contract Vault is
             delta: SafeCast.toUint128(delta),
             fee: SafeCast.toUint16(fee)
         });
-        _liquidityType[liquidityCount] = DataTypes.LiquidityType.LP1155;
+        _liquidityTokenStandard[liquidityCount] = DataTypes
+            .TokenStandard
+            .ERC1155;
         _liquidityIdToken[liquidityCount] = liquidityToken;
 
         // Mint liquidity position NFT
@@ -233,72 +239,29 @@ contract Vault is
 
         emit AddLiquidity(
             receiver,
-            DataTypes.LiquidityType.LP1155,
+            DataTypes.TokenStandard.ERC1155,
             liquidityToken,
             liquidityCount
         );
     }
 
-    function addSwapLiquidity(
-        address receiver,
-        address nft,
-        uint256[] calldata nftIds,
-        address token,
-        uint256 fee
-    ) external payable notPaused {
-        address liquidityToken = _slLiquidityTokens[nft][token];
-
-        if (liquidityToken == address(0)) {
-            liquidityToken = VaultGeneralLogic.initLiquidityToken(
-                DataTypes.LiquidityType.SL,
-                nft,
-                token
-            );
-            _slLiquidityTokens[nft][token] = liquidityToken;
-        }
-
-        uint256 liquidityCount = _liquidityCount;
-
-        // Save the user deposit info
-        _swapLiquidity[liquidityCount] = DataTypes.SwapLiquidity({
-            token: token,
-            nft: nft,
-            nftIds: nftIds,
-            fee: SafeCast.toUint128(fee),
-            tokenAmount: 0
-        });
-        _liquidityType[liquidityCount] = DataTypes.LiquidityType.SL;
-        _liquidityIdToken[liquidityCount] = liquidityToken;
-
-        // Mint liquidity position NFT
-        ILiquidityToken(liquidityToken).mint(receiver, liquidityCount);
-
-        _liquidityCount++;
-
-        // Add user nfts to the vault
-        _transfer721Batch(msg.sender, address(this), nft, nftIds);
-
-        emit AddLiquidity(
-            receiver,
-            DataTypes.LiquidityType.SL,
-            liquidityToken,
-            liquidityCount
-        );
+    function removeLiquidity(uint256 liquidityId, bool unwrap) external {
+        _removeLiquidity(liquidityId, unwrap);
     }
 
-    function removeLiquidity(uint256 liquidityId) external {
-        _removeLiquidity(liquidityId);
-    }
-
-    function removeLiquityBatch(uint256[] calldata liquidityIds) external {
+    function removeLiquityBatch(
+        uint256[] calldata liquidityIds,
+        bool unwrap
+    ) external {
         for (uint i = 0; i < liquidityIds.length; i++) {
-            _removeLiquidity(liquidityIds[i]);
+            _removeLiquidity(liquidityIds[i], unwrap);
         }
     }
 
     /// @notice Private function that removes a liquidity pair, sending back deposited tokens and transferring the NFTs to the user
     /// @param liquidityId The ID of the LP token to remove
-    function _removeLiquidity(uint256 liquidityId) internal {
+    /// @param unwrap Whether to unwrap WETH to ETH
+    function _removeLiquidity(uint256 liquidityId, bool unwrap) internal {
         address liquidityToken = _liquidityIdToken[liquidityId];
         //Require the caller owns LP
         VaultValidationLogic.validateRemoveLiquidity(
@@ -309,38 +272,46 @@ contract Vault is
         // Send vault nfts to the user
         address token;
         uint256 tokenAmount;
-        if (_liquidityType[liquidityId] == DataTypes.LiquidityType.LP721) {
+        if (
+            _liquidityTokenStandard[liquidityId] ==
+            DataTypes.TokenStandard.ERC721
+        ) {
             _transfer721Batch(
                 address(this),
                 msg.sender,
-                _liquidityPairs721[liquidityId].nft,
-                _liquidityPairs721[liquidityId].nftIds
+                _liquidity721[liquidityId].nft,
+                _liquidity721[liquidityId].nftIds
             );
 
-            token = _liquidityPairs721[liquidityId].token;
-            tokenAmount = _liquidityPairs721[liquidityId].tokenAmount;
+            token = _liquidity721[liquidityId].token;
+            tokenAmount = _liquidity721[liquidityId].tokenAmount;
             // delete the user deposit info
-            delete _liquidityPairs721[liquidityId];
+            delete _liquidity721[liquidityId];
         } else if (
-            _liquidityType[liquidityId] == DataTypes.LiquidityType.LP1155
+            _liquidityTokenStandard[liquidityId] ==
+            DataTypes.TokenStandard.ERC1155
         ) {
-            IERC1155Upgradeable(_liquidityPairs1155[liquidityId].nft)
+            IERC1155Upgradeable(_liquidity1155[liquidityId].nft)
                 .safeTransferFrom(
                     address(this),
                     msg.sender,
-                    _liquidityPairs1155[liquidityId].nftId,
-                    _liquidityPairs1155[liquidityId].nftAmount,
+                    _liquidity1155[liquidityId].nftId,
+                    _liquidity1155[liquidityId].nftAmount,
                     ""
                 );
-            token = _liquidityPairs1155[liquidityId].token;
-            tokenAmount = _liquidityPairs1155[liquidityId].tokenAmount;
+            token = _liquidity1155[liquidityId].token;
+            tokenAmount = _liquidity1155[liquidityId].tokenAmount;
 
             // delete the user deposit info
-            delete _liquidityPairs1155[liquidityId];
+            delete _liquidity1155[liquidityId];
         }
 
         // Send ERC20 tokens back to the user
-        _sendToken(token, msg.sender, tokenAmount);
+        _sendToken(
+            token == address(_weth) && unwrap ? address(0) : token,
+            msg.sender,
+            tokenAmount
+        );
 
         // Burn liquidity position NFT
         ILiquidityToken(liquidityToken).burn(liquidityId);
@@ -383,34 +354,43 @@ contract Vault is
             for (uint i = 0; i < sellRequest.liquidityIds.length; i++) {
                 if (i < sellRequest.tokenIds721.length) {
                     uint256 tokenId721 = sellRequest.tokenIds721[i];
-                    DataTypes.LiquidityPair721
-                        memory lp721 = _liquidityPairs721[
-                            sellRequest.liquidityIds[i]
-                        ];
+                    DataTypes.Liquidity721 memory liquidity721 = _liquidity721[
+                        sellRequest.liquidityIds[i]
+                    ];
 
-                    if (lp721.nft == address(0)) {
+                    if (liquidity721.nft == address(0)) {
                         revert NonexistentLiquidity();
                     }
-                    // Can't sell to sell LP
-                    if (lp721.lpType == DataTypes.LPType.Sell) {
-                        revert IsSellLP();
+                    // Can't sell to sell or swap LP
+                    if (
+                        liquidity721.liquidityType ==
+                        DataTypes.LiquidityType.Sell ||
+                        liquidity721.liquidityType ==
+                        DataTypes.LiquidityType.Swap
+                    ) {
+                        revert IncompatibleLiquidity(
+                            sellRequest.liquidityIds[i]
+                        );
                     }
 
-                    if (lp721.token != token) {
+                    if (
+                        liquidity721.token !=
+                        (token == address(0) ? address(_weth) : token)
+                    ) {
                         revert TokenMismatch();
                     }
 
                     if (
-                        lp721.tokenAmount <
-                        lp721.spotPrice -
+                        liquidity721.tokenAmount <
+                        liquidity721.spotPrice -
                             PercentageMath.percentMul(
-                                lp721.spotPrice,
-                                lp721.fee
+                                liquidity721.spotPrice,
+                                liquidity721.fee
                             ) +
                             PercentageMath.percentMul(
                                 PercentageMath.percentMul(
-                                    lp721.spotPrice,
-                                    lp721.fee
+                                    liquidity721.spotPrice,
+                                    liquidity721.fee
                                 ),
                                 protocolFeePercentage
                             )
@@ -419,59 +399,72 @@ contract Vault is
                     }
 
                     // Update total price quote and fee sum
-                    sellPrice += (lp721.spotPrice -
-                        PercentageMath.percentMul(lp721.spotPrice, lp721.fee));
+                    sellPrice += (liquidity721.spotPrice -
+                        PercentageMath.percentMul(
+                            liquidity721.spotPrice,
+                            liquidity721.fee
+                        ));
                     totalProtocolFee += PercentageMath.percentMul(
-                        PercentageMath.percentMul(lp721.spotPrice, lp721.fee),
+                        PercentageMath.percentMul(
+                            liquidity721.spotPrice,
+                            liquidity721.fee
+                        ),
                         protocolFeePercentage
                     );
 
-                    IERC721Upgradeable(lp721.nft).safeTransferFrom(
+                    IERC721Upgradeable(liquidity721.nft).safeTransferFrom(
                         msg.sender,
                         address(this),
                         tokenId721
                     );
 
-                    VaultGeneralLogic.updateLp721AfterSell(
-                        lp721,
-                        _liquidityPairs721[sellRequest.liquidityIds[i]],
-                        PercentageMath.percentMul(lp721.spotPrice, lp721.fee),
+                    VaultGeneralLogic.updateLiquidity721AfterSell(
+                        liquidity721,
+                        _liquidity721[sellRequest.liquidityIds[i]],
                         protocolFeePercentage,
                         tokenId721
                     );
                 } else {
-                    DataTypes.LiquidityPair1155
-                        memory lp1155 = _liquidityPairs1155[
+                    DataTypes.Liquidity1155
+                        memory liquidity1155 = _liquidity1155[
                             sellRequest.liquidityIds[i]
                         ];
                     uint256 tokenAmount1155 = sellRequest.tokenAmounts1155[
                         i - sellRequest.tokenIds721.length
                     ];
 
-                    if (lp1155.nft == address(0)) {
+                    if (liquidity1155.nft == address(0)) {
                         revert NonexistentLiquidity();
                     }
 
                     // Can't sell to sell LP
-                    if (lp1155.lpType == DataTypes.LPType.Sell) {
-                        revert IsSellLP();
+                    if (
+                        liquidity1155.liquidityType ==
+                        DataTypes.LiquidityType.Sell
+                    ) {
+                        revert IncompatibleLiquidity(
+                            sellRequest.liquidityIds[i]
+                        );
                     }
 
-                    if (lp1155.token != token) {
+                    if (
+                        liquidity1155.token !=
+                        (token == address(0) ? address(_weth) : token)
+                    ) {
                         revert TokenMismatch();
                     }
 
                     if (
-                        lp1155.tokenAmount <
-                        lp1155.spotPrice -
+                        liquidity1155.tokenAmount <
+                        liquidity1155.spotPrice -
                             PercentageMath.percentMul(
-                                lp1155.spotPrice,
-                                lp1155.fee
+                                liquidity1155.spotPrice,
+                                liquidity1155.fee
                             ) +
                             PercentageMath.percentMul(
                                 PercentageMath.percentMul(
-                                    lp1155.spotPrice,
-                                    lp1155.fee
+                                    liquidity1155.spotPrice,
+                                    liquidity1155.fee
                                 ),
                                 protocolFeePercentage
                             )
@@ -480,28 +473,30 @@ contract Vault is
                     }
 
                     // Update total price quote and fee sum
-                    sellPrice += (lp1155.spotPrice -
+                    sellPrice += (liquidity1155.spotPrice -
                         PercentageMath.percentMul(
-                            lp1155.spotPrice,
-                            lp1155.fee
+                            liquidity1155.spotPrice,
+                            liquidity1155.fee
                         ));
                     totalProtocolFee += PercentageMath.percentMul(
-                        PercentageMath.percentMul(lp1155.spotPrice, lp1155.fee),
+                        PercentageMath.percentMul(
+                            liquidity1155.spotPrice,
+                            liquidity1155.fee
+                        ),
                         protocolFeePercentage
                     );
 
-                    IERC1155Upgradeable(lp1155.nft).safeTransferFrom(
+                    IERC1155Upgradeable(liquidity1155.nft).safeTransferFrom(
                         msg.sender,
                         address(this),
-                        lp1155.nftId,
+                        liquidity1155.nftId,
                         tokenAmount1155,
                         ""
                     );
 
-                    VaultGeneralLogic.updateLp1155AfterSell(
-                        lp1155,
-                        _liquidityPairs1155[sellRequest.liquidityIds[i]],
-                        PercentageMath.percentMul(lp1155.spotPrice, lp1155.fee),
+                    VaultGeneralLogic.updateLiquidity1155AfterSell(
+                        liquidity1155,
+                        _liquidity1155[sellRequest.liquidityIds[i]],
                         protocolFeePercentage,
                         tokenAmount1155
                     );
@@ -541,106 +536,136 @@ contract Vault is
 
             for (uint i = 0; i < buyRequest.liquidityIds.length; i++) {
                 if (i < buyRequest.lp721Indexes.length) {
-                    DataTypes.LiquidityPair721
-                        memory lp721 = _liquidityPairs721[
-                            buyRequest.liquidityIds[i]
-                        ];
+                    DataTypes.Liquidity721 memory liquidity721 = _liquidity721[
+                        buyRequest.liquidityIds[i]
+                    ];
 
-                    if (lp721.nft == address(0)) {
+                    if (liquidity721.nft == address(0)) {
                         revert NonexistentLiquidity();
                     }
                     // Make sure the token for the LP is the same
-                    if (lp721.token != token) {
+                    if (
+                        liquidity721.token !=
+                        (token == address(0) ? address(_weth) : token)
+                    ) {
                         revert TokenMismatch();
                     }
 
                     // Can't buy from buy LP
-                    if (lp721.lpType == DataTypes.LPType.Buy) {
-                        revert IsBuyLP();
+                    if (
+                        liquidity721.liquidityType ==
+                        DataTypes.LiquidityType.Buy
+                    ) {
+                        revert IncompatibleLiquidity(
+                            buyRequest.liquidityIds[i]
+                        );
                     }
 
                     if (
                         buyRequest.lp721TokenIds[i] !=
-                        lp721.nftIds[buyRequest.lp721Indexes[i]]
+                        liquidity721.nftIds[buyRequest.lp721Indexes[i]]
                     ) {
                         revert NFTMismatch();
                     }
 
                     // Increase total price and fee sum
-                    buyPrice += (lp721.spotPrice +
-                        PercentageMath.percentMul(lp721.spotPrice, lp721.fee));
+                    buyPrice += (liquidity721.spotPrice +
+                        PercentageMath.percentMul(
+                            liquidity721.spotPrice,
+                            liquidity721.fee
+                        ));
                     totalProtocolFee += PercentageMath.percentMul(
-                        PercentageMath.percentMul(lp721.spotPrice, lp721.fee),
+                        PercentageMath.percentMul(
+                            liquidity721.spotPrice,
+                            liquidity721.fee
+                        ),
                         protocolFeePercentage
                     );
 
                     // Save the bought token
                     boughtTokens721[i] = BoughtToken721({
-                        token: lp721.nft,
-                        tokenId: lp721.nftIds[buyRequest.lp721Indexes[i]]
+                        token: liquidity721.nft,
+                        tokenId: liquidity721.nftIds[buyRequest.lp721Indexes[i]]
                     });
 
                     VaultGeneralLogic.updateLp721AfterBuy(
-                        lp721,
-                        _liquidityPairs721[buyRequest.liquidityIds[i]],
-                        PercentageMath.percentMul(lp721.spotPrice, lp721.fee),
+                        liquidity721,
+                        _liquidity721[buyRequest.liquidityIds[i]],
+                        PercentageMath.percentMul(
+                            liquidity721.spotPrice,
+                            liquidity721.fee
+                        ),
                         protocolFeePercentage,
                         buyRequest.lp721Indexes[i]
                     );
                 } else {
-                    DataTypes.LiquidityPair1155
-                        memory lp1155 = _liquidityPairs1155[
+                    DataTypes.Liquidity1155
+                        memory liquidity1155 = _liquidity1155[
                             buyRequest.liquidityIds[i]
                         ];
                     uint256 tokenAmount1155 = buyRequest.lp1155Amounts[
                         i - buyRequest.lp721Indexes.length
                     ];
 
-                    if (lp1155.nft == address(0)) {
+                    if (liquidity1155.nft == address(0)) {
                         revert NonexistentLiquidity();
                     }
 
                     // Make sure the token for the LP is the same
-                    if (lp1155.token != token) {
+                    if (
+                        liquidity1155.token !=
+                        (token == address(0) ? address(_weth) : token)
+                    ) {
                         revert TokenMismatch();
                     }
 
                     // Can't buy from buy LP
-                    if (lp1155.lpType == DataTypes.LPType.Buy) {
-                        revert IsBuyLP();
+                    if (
+                        liquidity1155.liquidityType ==
+                        DataTypes.LiquidityType.Buy
+                    ) {
+                        revert IncompatibleLiquidity(
+                            buyRequest.liquidityIds[i]
+                        );
                     }
 
                     if (
                         buyRequest.lp1155Amounts[
                             i - buyRequest.lp721Indexes.length
-                        ] > lp1155.tokenAmount
+                        ] > liquidity1155.tokenAmount
                     ) {
                         revert InsufficientTokensInLP();
                     }
 
                     // Increase total price and fee sum
-                    buyPrice += (lp1155.spotPrice +
+                    buyPrice += (liquidity1155.spotPrice +
                         PercentageMath.percentMul(
-                            lp1155.spotPrice,
-                            lp1155.fee
+                            liquidity1155.spotPrice,
+                            liquidity1155.fee
                         ));
                     totalProtocolFee += PercentageMath.percentMul(
-                        PercentageMath.percentMul(lp1155.spotPrice, lp1155.fee),
+                        PercentageMath.percentMul(
+                            liquidity1155.spotPrice,
+                            liquidity1155.fee
+                        ),
                         protocolFeePercentage
                     );
 
-                    IERC1155Upgradeable(lp1155.nft).safeTransferFrom(
+                    IERC1155Upgradeable(liquidity1155.nft).safeTransferFrom(
                         address(this),
                         receiver,
-                        lp1155.nftId,
+                        liquidity1155.nftId,
                         tokenAmount1155,
                         ""
                     );
 
                     VaultGeneralLogic.updateLp1155AfterBuy(
-                        lp1155,
-                        _liquidityPairs1155[buyRequest.liquidityIds[i]],
-                        PercentageMath.percentMul(lp1155.spotPrice, lp1155.fee),
+                        liquidity1155,
+                        _liquidity1155[buyRequest.liquidityIds[i]],
+                        PercentageMath.percentMul(
+                            liquidity1155.spotPrice,
+                            liquidity1155.fee
+                        ),
                         protocolFeePercentage
                     );
                 }
@@ -663,78 +688,89 @@ contract Vault is
             if (
                 swapRequest.liquidityIds.length !=
                 swapRequest.fromTokenIds721.length +
-                    swapRequest.boughtLp721Indexes.length ||
+                    swapRequest.bought721Indexes.length ||
                 swapRequest.liquidityIds.length !=
                 swapRequest.toTokenIds721Indexes.length
             ) {
                 revert LiquidityMismatch();
             }
-            DataTypes.SwapLiquidity memory sl;
+            DataTypes.Liquidity721 memory liquidity721;
             for (uint i = 0; i < swapRequest.liquidityIds.length; i++) {
-                sl = _swapLiquidity[swapRequest.liquidityIds[i]];
+                liquidity721 = _liquidity721[swapRequest.liquidityIds[i]];
 
-                if (sl.nft == address(0)) {
+                if (liquidity721.nft == address(0)) {
                     revert NonexistentLiquidity();
                 }
-                if (sl.token != token) {
+                if (
+                    liquidity721.token !=
+                    (token == address(0) ? address(_weth) : token)
+                ) {
                     revert TokenMismatch();
                 }
 
-                _swapLiquidity[swapRequest.liquidityIds[i]]
-                    .tokenAmount += SafeCast.toUint128(sl.fee);
-                buyPrice += (sl.fee +
-                    PercentageMath.percentMul(sl.fee, protocolFeePercentage));
+                // Only allow swapping from liquidity with a swap fee
+                if (liquidity721.swapFee == 0) {
+                    revert IncompatibleLiquidity(swapRequest.liquidityIds[i]);
+                }
+
+                _liquidity721[swapRequest.liquidityIds[i]]
+                    .tokenAmount += SafeCast.toUint128(liquidity721.swapFee);
+                buyPrice += (liquidity721.swapFee +
+                    PercentageMath.percentMul(
+                        liquidity721.swapFee,
+                        protocolFeePercentage
+                    ));
                 totalProtocolFee += PercentageMath.percentMul(
-                    sl.fee,
+                    liquidity721.swapFee,
                     protocolFeePercentage
                 );
 
                 // Swap NFTs in swap liquidity
                 if (i < swapRequest.fromTokenIds721.length) {
-                    IERC721Upgradeable(sl.nft).safeTransferFrom(
+                    IERC721Upgradeable(liquidity721.nft).safeTransferFrom(
                         msg.sender,
                         address(this),
                         swapRequest.fromTokenIds721[i]
                     );
                     if (
                         swapRequest.toTokenIds721[i] !=
-                        sl.nftIds[swapRequest.toTokenIds721Indexes[i]]
+                        liquidity721.nftIds[swapRequest.toTokenIds721Indexes[i]]
                     ) {
                         revert NFTMismatch();
                     }
 
                     // Swap tokens in swap liquidity
-                    _swapLiquidity[swapRequest.liquidityIds[i]].nftIds[
+                    _liquidity721[swapRequest.liquidityIds[i]].nftIds[
                             swapRequest.toTokenIds721Indexes[i]
                         ] = swapRequest.fromTokenIds721[i];
 
-                    IERC721Upgradeable(sl.nft).safeTransferFrom(
+                    IERC721Upgradeable(liquidity721.nft).safeTransferFrom(
                         address(this),
                         receiver,
                         swapRequest.toTokenIds721[i]
                     );
                 } else {
                     BoughtToken721 memory boughtToken = boughtTokens721[
-                        swapRequest.boughtLp721Indexes[
+                        swapRequest.bought721Indexes[
                             i - swapRequest.fromTokenIds721.length
                         ]
                     ];
 
-                    if (boughtToken.token != sl.nft) {
+                    if (boughtToken.token != liquidity721.nft) {
                         revert NFTMismatch();
                     }
 
                     // Swap tokens in swap liquidity
-                    _swapLiquidity[swapRequest.liquidityIds[i]].nftIds[
+                    _liquidity721[swapRequest.liquidityIds[i]].nftIds[
                             swapRequest.toTokenIds721Indexes[i]
                         ] = boughtToken.tokenId;
 
                     boughtTokens721[
-                        swapRequest.boughtLp721Indexes[
+                        swapRequest.bought721Indexes[
                             i - swapRequest.fromTokenIds721.length
                         ]
                     ] = BoughtToken721({
-                        token: sl.nft,
+                        token: liquidity721.nft,
                         tokenId: swapRequest.toTokenIds721[i]
                     });
                 }
@@ -744,7 +780,7 @@ contract Vault is
                 receiver,
                 swapRequest.liquidityIds,
                 swapRequest.fromTokenIds721,
-                swapRequest.boughtLp721Indexes,
+                swapRequest.bought721Indexes,
                 swapRequest.toTokenIds721
             );
         }
@@ -769,8 +805,14 @@ contract Vault is
 
         // Send protocol fee to protocol fee distributor and call a checkpoint
         address feeDistributor = _addressProvider.getFeeDistributor();
-        _sendToken(token, feeDistributor, totalProtocolFee);
-        IFeeDistributor(feeDistributor).checkpoint(token);
+        _sendToken(
+            (token == address(0) ? address(_weth) : token),
+            feeDistributor,
+            totalProtocolFee
+        );
+        IFeeDistributor(feeDistributor).checkpoint(
+            (token == address(0) ? address(_weth) : token)
+        );
     }
 
     function setProtocolFeePercentage(
@@ -798,6 +840,8 @@ contract Vault is
                     revert ETHTransferFailed();
                 }
             }
+            // Deposit in WETH contract
+            _weth.deposit{value: amount}();
         } else {
             IERC20Upgradeable(token).safeTransferFrom(
                 msg.sender,
@@ -809,6 +853,8 @@ contract Vault is
 
     function _sendToken(address token, address to, uint256 amount) internal {
         if (token == address(0)) {
+            // Withdraw from WETH contract
+            _weth.withdraw(amount);
             (bool sent, ) = to.call{value: amount}("");
             if (!sent) {
                 revert ETHTransferFailed();
@@ -860,4 +906,6 @@ contract Vault is
             interfaceId == type(IERC721ReceiverUpgradeable).interfaceId ||
             interfaceId == type(IERC1155ReceiverUpgradeable).interfaceId;
     }
+
+    receive() external payable {}
 }

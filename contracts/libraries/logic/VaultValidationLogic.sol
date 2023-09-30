@@ -7,7 +7,6 @@ import {IPricingCurve} from "../../interfaces/IPricingCurve.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
-error NotPriceCurve();
 error NotLiquidityOwner();
 error WrongMessageValue();
 error NFTMismatch();
@@ -23,6 +22,9 @@ error NFTsOnly();
 error InvalidDelta();
 error InvalidCurve();
 error InvalidFee();
+error InvalidSwapFee();
+error InvalidSwap1155();
+error InvalidCurveParams();
 error NonexistentLiquidity();
 
 library VaultValidationLogic {
@@ -31,14 +33,16 @@ library VaultValidationLogic {
     using ERC165Checker for address;
 
     function validateAddLiquidityPair(
-        DataTypes.LPType lpType,
+        DataTypes.LiquidityType liquidityType,
+        DataTypes.TokenStandard tokenStandard,
         uint256 nftAmount,
         address token,
         uint256 tokenAmount,
         uint256 spotPrice,
         address curve,
         uint256 delta,
-        uint256 fee
+        uint256 fee,
+        uint256 swapFee
     ) external view {
         // If the user is sending ETH we check the message value
         if (token == address(0) && msg.value != tokenAmount) {
@@ -51,34 +55,40 @@ library VaultValidationLogic {
         // Buy: Can only contain tokens
         // Sell: Can only contain NFTs
         if (
-            (lpType == DataTypes.LPType.Trade ||
-                lpType == DataTypes.LPType.TradeUp ||
-                lpType == DataTypes.LPType.TradeDown) &&
+            (liquidityType == DataTypes.LiquidityType.Trade ||
+                liquidityType == DataTypes.LiquidityType.TradeUp ||
+                liquidityType == DataTypes.LiquidityType.TradeDown) &&
             (tokenAmount == 0 && nftAmount == 0)
         ) {
             revert EmptyDeposit();
         } else if (
-            lpType == DataTypes.LPType.Buy &&
+            liquidityType == DataTypes.LiquidityType.Buy &&
             (tokenAmount == 0 || nftAmount > 0)
         ) {
             revert TokensOnly();
         } else if (
-            lpType == DataTypes.LPType.Sell &&
+            (liquidityType == DataTypes.LiquidityType.Sell ||
+                liquidityType == DataTypes.LiquidityType.Swap) &&
             (tokenAmount > 0 || nftAmount == 0)
         ) {
             revert NFTsOnly();
         }
 
-        // Directional LPs must have a positive delta in order for the price to move or else
-        // they degenerate into a Trade LPs with delta = 0
+        // Directional Liquidity must have a positive delta in order for the price to move or else
+        // they degenerate into a Trade Liquidity with delta = 0
         if (
-            (lpType == DataTypes.LPType.TradeUp ||
-                lpType == DataTypes.LPType.TradeDown) && delta == 0
+            (liquidityType == DataTypes.LiquidityType.TradeUp ||
+                liquidityType == DataTypes.LiquidityType.TradeDown) &&
+            delta == 0
         ) {
             revert InvalidDelta();
         }
 
-        if (lpType == DataTypes.LPType.Buy || lpType == DataTypes.LPType.Sell) {
+        if (
+            liquidityType == DataTypes.LiquidityType.Buy ||
+            liquidityType == DataTypes.LiquidityType.Sell ||
+            liquidityType == DataTypes.LiquidityType.Swap
+        ) {
             // Validate fee
             if (fee > 0) {
                 revert InvalidFee();
@@ -91,14 +101,40 @@ library VaultValidationLogic {
         }
 
         // Require that the curve conforms to the curve interface
-        if (
-            !address(curve).supportsInterface(type(IPricingCurve).interfaceId)
-        ) {
-            revert NotPriceCurve();
+        if (liquidityType != DataTypes.LiquidityType.Swap) {
+            if (
+                !address(curve).supportsInterface(
+                    type(IPricingCurve).interfaceId
+                )
+            ) {
+                revert InvalidCurve();
+            }
+        } else if (curve != address(0)) {
+            revert InvalidCurve();
         }
 
         // Validate LP params for chosen curve
-        IPricingCurve(curve).validateLpParameters(spotPrice, delta, fee);
+        if (liquidityType != DataTypes.LiquidityType.Swap) {
+            IPricingCurve(curve).validateLpParameters(spotPrice, delta, fee);
+        } else if (spotPrice > 0 || delta > 0 || fee > 0) {
+            revert InvalidCurveParams();
+        }
+
+        // Validate swap fee
+        if (swapFee > MAX_FEE) {
+            revert InvalidSwapFee();
+        }
+
+        if (liquidityType == DataTypes.LiquidityType.Swap && swapFee == 0) {
+            revert InvalidSwapFee();
+        }
+
+        if (
+            tokenStandard == DataTypes.TokenStandard.ERC1155 &&
+            (swapFee != 0 || liquidityType == DataTypes.LiquidityType.Swap)
+        ) {
+            revert InvalidSwap1155();
+        }
     }
 
     function validateRemoveLiquidity(

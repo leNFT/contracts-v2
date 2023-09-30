@@ -61,7 +61,7 @@ async function main() {
   vault = await upgrades.deployProxy(Vault, [addressProvider.address], {
     unsafeAllow: ["external-library-linking", "state-variable-immutable"],
     timeout: 0,
-    constructorArgs: [addressProvider.address],
+    constructorArgs: [addressProvider.address, addresses.ETH.address],
   });
   addresses["Vault"] = vault.address;
 

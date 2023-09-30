@@ -10,8 +10,7 @@ interface IVault {
     error TokenMismatch();
     error EmptyLiquidity();
     error LiquidityMismatch();
-    error IsBuyLP();
-    error IsSellLP();
+    error IncompatibleLiquidity(uint256 liquidityId);
     error InsufficientTokensInLP();
     error EmptyDeposit();
     error TokensOnly();
@@ -27,7 +26,7 @@ interface IVault {
     error NonexistentLiquidity();
     event AddLiquidity(
         address indexed user,
-        DataTypes.LiquidityType indexed liquidityType,
+        DataTypes.TokenStandard indexed tokenStandard,
         address indexed liquidityToken,
         uint256 liquidityId
     );
@@ -71,15 +70,11 @@ interface IVault {
         uint256 liquidityId
     ) external view returns (address);
 
-    function getLP721(
+    function getLiquidity721(
         uint256 liquidityId
-    ) external view returns (DataTypes.LiquidityPair721 memory);
+    ) external view returns (DataTypes.Liquidity721 memory);
 
-    function getLP1155(
+    function getLiquidity1155(
         uint256 liquidityId
-    ) external view returns (DataTypes.LiquidityPair1155 memory);
-
-    function getSL(
-        uint256 liquidityId
-    ) external view returns (DataTypes.SwapLiquidity memory);
+    ) external view returns (DataTypes.Liquidity1155 memory);
 }

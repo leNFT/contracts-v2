@@ -18,144 +18,152 @@ library VaultGeneralLogic {
     );
 
     function updateLp721AfterBuy(
-        DataTypes.LiquidityPair721 memory liquidityPair,
-        DataTypes.LiquidityPair721 storage liquidityPairPointer,
+        DataTypes.Liquidity721 memory liquidity,
+        DataTypes.Liquidity721 storage liquidityPointer,
         uint256 fee,
         uint256 protocolFeePercentage,
         uint256 lp721Index
     ) external {
-        // Update token amount in liquidity pair
-        liquidityPairPointer.tokenAmount += SafeCast.toUint128(
-            (liquidityPair.spotPrice +
+        // Update token amount in liquidity
+        liquidityPointer.tokenAmount += SafeCast.toUint128(
+            (liquidity.spotPrice +
                 fee -
                 PercentageMath.percentMul(fee, protocolFeePercentage))
         );
         // Update liquidity pair price
-        if (liquidityPair.lpType != DataTypes.LPType.TradeDown) {
-            liquidityPairPointer.spotPrice = SafeCast.toUint128(
-                IPricingCurve(liquidityPair.curve).priceAfterBuy(
-                    liquidityPair.spotPrice,
-                    liquidityPair.delta,
-                    liquidityPair.fee
+        if (liquidity.liquidityType != DataTypes.LiquidityType.TradeDown) {
+            liquidityPointer.spotPrice = SafeCast.toUint128(
+                IPricingCurve(liquidity.curve).priceAfterBuy(
+                    liquidity.spotPrice,
+                    liquidity.delta,
+                    liquidity.fee
                 )
             );
         }
 
-        liquidityPairPointer.nftIds[lp721Index] = liquidityPair.nftIds[
-            liquidityPair.nftIds.length - 1
+        liquidityPointer.nftIds[lp721Index] = liquidity.nftIds[
+            liquidity.nftIds.length - 1
         ];
-        liquidityPairPointer.nftIds.pop();
+        liquidityPointer.nftIds.pop();
     }
 
     function updateLp1155AfterBuy(
-        DataTypes.LiquidityPair1155 memory liquidityPair,
-        DataTypes.LiquidityPair1155 storage liquidityPairPointer,
+        DataTypes.Liquidity1155 memory liquidity,
+        DataTypes.Liquidity1155 storage liquidityPointer,
         uint256 fee,
         uint256 protocolFeePercentage
     ) external {
-        liquidityPairPointer.tokenAmount += SafeCast.toUint128(
-            (liquidityPair.spotPrice +
+        liquidityPointer.tokenAmount += SafeCast.toUint128(
+            (liquidity.spotPrice +
                 fee -
                 PercentageMath.percentMul(fee, protocolFeePercentage))
         );
 
         // Update liquidity pair price
-        if (liquidityPair.lpType != DataTypes.LPType.TradeDown) {
-            liquidityPairPointer.spotPrice = SafeCast.toUint128(
-                IPricingCurve(liquidityPair.curve).priceAfterBuy(
-                    liquidityPair.spotPrice,
-                    liquidityPair.delta,
-                    liquidityPair.fee
+        if (liquidity.liquidityType != DataTypes.LiquidityType.TradeDown) {
+            liquidityPointer.spotPrice = SafeCast.toUint128(
+                IPricingCurve(liquidity.curve).priceAfterBuy(
+                    liquidity.spotPrice,
+                    liquidity.delta,
+                    liquidity.fee
                 )
             );
         }
     }
 
-    function updateLp721AfterSell(
-        DataTypes.LiquidityPair721 memory liquidityPair,
-        DataTypes.LiquidityPair721 storage liquidityPairPointer,
-        uint256 fee,
+    function updateLiquidity721AfterSell(
+        DataTypes.Liquidity721 memory liquidity,
+        DataTypes.Liquidity721 storage liquidityPointer,
         uint256 protocolFeePercentage,
         uint256 tokenId721
     ) external {
+        uint256 fee = PercentageMath.percentMul(
+            liquidity.spotPrice,
+            liquidity.fee
+        );
         // Add nft to liquidity pair nft list
-        liquidityPairPointer.nftIds.push(tokenId721);
+        liquidityPointer.nftIds.push(tokenId721);
 
         // Update token amount in liquidity pair
-        liquidityPairPointer.tokenAmount -= SafeCast.toUint128(
-            (liquidityPair.spotPrice -
+        liquidityPointer.tokenAmount -= SafeCast.toUint128(
+            (liquidity.spotPrice -
                 fee +
                 PercentageMath.percentMul(fee, protocolFeePercentage))
         );
 
         // Update liquidity pair price
-        if (liquidityPair.lpType != DataTypes.LPType.TradeUp) {
-            liquidityPairPointer.spotPrice = SafeCast.toUint128(
-                IPricingCurve(liquidityPair.curve).priceAfterSell(
-                    liquidityPair.spotPrice,
-                    liquidityPair.delta,
-                    liquidityPair.fee
+        if (liquidity.liquidityType != DataTypes.LiquidityType.TradeUp) {
+            liquidityPointer.spotPrice = SafeCast.toUint128(
+                IPricingCurve(liquidity.curve).priceAfterSell(
+                    liquidity.spotPrice,
+                    liquidity.delta,
+                    liquidity.fee
                 )
             );
         }
     }
 
-    function updateLp1155AfterSell(
-        DataTypes.LiquidityPair1155 memory liquidityPair,
-        DataTypes.LiquidityPair1155 storage liquidityPairPointer,
-        uint256 fee,
+    function updateLiquidity1155AfterSell(
+        DataTypes.Liquidity1155 memory liquidity,
+        DataTypes.Liquidity1155 storage liquidityPointer,
         uint256 protocolFeePercentage,
         uint256 tokenAmount1155
     ) external {
-        // Add token amount to liquidity pair token amount
-        liquidityPairPointer.tokenAmount += SafeCast.toUint128(tokenAmount1155);
+        uint256 fee = PercentageMath.percentMul(
+            liquidity.spotPrice,
+            liquidity.fee
+        );
+        // Add token amount to liquidity  token amount
+        liquidityPointer.tokenAmount += SafeCast.toUint128(tokenAmount1155);
 
-        // Update token amount in liquidity pair
-        liquidityPairPointer.tokenAmount -= SafeCast.toUint128(
-            (liquidityPair.spotPrice -
+        // Update token amount in liquidity
+        liquidityPointer.tokenAmount -= SafeCast.toUint128(
+            (liquidity.spotPrice -
                 fee +
                 PercentageMath.percentMul(fee, protocolFeePercentage))
         );
-        // Update liquidity pair price
-        if (liquidityPair.lpType != DataTypes.LPType.TradeUp) {
-            liquidityPairPointer.spotPrice = SafeCast.toUint128(
-                IPricingCurve(liquidityPair.curve).priceAfterSell(
-                    liquidityPair.spotPrice,
-                    liquidityPair.delta,
-                    liquidityPair.fee
+        // Update liquidity  price
+        if (liquidity.liquidityType != DataTypes.LiquidityType.TradeUp) {
+            liquidityPointer.spotPrice = SafeCast.toUint128(
+                IPricingCurve(liquidity.curve).priceAfterSell(
+                    liquidity.spotPrice,
+                    liquidity.delta,
+                    liquidity.fee
                 )
             );
         }
     }
 
     function initLiquidityToken(
-        DataTypes.LiquidityType liquidityType,
+        DataTypes.TokenStandard tokenStandard,
         address nft,
         address token
     ) external returns (address liquidityToken) {
         // Create the NFT LP contract if it doesn't exist
-        string memory name;
-        string memory symbol;
-        string memory nftSymbol = IERC721MetadataUpgradeable(nft).symbol();
-        string memory tokenSymbol = token != address(0)
-            ? IERC20MetadataUpgradeable(token).symbol()
-            : "ETH";
+        string memory name = "leNFT2 Liquidity Token";
+        string memory symbol = "leNFT2";
+        string memory tokenSymbol = IERC20MetadataUpgradeable(token).symbol();
+        string memory nftSymbol;
 
-        if (
-            liquidityType == DataTypes.LiquidityType.LP721 ||
-            liquidityType == DataTypes.LiquidityType.LP1155
-        ) {
-            name = "leNFT2 Trading Pool ";
-            symbol = "leT2";
-        } else {
-            name = "leNFT2 Swap Pool ";
-            symbol = "leS2";
+        if (tokenStandard == DataTypes.TokenStandard.ERC721) {
+            nftSymbol = IERC721MetadataUpgradeable(nft).symbol();
+        } else if (tokenStandard == DataTypes.TokenStandard.ERC1155) {
+            // Make an external call to get the ERC1155 token's symbol
+            (bool success, bytes memory data) = nft.staticcall(
+                abi.encodeWithSignature("symbol()")
+            );
+            if (!success) {
+                nftSymbol = "N/A";
+            } else {
+                // Decode the response
+                nftSymbol = abi.decode(data, (string));
+            }
         }
 
         // Deploy ERC721 LP contract
         liquidityToken = address(
             new LiquidityToken(
-                string.concat(name, nftSymbol, " - ", tokenSymbol),
+                string.concat(name, nftSymbol, "-", tokenSymbol),
                 string.concat(symbol, nftSymbol, "-", tokenSymbol)
             )
         );
