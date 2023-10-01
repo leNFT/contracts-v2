@@ -120,11 +120,6 @@ library VaultValidationLogic {
             revert InvalidCurveParams();
         }
 
-        // Validate swap fee
-        if (swapFee > MAX_FEE) {
-            revert InvalidSwapFee();
-        }
-
         if (liquidityType == DataTypes.LiquidityType.Swap && swapFee == 0) {
             revert InvalidSwapFee();
         }

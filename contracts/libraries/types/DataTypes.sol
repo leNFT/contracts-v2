@@ -32,9 +32,9 @@ library DataTypes {
     /// @param delta The delta of the curve
     /// @param fee The fee for the buy/sell trades
     struct Liquidity721 {
-        uint256[] nftIds;
         address token;
         address nft;
+        uint256[] nftIds;
         uint128 swapFee;
         uint128 tokenAmount;
         uint128 spotPrice;

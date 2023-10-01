@@ -717,12 +717,14 @@ contract Vault is
                 }
 
                 _liquidity721[swapRequest.liquidityIds[i]]
-                    .tokenAmount += SafeCast.toUint128(liquidity721.swapFee);
-                buyPrice += (liquidity721.swapFee +
-                    PercentageMath.percentMul(
-                        liquidity721.swapFee,
-                        protocolFeePercentage
-                    ));
+                    .tokenAmount += SafeCast.toUint128(
+                    liquidity721.swapFee -
+                        PercentageMath.percentMul(
+                            liquidity721.swapFee,
+                            protocolFeePercentage
+                        )
+                );
+                buyPrice += liquidity721.swapFee;
                 totalProtocolFee += PercentageMath.percentMul(
                     liquidity721.swapFee,
                     protocolFeePercentage
@@ -837,6 +839,7 @@ contract Vault is
 
     function _receiveToken(address token, uint256 amount) internal {
         if (token == address(0)) {
+            // In the case the user sends more ETH than needed, send it back
             if (msg.value > amount) {
                 (bool sent, ) = msg.sender.call{value: msg.value - amount}("");
                 if (!sent) {

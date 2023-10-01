@@ -123,6 +123,8 @@ describe("Vault", function () {
     );
     await addLiquidityTx.wait();
 
+    console.log("swapping");
+
     const swapTx = await vault.swap(
       owner.address,
       {
@@ -141,7 +143,7 @@ describe("Vault", function () {
       {
         liquidityIds: [],
         fromTokenIds721: [],
-        boughtLp721Indexes: [],
+        bought721Indexes: [],
         toTokenIds721: [],
         toTokenIds721Indexes: [],
       },
@@ -151,6 +153,8 @@ describe("Vault", function () {
       }
     );
     await swapTx.wait();
+
+    console.log("swapped");
 
     expect(await testERC721.ownerOf(0)).to.equal(owner.address);
   });
@@ -201,7 +205,7 @@ describe("Vault", function () {
       {
         liquidityIds: [],
         fromTokenIds721: [],
-        boughtLp721Indexes: [],
+        bought721Indexes: [],
         toTokenIds721: [],
         toTokenIds721Indexes: [],
       },
@@ -263,7 +267,7 @@ describe("Vault", function () {
       {
         liquidityIds: [],
         fromTokenIds721: [],
-        boughtLp721Indexes: [],
+        bought721Indexes: [],
         toTokenIds721: [],
         toTokenIds721Indexes: [],
       },
@@ -323,7 +327,7 @@ describe("Vault", function () {
       {
         liquidityIds: [],
         fromTokenIds721: [],
-        boughtLp721Indexes: [],
+        bought721Indexes: [],
         toTokenIds721: [],
         toTokenIds721Indexes: [],
       },
@@ -354,12 +358,21 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addSwapLiquidity(
+    const addLiquidityTx = await vault.addLiquidity721(
       owner.address,
+      0,
       testERC721.address,
       [0],
       ethers.constants.AddressZero,
-      ethers.utils.parseEther("0.01")
+      ethers.utils.parseEther("1"),
+      ethers.utils.parseEther("0.1"),
+      exponentialCurve.address,
+      100,
+      1000,
+      ethers.utils.parseEther("0.011"),
+      {
+        value: ethers.utils.parseEther("1"),
+      }
     );
     await addLiquidityTx.wait();
 
@@ -381,7 +394,7 @@ describe("Vault", function () {
       {
         liquidityIds: [0],
         fromTokenIds721: [1],
-        boughtLp721Indexes: [],
+        bought721Indexes: [],
         toTokenIds721: [0],
         toTokenIds721Indexes: [0],
       },
@@ -427,14 +440,23 @@ describe("Vault", function () {
     await addLiquidityTx.wait();
 
     // Add swap liquidity to the vault
-    const addSwapLiquidityTx = await vault.addSwapLiquidity(
+    const addLiquidityTx2 = await vault.addLiquidity721(
       owner.address,
+      0,
       testERC721.address,
       [1],
       ethers.constants.AddressZero,
-      ethers.utils.parseEther("0.01")
+      ethers.utils.parseEther("1"),
+      ethers.utils.parseEther("0.01"),
+      exponentialCurve.address,
+      100,
+      1000,
+      ethers.utils.parseEther("0.11"),
+      {
+        value: ethers.utils.parseEther("1"),
+      }
     );
-    await addSwapLiquidityTx.wait();
+    await addLiquidityTx2.wait();
 
     const swapTx = await vault.swap(
       owner.address,
@@ -454,13 +476,13 @@ describe("Vault", function () {
       {
         liquidityIds: [1],
         fromTokenIds721: [],
-        boughtLp721Indexes: [0],
+        bought721Indexes: [0],
         toTokenIds721: [1],
         toTokenIds721Indexes: [0],
       },
       ethers.constants.AddressZero,
       {
-        value: ethers.utils.parseEther("0.121"),
+        value: ethers.utils.parseEther("0.22"),
       }
     );
     await swapTx.wait();
@@ -536,7 +558,7 @@ describe("Vault", function () {
       {
         liquidityIds: [],
         fromTokenIds721: [],
-        boughtLp721Indexes: [],
+        bought721Indexes: [],
         toTokenIds721: [],
         toTokenIds721Indexes: [],
       },
@@ -585,12 +607,21 @@ describe("Vault", function () {
 
     // Add a second liquidity pair to the vault
     console.log("Adding liquidity", testERC721.address);
-    const addLiquidityTx2 = await vault.addSwapLiquidity(
+    const addLiquidityTx2 = await vault.addLiquidity721(
       owner.address,
+      0,
       testERC721.address,
       [0],
       ethers.constants.AddressZero,
-      ethers.utils.parseEther("0.01")
+      ethers.utils.parseEther("1"),
+      ethers.utils.parseEther("0.01"),
+      exponentialCurve.address,
+      100,
+      1000,
+      ethers.utils.parseEther("0.15"),
+      {
+        value: ethers.utils.parseEther("1"),
+      }
     );
     await addLiquidityTx2.wait();
 
@@ -612,13 +643,13 @@ describe("Vault", function () {
       {
         liquidityIds: [1],
         fromTokenIds721: [2],
-        boughtLp721Indexes: [],
+        bought721Indexes: [],
         toTokenIds721: [0],
         toTokenIds721Indexes: [0],
       },
       ethers.constants.AddressZero,
       {
-        value: ethers.utils.parseEther("0.15"),
+        value: ethers.utils.parseEther("0.1"),
       }
     );
     await swapTx.wait();
@@ -663,26 +694,6 @@ describe("Vault", function () {
     );
     await addLiquidityTx.wait();
 
-    console.log(
-      "Add second liquidity pair gas",
-      await vault.estimateGas.addLiquidity721(
-        owner.address,
-        0,
-        testERC721.address,
-        [0],
-        ethers.constants.AddressZero,
-        ethers.utils.parseEther("1"),
-        ethers.utils.parseEther("0.1"),
-        exponentialCurve.address,
-        100,
-        1000,
-        0,
-        {
-          value: ethers.utils.parseEther("1"),
-        }
-      )
-    );
-
     const addLiquidity2Tx = await vault.addLiquidity721(
       owner.address,
       0,
@@ -702,12 +713,21 @@ describe("Vault", function () {
     await addLiquidity2Tx.wait();
 
     // Add a second liquidity pair to the vault
-    const addLiquidityTx3 = await vault.addSwapLiquidity(
+    const addLiquidityTx3 = await vault.addLiquidity721(
       owner.address,
+      0,
       testERC721.address,
       [1],
       ethers.constants.AddressZero,
-      ethers.utils.parseEther("0.01")
+      ethers.utils.parseEther("1"),
+      ethers.utils.parseEther("0.01"),
+      exponentialCurve.address,
+      100,
+      1000,
+      ethers.utils.parseEther("0.15"),
+      {
+        value: ethers.utils.parseEther("1"),
+      }
     );
     await addLiquidityTx3.wait();
 
@@ -729,13 +749,13 @@ describe("Vault", function () {
       {
         liquidityIds: [2],
         fromTokenIds721: [3],
-        boughtLp721Indexes: [],
+        bought721Indexes: [],
         toTokenIds721: [1],
         toTokenIds721Indexes: [0],
       },
       ethers.constants.AddressZero,
       {
-        value: ethers.utils.parseEther("0.15"),
+        value: ethers.utils.parseEther("0.3"),
       }
     );
     await swapTx.wait();
