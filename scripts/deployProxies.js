@@ -83,29 +83,22 @@ async function main() {
   ******************************************************************/
 
   // Deploy liquidity position metadata contracts
-  const LiquidityPair721Metadata = await ethers.getContractFactory(
-    "LiquidityPair721Metadata"
+  const Liquidity721Metadata = await ethers.getContractFactory(
+    "Liquidity721Metadata"
   );
-  liquidityPair721Metadata = await LiquidityPair721Metadata.deploy(
+  liquidity721Metadata = await Liquidity721Metadata.deploy(
     addressProvider.address
   );
-  await liquidityPair721Metadata.deployed();
-  addresses["LiquidityPair721Metadata"] = liquidityPair721Metadata.address;
-  const LiquidityPair1155Metadata = await ethers.getContractFactory(
-    "LiquidityPair1155Metadata"
+  await liquidity721Metadata.deployed();
+  addresses["Liquidity721Metadata"] = liquidity721Metadata.address;
+  const Liquidity1155Metadata = await ethers.getContractFactory(
+    "Liquidity1155Metadata"
   );
-  liquidityPair1155Metadata = await LiquidityPair1155Metadata.deploy(
+  liquidity1155Metadata = await Liquidity1155Metadata.deploy(
     addressProvider.address
   );
-  await liquidityPair1155Metadata.deployed();
-  addresses["LiquidityPair1155Metadata"] = liquidityPair1155Metadata.address;
-  const SwapLiquidityMetadata = await ethers.getContractFactory(
-    "SwapLiquidityMetadata"
-  );
-  swapLiquidityMetadata = await SwapLiquidityMetadata.deploy(
-    addressProvider.address
-  );
-  addresses["SwapLiquidityMetadata"] = swapLiquidityMetadata.address;
+  await liquidity1155Metadata.deployed();
+  addresses["Liquidity1155Metadata"] = liquidity1155Metadata.address;
 
   const ExponentialCurve = await ethers.getContractFactory(
     "ExponentialPriceCurve"
@@ -185,21 +178,15 @@ async function main() {
 
   console.log("Setting up protocol");
 
-  const setLiquidityPair721MetadataTx =
-    await addressProvider.setLiquidityPair721Metadata(
-      liquidityPair721Metadata.address
+  const setLiquidity721MetadataTx =
+    await addressProvider.setLiquidity721Metadata(liquidity721Metadata.address);
+  await setLiquidity721MetadataTx.wait();
+  const setLiquidity1155MetadataTx =
+    await addressProvider.setLiquidity1155Metadata(
+      liquidity1155Metadata.address
     );
-  await setLiquidityPair721MetadataTx.wait();
-  const setLiquidityPair1155MetadataTx =
-    await addressProvider.setLiquidityPair1155Metadata(
-      liquidityPair1155Metadata.address
-    );
-  await setLiquidityPair1155MetadataTx.wait();
-  const setSwapLiquidityMetadataTx =
-    await addressProvider.setSwapLiquidityMetadata(
-      swapLiquidityMetadata.address
-    );
-  await setSwapLiquidityMetadataTx.wait();
+  await setLiquidity1155MetadataTx.wait();
+
   const setFeeDistributorTx = await addressProvider.setFeeDistributor(
     feeDistributor.address
   );

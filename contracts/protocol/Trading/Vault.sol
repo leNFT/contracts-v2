@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.8.19;
+pragma solidity 0.8.21;
 
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
@@ -49,7 +49,7 @@ contract Vault is
     }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(IAddressProvider addressProvider, IWETH weth) initializer {
+    constructor(IAddressProvider addressProvider, IWETH weth) {
         _addressProvider = addressProvider;
         _weth = weth;
         _disableInitializers();
@@ -111,16 +111,19 @@ contract Vault is
             fee,
             swapFee
         );
-        address erc20Token = token == address(0) ? address(_weth) : token;
-        address liquidityToken = _liquidityTokens[nft][erc20Token];
+        address liquidityToken = _liquidityTokens[nft][
+            token == address(0) ? address(_weth) : token
+        ];
 
         if (liquidityToken == address(0)) {
             liquidityToken = VaultGeneralLogic.initLiquidityToken(
                 DataTypes.TokenStandard.ERC721,
                 nft,
-                erc20Token
+                token == address(0) ? address(_weth) : token
             );
-            _liquidityTokens[nft][erc20Token] = liquidityToken;
+            _liquidityTokens[nft][
+                token == address(0) ? address(_weth) : token
+            ] = liquidityToken;
         }
 
         // Send user token to the vault
@@ -132,7 +135,7 @@ contract Vault is
         _liquidity721[liquidityCount] = DataTypes.Liquidity721({
             liquidityType: liquidityType,
             nftIds: nftIds,
-            token: erc20Token,
+            token: token == address(0) ? address(_weth) : token,
             nft: nft,
             tokenAmount: SafeCast.toUint128(tokenAmount),
             spotPrice: SafeCast.toUint128(spotPrice),

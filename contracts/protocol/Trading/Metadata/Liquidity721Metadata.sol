@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.21;
 
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
@@ -14,15 +14,15 @@ import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
 import {IVault} from "../../../interfaces/IVault.sol";
 import {ILiquidityMetadata} from "../../../interfaces/ILiquidityMetadata.sol";
 
-/// @title LiquidityPair Metadata
-/// @author leNFT (thanks to out.eth (@outdoteth))
+/// @title Liquidity Metadata
+/// @author leNFT. Based on out.eth (@outdoteth) work.
 /// @notice This contract is used to generate a liquidity pair's metadata.
 /// @dev Fills the metadata with dynamic data from the liquidity pair.
-contract SwapLiquidityMetadata is ILiquidityMetadata {
+contract Liquidity721Metadata is ILiquidityMetadata {
     IAddressProvider private immutable _addressProvider;
 
-    modifier slExists(uint256 liquidityId) {
-        _requireSlExists(liquidityId);
+    modifier liquidityExists(uint256 liquidityId) {
+        _requireLiquidityExists(liquidityId);
         _;
     }
 
@@ -31,22 +31,29 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
     }
 
     /// @notice Returns the metadata for a liquidity pair
-    /// @param liquidityId The liquidity pair's token ID.
+    /// @param liquidityId The address of the trading pool of the liquidity pair.
     /// @return The encoded metadata for the liquidity pair.
     function tokenURI(
         uint256 liquidityId
-    ) public view override slExists(liquidityId) returns (string memory) {
+    )
+        public
+        view
+        override
+        liquidityExists(liquidityId)
+        returns (string memory)
+    {
         bytes memory metadata;
-        DataTypes.SwapLiquidity memory sl = IVault(_addressProvider.getVault())
-            .getSL(liquidityId);
+        DataTypes.Liquidity721 memory liquidity = IVault(
+            _addressProvider.getVault()
+        ).getLiquidity721(liquidityId);
 
         {
             // scope to avoid stack too deep errors
             metadata = abi.encodePacked(
                 "{",
                 '"name": "Liquidity Pair ',
-                IERC721Metadata(sl.nft).symbol(),
-                IERC20Metadata(sl.token).symbol(),
+                IERC721Metadata(liquidity.nft).symbol(),
+                IERC20Metadata(liquidity.token).symbol(),
                 " #",
                 Strings.toString(liquidityId),
                 '",'
@@ -78,26 +85,38 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
     }
 
     /// @notice Returns the attributes for a liquidity pair encoded as json.
-    /// @param liquidityId The liquidity pair's token ID.
+    /// @param liquidityId The address of the trading pool of the liquidity pair.
     /// @return The encoded attributes for the liquidity pair.
     function attributes(
         uint256 liquidityId
-    ) public view slExists(liquidityId) returns (string memory) {
-        DataTypes.SwapLiquidity memory sl = IVault(_addressProvider.getVault())
-            .getSL(liquidityId);
-        address swapPool = IVault(_addressProvider.getVault())
-            .getLiquidityToken(liquidityId);
-
+    ) public view liquidityExists(liquidityId) returns (string memory) {
+        DataTypes.Liquidity721 memory liquidity = IVault(
+            _addressProvider.getVault()
+        ).getLiquidity721(liquidityId);
         bytes memory _attributes;
 
         {
             // scope to avoid stack too deep errors
             _attributes = abi.encodePacked(
-                trait("Pool address", Strings.toHexString(swapPool)),
+                _trait(
+                    "Pool address",
+                    Strings.toHexString(
+                        IVault(_addressProvider.getVault()).getLiquidityToken(
+                            liquidityId
+                        )
+                    )
+                ),
                 ",",
-                trait("Token", Strings.toHexString(sl.token)),
+                _trait("Token", Strings.toHexString(liquidity.token)),
                 ",",
-                trait("NFT", Strings.toHexString(sl.nft)),
+                _trait("NFT", Strings.toHexString(liquidity.nft)),
+                ",",
+                _trait("Price", Strings.toString(liquidity.spotPrice)),
+                ",",
+                _trait(
+                    "Token balance",
+                    Strings.toString(liquidity.tokenAmount)
+                ),
                 ","
             );
         }
@@ -105,9 +124,21 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
         {
             _attributes = abi.encodePacked(
                 _attributes,
-                trait("NFT balance", Strings.toString(sl.nftIds.length)),
+                _trait(
+                    "NFT balance",
+                    Strings.toString(liquidity.nftIds.length)
+                ),
                 ",",
-                trait("Fee", Strings.toString(sl.fee))
+                _trait("Curve", Strings.toHexString(liquidity.curve)),
+                ",",
+                _trait("Delta", Strings.toString(liquidity.delta)),
+                ",",
+                _trait("Fee", Strings.toString(liquidity.fee)),
+                ",",
+                _trait(
+                    "Type",
+                    Strings.toString(uint256(liquidity.liquidityType))
+                )
             );
         }
 
@@ -115,15 +146,16 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
     }
 
     /// @notice Returns an svg image for a liquidity pair.
-    /// @param liquidityId The liquidity pair's token ID.
+    /// @param liquidityId The address of the trading pool of the liquidity pair.
     /// @return _svg The svg image for the liquidity pair.
     function svg(
         uint256 liquidityId
-    ) public view slExists(liquidityId) returns (bytes memory _svg) {
-        DataTypes.SwapLiquidity memory sl = IVault(_addressProvider.getVault())
-            .getSL(liquidityId);
-        IERC721Metadata nft = IERC721Metadata(sl.nft);
-        IERC20Metadata token = IERC20Metadata(sl.token);
+    ) public view liquidityExists(liquidityId) returns (bytes memory _svg) {
+        DataTypes.Liquidity721 memory liquidity = IVault(
+            _addressProvider.getVault()
+        ).getLiquidity721(liquidityId);
+        IERC721Metadata nft = IERC721Metadata(liquidity.nft);
+        IERC20Metadata token = IERC20Metadata(liquidity.token);
 
         // break up svg building into multiple scopes to avoid stack too deep errors
         {
@@ -145,10 +177,8 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
                 _svg,
                 "Trading pool: ",
                 Strings.toHexString(
-                    address(
-                        IVault(_addressProvider.getVault()).getLiquidityToken(
-                            liquidityId
-                        )
+                    IVault(_addressProvider.getVault()).getLiquidityToken(
+                        liquidityId
                     )
                 ),
                 "</text>",
@@ -166,13 +196,17 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
         {
             _svg = abi.encodePacked(
                 _svg,
+                '<text x="24px" y="126px" font-size="8">',
+                "Price: ",
+                Strings.toString(liquidity.spotPrice),
+                "</text>",
                 '<text x="24px" y="144px" font-size="8">',
                 "NFT Balance: ",
-                Strings.toString(sl.nftIds.length),
+                Strings.toString(liquidity.nftIds.length),
                 "</text>",
                 '<text x="24px" y="162px" font-size="8">',
                 "Token Balance: ",
-                Strings.toString(sl.tokenAmount),
+                Strings.toString(liquidity.tokenAmount),
                 "</text>"
             );
         }
@@ -182,7 +216,15 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
                 _svg,
                 '<text x="24px" y="180px" font-size="8">',
                 "Fee: ",
-                Strings.toString(sl.fee),
+                Strings.toString(liquidity.fee),
+                "</text>",
+                '<text x="24px" y="198px" font-size="8">',
+                "Curve: ",
+                Strings.toHexString(liquidity.curve),
+                "</text>",
+                '<text x="24px" y="216px" font-size="8">',
+                "Delta: ",
+                Strings.toString(liquidity.delta),
                 "</text>",
                 "</svg>"
             );
@@ -193,7 +235,7 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
     /// @param traitType The trait type.
     /// @param value The trait value.
     /// @return The encoded trait.
-    function trait(
+    function _trait(
         string memory traitType,
         string memory value
     ) internal pure returns (string memory) {
@@ -210,14 +252,14 @@ contract SwapLiquidityMetadata is ILiquidityMetadata {
             );
     }
 
-    function _requireSlExists(uint256 liquidityId) internal view {
+    function _requireLiquidityExists(uint256 liquidityId) internal view {
         require(
             IERC721(
                 IVault(_addressProvider.getVault()).getLiquidityToken(
                     liquidityId
                 )
             ).ownerOf(liquidityId) != address(0),
-            "SL_DOES_NOT_EXIST"
+            "LIQUIDITY_DOES_NOT_EXIST"
         );
     }
 }

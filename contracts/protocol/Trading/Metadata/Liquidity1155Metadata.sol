@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.21;
 
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
@@ -12,15 +12,15 @@ import {DataTypes} from "../../../libraries/types/DataTypes.sol";
 import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
 import {IVault} from "../../../interfaces/IVault.sol";
 
-/// @title LiquidityPair Metadata
+/// @title Liquidity Metadata
 /// @author leNFT. Based on out.eth (@outdoteth) work.
 /// @notice This contract is used to generate a liquidity pair's metadata.
 /// @dev Fills the metadata with dynamic data from the liquidity pair.
-contract LiquidityPair1155Metadata {
+contract Liquidity1155Metadata {
     IAddressProvider private immutable _addressProvider;
 
-    modifier lpExists(uint256 liquidityId) {
-        _requireLpExists(liquidityId);
+    modifier liquidityExists(uint256 liquidityId) {
+        _requireLiquidityExists(liquidityId);
         _;
     }
 
@@ -33,15 +33,15 @@ contract LiquidityPair1155Metadata {
     /// @return The encoded metadata for the liquidity pair.
     function tokenURI(
         uint256 liquidityId
-    ) public view lpExists(liquidityId) returns (string memory) {
+    ) public view liquidityExists(liquidityId) returns (string memory) {
         bytes memory metadata;
         string memory nftSymbol;
-        DataTypes.LiquidityPair1155 memory lp = IVault(
+        DataTypes.Liquidity1155 memory liquidity = IVault(
             _addressProvider.getVault()
-        ).getLP1155(liquidityId);
+        ).getLiquidity1155(liquidityId);
 
         // Make an external call to get the ERC1155 token's symbol
-        (bool success, bytes memory data) = lp.nft.staticcall(
+        (bool success, bytes memory data) = liquidity.nft.staticcall(
             abi.encodeWithSignature("symbol()")
         );
         if (!success) {
@@ -57,7 +57,7 @@ contract LiquidityPair1155Metadata {
                 "{",
                 '"name": "Liquidity Pair ',
                 nftSymbol,
-                IERC20Metadata(lp.token).symbol(),
+                IERC20Metadata(liquidity.token).symbol(),
                 " #",
                 Strings.toString(liquidityId),
                 '",'
@@ -93,10 +93,10 @@ contract LiquidityPair1155Metadata {
     /// @return The encoded attributes for the liquidity pair.
     function attributes(
         uint256 liquidityId
-    ) public view lpExists(liquidityId) returns (string memory) {
-        DataTypes.LiquidityPair1155 memory lp = IVault(
+    ) public view liquidityExists(liquidityId) returns (string memory) {
+        DataTypes.Liquidity1155 memory liquidity = IVault(
             _addressProvider.getVault()
-        ).getLP1155(liquidityId);
+        ).getLiquidity1155(liquidityId);
 
         bytes memory _attributes;
 
@@ -112,13 +112,13 @@ contract LiquidityPair1155Metadata {
                     )
                 ),
                 ",",
-                trait("Token", Strings.toHexString(lp.token)),
+                trait("Token", Strings.toHexString(liquidity.token)),
                 ",",
-                trait("NFT", Strings.toHexString(lp.nft)),
+                trait("NFT", Strings.toHexString(liquidity.nft)),
                 ",",
-                trait("Price", Strings.toString(lp.spotPrice)),
+                trait("Price", Strings.toString(liquidity.spotPrice)),
                 ",",
-                trait("Token balance", Strings.toString(lp.tokenAmount)),
+                trait("Token balance", Strings.toString(liquidity.tokenAmount)),
                 ","
             );
         }
@@ -126,15 +126,18 @@ contract LiquidityPair1155Metadata {
         {
             _attributes = abi.encodePacked(
                 _attributes,
-                trait("NFT balance", Strings.toString(lp.nftAmount)),
+                trait("NFT balance", Strings.toString(liquidity.nftAmount)),
                 ",",
-                trait("Curve", Strings.toHexString(lp.curve)),
+                trait("Curve", Strings.toHexString(liquidity.curve)),
                 ",",
-                trait("Delta", Strings.toString(lp.delta)),
+                trait("Delta", Strings.toString(liquidity.delta)),
                 ",",
-                trait("Fee", Strings.toString(lp.fee)),
+                trait("Fee", Strings.toString(liquidity.fee)),
                 ",",
-                trait("Type", Strings.toString(uint256(lp.liquidityType)))
+                trait(
+                    "Type",
+                    Strings.toString(uint256(liquidity.liquidityType))
+                )
             );
         }
 
@@ -146,17 +149,17 @@ contract LiquidityPair1155Metadata {
     /// @return _svg The svg image for the liquidity pair.
     function svg(
         uint256 liquidityId
-    ) public view lpExists(liquidityId) returns (bytes memory _svg) {
-        DataTypes.LiquidityPair1155 memory lp = IVault(
+    ) public view liquidityExists(liquidityId) returns (bytes memory _svg) {
+        DataTypes.Liquidity1155 memory liquidity = IVault(
             _addressProvider.getVault()
-        ).getLP1155(liquidityId);
+        ).getLiquidity1155(liquidityId);
         string memory nftSymbol;
         string memory nftName;
 
         // TRy and get the nft symbol
-        (bool symbolSuccess, bytes memory symbolData) = lp.nft.staticcall(
-            abi.encodeWithSignature("symbol()")
-        );
+        (bool symbolSuccess, bytes memory symbolData) = liquidity
+            .nft
+            .staticcall(abi.encodeWithSignature("symbol()"));
         if (!symbolSuccess) {
             nftSymbol = "N/A";
         } else {
@@ -165,7 +168,7 @@ contract LiquidityPair1155Metadata {
         }
 
         // Try to get the NFT name
-        (bool nameSuccess, bytes memory nameData) = lp.nft.staticcall(
+        (bool nameSuccess, bytes memory nameData) = liquidity.nft.staticcall(
             abi.encodeWithSignature("name()")
         );
         if (!nameSuccess) {
@@ -175,7 +178,7 @@ contract LiquidityPair1155Metadata {
             nftName = abi.decode(nameData, (string));
         }
 
-        IERC20Metadata token = IERC20Metadata(lp.token);
+        IERC20Metadata token = IERC20Metadata(liquidity.token);
 
         // break up svg building into multiple scopes to avoid stack too deep errors
         {
@@ -220,15 +223,15 @@ contract LiquidityPair1155Metadata {
                 _svg,
                 '<text x="24px" y="126px" font-size="8">',
                 "Price: ",
-                Strings.toString(lp.spotPrice),
+                Strings.toString(liquidity.spotPrice),
                 "</text>",
                 '<text x="24px" y="144px" font-size="8">',
                 "NFT Balance: ",
-                Strings.toString(lp.nftAmount),
+                Strings.toString(liquidity.nftAmount),
                 "</text>",
                 '<text x="24px" y="162px" font-size="8">',
                 "Token Balance: ",
-                Strings.toString(lp.tokenAmount),
+                Strings.toString(liquidity.tokenAmount),
                 "</text>"
             );
         }
@@ -238,15 +241,15 @@ contract LiquidityPair1155Metadata {
                 _svg,
                 '<text x="24px" y="180px" font-size="8">',
                 "Fee: ",
-                Strings.toString(lp.fee),
+                Strings.toString(liquidity.fee),
                 "</text>",
                 '<text x="24px" y="198px" font-size="8">',
                 "Curve: ",
-                Strings.toHexString(lp.curve),
+                Strings.toHexString(liquidity.curve),
                 "</text>",
                 '<text x="24px" y="216px" font-size="8">',
                 "Delta: ",
-                Strings.toString(lp.delta),
+                Strings.toString(liquidity.delta),
                 "</text>",
                 "</svg>"
             );
@@ -274,14 +277,14 @@ contract LiquidityPair1155Metadata {
             );
     }
 
-    function _requireLpExists(uint256 liquidityId) internal view {
+    function _requireLiquidityExists(uint256 liquidityId) internal view {
         require(
             IERC721(
                 IVault(_addressProvider.getVault()).getLiquidityToken(
                     liquidityId
                 )
             ).ownerOf(liquidityId) != address(0),
-            "LP_DOES_NOT_EXIST"
+            "LIQUIDITY_DOES_NOT_EXIST"
         );
     }
 }

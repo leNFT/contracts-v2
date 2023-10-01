@@ -67,12 +67,16 @@ let loadEnv = async function (isMainnetFork) {
       VaultGeneralLogic: vaultGeneralLogicLib.address,
     },
   });
+  console.log("Deploying vault");
+  console.log("addressProvider.address", addressProvider.address);
+  console.log("wethAddress", wethAddress);
   vault = await upgrades.deployProxy(Vault, [addressProvider.address], {
     unsafeAllow: ["external-library-linking", "state-variable-immutable"],
     timeout: 0,
-    constructorArgs: [addressProvider.address],
+    constructorArgs: [addressProvider.address, wethAddress],
   });
 
+  console.log("Deployed vault");
   // Deploy and initialize Fee distributor
   const FeeDistributor = await ethers.getContractFactory("FeeDistributor");
   feeDistributor = await upgrades.deployProxy(FeeDistributor, [], {
@@ -90,36 +94,34 @@ let loadEnv = async function (isMainnetFork) {
   ******************************************************************/
 
   // Deploy liquidity position metadata contracts
-  const LiquidityPair721Metadata = await ethers.getContractFactory(
-    "LiquidityPair721Metadata"
+  const Liquidity721Metadata = await ethers.getContractFactory(
+    "Liquidity721Metadata"
   );
-  liquidityPair721Metadata = await LiquidityPair721Metadata.deploy(
+  liquidity721Metadata = await Liquidity721Metadata.deploy(
     addressProvider.address
   );
-  await liquidityPair721Metadata.deployed();
-  const LiquidityPair1155Metadata = await ethers.getContractFactory(
-    "LiquidityPair1155Metadata"
+  await liquidity721Metadata.deployed();
+  const Liquidity1155Metadata = await ethers.getContractFactory(
+    "Liquidity1155Metadata"
   );
-  liquidityPair1155Metadata = await LiquidityPair1155Metadata.deploy(
+  liquidity1155Metadata = await Liquidity1155Metadata.deploy(
     addressProvider.address
   );
-  await liquidityPair1155Metadata.deployed();
-  const SwapLiquidityMetadata = await ethers.getContractFactory(
-    "SwapLiquidityMetadata"
-  );
-  swapLiquidityMetadata = await SwapLiquidityMetadata.deploy(
-    addressProvider.address
-  );
+  await liquidity1155Metadata.deployed();
+
+  console.log("Deployed LiquidityMetadata");
 
   // Deploy Test NFT contracts
   const TestERC721 = await ethers.getContractFactory("TestERC721");
-  testERC721 = await TestERC721.deploy("Test 721", "T721");
+  testERC721 = await TestERC721.deploy("Test 721", "T721", "");
   await testERC721.deployed();
   const TestERC721_2 = await ethers.getContractFactory("TestERC721");
-  testERC721_2 = await TestERC721_2.deploy("Test 721 2", "TNFT721_2");
+  testERC721_2 = await TestERC721_2.deploy("Test 721 2", "TNFT721_2", "");
   await testERC721_2.deployed();
   const TestERC1155 = await ethers.getContractFactory("TestERC1155");
-  testERC1155 = await TestERC1155.deploy("Test 1155", "T1155");
+  testERC1155 = await TestERC1155.deploy("Test 1155", "T1155", "");
+
+  console.log("Deployed Test NFTs");
 
   // Deploy price curves contracts
   const ExponentialCurve = await ethers.getContractFactory(
@@ -133,21 +135,15 @@ let loadEnv = async function (isMainnetFork) {
 
   console.log("Deployed Non-Proxies");
 
-  const setLiquidityPair721MetadataTx =
-    await addressProvider.setLiquidityPair721Metadata(
-      liquidityPair721Metadata.address
+  const setLiquidity721MetadataTx =
+    await addressProvider.setLiquidity721Metadata(liquidity721Metadata.address);
+  await setLiquidity721MetadataTx.wait();
+  const setLiquidity1155MetadataTx =
+    await addressProvider.setLiquidity1155Metadata(
+      liquidity1155Metadata.address
     );
-  await setLiquidityPair721MetadataTx.wait();
-  const setLiquidityPair1155MetadataTx =
-    await addressProvider.setLiquidityPair1155Metadata(
-      liquidityPair1155Metadata.address
-    );
-  await setLiquidityPair1155MetadataTx.wait();
-  const setSwapLiquidityMetadataTx =
-    await addressProvider.setSwapLiquidityMetadata(
-      swapLiquidityMetadata.address
-    );
-  await setSwapLiquidityMetadataTx.wait();
+  await setLiquidity1155MetadataTx.wait();
+
   const setFeeDistributorTx = await addressProvider.setFeeDistributor(
     feeDistributor.address
   );

@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity 0.8.19;
+pragma solidity 0.8.21;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
@@ -9,9 +9,8 @@ import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 /// @notice This contract is responsible for storing and providing all the protocol contract addresses
 // solhint-disable-next-line max-states-count
 contract AddressProvider is OwnableUpgradeable, IAddressProvider {
-    address private _liquidityPair721Metadata;
-    address private _liquidityPair1155Metadata;
-    address private _swapLiquidityMetadata;
+    address private _liquidity721Metadata;
+    address private _liquidity1155Metadata;
     address private _votingEscrow;
     address private _vault;
     address private _feeDistributor;
@@ -33,34 +32,24 @@ contract AddressProvider is OwnableUpgradeable, IAddressProvider {
         return _vault;
     }
 
-    function setLiquidityPair721Metadata(
+    function setLiquidity721Metadata(
         address liquidityPair721Metadata
     ) external override {
-        _liquidityPair721Metadata = liquidityPair721Metadata;
+        _liquidity721Metadata = liquidityPair721Metadata;
     }
 
-    function getLiquidityPair721Metadata() external view returns (address) {
-        return _liquidityPair721Metadata;
+    function getLiquidity721Metadata() external view returns (address) {
+        return _liquidity721Metadata;
     }
 
-    function setLiquidityPair1155Metadata(
-        address liquidityPair1155Metadata
+    function setLiquidity1155Metadata(
+        address liquidity1155Metadata
     ) external override {
-        _liquidityPair1155Metadata = liquidityPair1155Metadata;
+        _liquidity1155Metadata = liquidity1155Metadata;
     }
 
-    function getLiquidityPair1155Metadata() external view returns (address) {
-        return _liquidityPair1155Metadata;
-    }
-
-    function setSwapLiquidityMetadata(
-        address swapLiquidityMetadata
-    ) external override {
-        _swapLiquidityMetadata = swapLiquidityMetadata;
-    }
-
-    function getSwapLiquidityMetadata() external view returns (address) {
-        return _swapLiquidityMetadata;
+    function getLiquidity1155Metadata() external view returns (address) {
+        return _liquidity1155Metadata;
     }
 
     function setVotingEscrow(address votingEscrow) external override onlyOwner {

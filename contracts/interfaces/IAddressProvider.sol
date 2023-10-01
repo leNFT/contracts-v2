@@ -1,22 +1,14 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity 0.8.19;
+pragma solidity 0.8.21;
 
 interface IAddressProvider {
-    function setLiquidityPair721Metadata(
-        address liquidityPairMetadata
-    ) external;
+    function setLiquidity721Metadata(address liquidityMetadata) external;
 
-    function getLiquidityPair721Metadata() external view returns (address);
+    function getLiquidity721Metadata() external view returns (address);
 
-    function setLiquidityPair1155Metadata(
-        address liquidityPairMetadata
-    ) external;
+    function setLiquidity1155Metadata(address liquidityMetadata) external;
 
-    function getLiquidityPair1155Metadata() external view returns (address);
-
-    function setSwapLiquidityMetadata(address swapLiquidityMetadata) external;
-
-    function getSwapLiquidityMetadata() external view returns (address);
+    function getLiquidity1155Metadata() external view returns (address);
 
     function setVault(address vault) external;
 

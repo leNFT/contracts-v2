@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity 0.8.19;
+pragma solidity 0.8.21;
 
 import {IPricingCurve} from "../../../interfaces/IPricingCurve.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
