@@ -31,7 +31,7 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addLiquidityPair721(
+    const addLiquidityTx = await vault.addLiquidity721(
       owner.address,
       0,
       testERC721.address,
@@ -42,16 +42,17 @@ describe("Vault", function () {
       exponentialCurve.address,
       100,
       1000,
+      0,
       {
         value: ethers.utils.parseEther("1"),
       }
     );
     await addLiquidityTx.wait();
 
-    const lp = await vault.getLP721(0);
-    console.log("lp", lp);
+    const liquidity = await vault.getLiquidity721(0);
+    console.log("liquidity", liquidity);
 
-    expect(lp.spotPrice.toString()).to.equal(
+    expect(liquidity.spotPrice.toString()).to.equal(
       ethers.utils.parseEther("0.1").toString()
     );
   });
@@ -66,7 +67,7 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addLiquidityPair1155(
+    const addLiquidityTx = await vault.addLiquidity1155(
       owner.address,
       0,
       testERC1155.address,
@@ -84,43 +85,14 @@ describe("Vault", function () {
     );
     await addLiquidityTx.wait();
 
-    const lp = await vault.getLP1155(0);
+    const lp = await vault.getLiquidity1155(0);
     console.log("lp", lp);
 
     expect(lp.spotPrice.toString()).to.equal(
       ethers.utils.parseEther("0.1").toString()
     );
   });
-  it("Should be able to add swap liquidity to the vault pool", async function () {
-    // Mint a test NFT
-    const mintTestNFTTx = await testERC721.mint(owner.address);
-    await mintTestNFTTx.wait();
-    const approveNFTTx = await testERC721.setApprovalForAll(
-      vault.address,
-      true
-    );
-    await approveNFTTx.wait();
 
-    // Add liquidity to the vault
-    const addLiquidityTx = await vault.addSwapLiquidity(
-      owner.address,
-      testERC721.address,
-      [0],
-      ethers.constants.AddressZero,
-      ethers.utils.parseEther("0.01"),
-      {
-        value: ethers.utils.parseEther("1"),
-      }
-    );
-    await addLiquidityTx.wait();
-
-    const sl = await vault.getSL(0);
-    console.log("sl", sl);
-
-    expect(sl.fee.toString()).to.equal(
-      ethers.utils.parseEther("0.01").toString()
-    );
-  });
   it("Should be able to buy an erc721 asset", async function () {
     // Mint a test NFT
     const mintTestNFTTx = await testERC721.mint(owner.address);
@@ -133,7 +105,7 @@ describe("Vault", function () {
 
     // Add liquidity to the vault
     console.log("Adding liquidity", testERC721.address);
-    const addLiquidityTx = await vault.addLiquidityPair721(
+    const addLiquidityTx = await vault.addLiquidity721(
       owner.address,
       0,
       testERC721.address,
@@ -144,42 +116,12 @@ describe("Vault", function () {
       exponentialCurve.address,
       100,
       1000,
+      0,
       {
         value: ethers.utils.parseEther("1"),
       }
     );
     await addLiquidityTx.wait();
-
-    console.log(
-      "buy swap gas",
-      await vault.estimateGas.swap(
-        owner.address,
-        {
-          liquidityIds: [],
-          tokenIds721: [],
-          tokenAmounts1155: [],
-          minimumPrice: ethers.utils.parseEther("0"),
-        },
-        {
-          liquidityIds: [0],
-          lp721Indexes: [0],
-          lp721TokenIds: [0],
-          lp1155Amounts: [],
-          maximumPrice: ethers.utils.parseEther("1"),
-        },
-        {
-          liquidityIds: [],
-          fromTokenIds721: [],
-          boughtLp721Indexes: [],
-          toTokenIds721: [],
-          toTokenIds721Indexes: [],
-        },
-        ethers.constants.AddressZero,
-        {
-          value: ethers.utils.parseEther("0.11"),
-        }
-      )
-    );
 
     const swapTx = await vault.swap(
       owner.address,
@@ -223,7 +165,7 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addLiquidityPair1155(
+    const addLiquidityTx = await vault.addLiquidity1155(
       owner.address,
       0,
       testERC1155.address,
@@ -285,7 +227,7 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addLiquidityPair721(
+    const addLiquidityTx = await vault.addLiquidity721(
       owner.address,
       0,
       testERC721.address,
@@ -296,6 +238,7 @@ describe("Vault", function () {
       exponentialCurve.address,
       100,
       1000,
+      0,
       {
         value: ethers.utils.parseEther("1"),
       }
@@ -344,7 +287,7 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addLiquidityPair1155(
+    const addLiquidityTx = await vault.addLiquidity1155(
       owner.address,
       0,
       testERC1155.address,
@@ -465,7 +408,7 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addLiquidityPair721(
+    const addLiquidityTx = await vault.addLiquidity721(
       owner.address,
       0,
       testERC721.address,
@@ -476,6 +419,7 @@ describe("Vault", function () {
       exponentialCurve.address,
       100,
       1000,
+      0,
       {
         value: ethers.utils.parseEther("1"),
       }
@@ -537,7 +481,7 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addLiquidityPair721(
+    const addLiquidityTx = await vault.addLiquidity721(
       owner.address,
       0,
       testERC721.address,
@@ -548,6 +492,7 @@ describe("Vault", function () {
       exponentialCurve.address,
       100,
       1000,
+      0,
       {
         value: ethers.utils.parseEther("1"),
       }
@@ -555,7 +500,7 @@ describe("Vault", function () {
     await addLiquidityTx.wait();
 
     // Add a second liquidity pair to the vault
-    const addLiquidityTx2 = await vault.addLiquidityPair721(
+    const addLiquidityTx2 = await vault.addLiquidity721(
       owner.address,
       0,
       testERC721.address,
@@ -566,6 +511,7 @@ describe("Vault", function () {
       exponentialCurve.address,
       100,
       1000,
+      0,
       {
         value: ethers.utils.parseEther("1"),
       }
@@ -619,7 +565,7 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addLiquidityPair721(
+    const addLiquidityTx = await vault.addLiquidity721(
       owner.address,
       0,
       testERC721.address,
@@ -630,6 +576,7 @@ describe("Vault", function () {
       exponentialCurve.address,
       100,
       1000,
+      0,
       {
         value: ethers.utils.parseEther("1"),
       }
@@ -698,7 +645,7 @@ describe("Vault", function () {
     await approveNFTTx.wait();
 
     // Add liquidity to the vault
-    const addLiquidityTx = await vault.addLiquidityPair721(
+    const addLiquidityTx = await vault.addLiquidity721(
       owner.address,
       0,
       testERC721.address,
@@ -709,6 +656,7 @@ describe("Vault", function () {
       exponentialCurve.address,
       100,
       1000,
+      0,
       {
         value: ethers.utils.parseEther("1"),
       }
@@ -717,7 +665,7 @@ describe("Vault", function () {
 
     console.log(
       "Add second liquidity pair gas",
-      await vault.estimateGas.addLiquidityPair721(
+      await vault.estimateGas.addLiquidity721(
         owner.address,
         0,
         testERC721.address,
@@ -728,13 +676,14 @@ describe("Vault", function () {
         exponentialCurve.address,
         100,
         1000,
+        0,
         {
           value: ethers.utils.parseEther("1"),
         }
       )
     );
 
-    const addLiquidity2Tx = await vault.addLiquidityPair721(
+    const addLiquidity2Tx = await vault.addLiquidity721(
       owner.address,
       0,
       testERC721.address,
@@ -745,6 +694,7 @@ describe("Vault", function () {
       exponentialCurve.address,
       100,
       1000,
+      0,
       {
         value: ethers.utils.parseEther("1"),
       }
