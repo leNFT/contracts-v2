@@ -17,7 +17,7 @@ library VaultGeneralLogic {
         address indexed liquidityToken
     );
 
-    function updateLp721AfterBuy(
+    function updateLiquidity721AfterBuy(
         DataTypes.Liquidity721 memory liquidity,
         DataTypes.Liquidity721 storage liquidityPointer,
         uint256 fee,
@@ -47,25 +47,27 @@ library VaultGeneralLogic {
         liquidityPointer.nftIds.pop();
     }
 
-    function updateLp1155AfterBuy(
+    function updateLiquidity1155AfterBuy(
         DataTypes.Liquidity1155 memory liquidity,
         DataTypes.Liquidity1155 storage liquidityPointer,
-        uint256 fee,
-        uint256 protocolFeePercentage
+        uint256 price,
+        uint256 feeAmount,
+        uint256 protocolFeePercentage,
+        uint256 nftAmount
     ) external {
         liquidityPointer.tokenAmount += SafeCast.toUint128(
-            (liquidity.spotPrice +
-                fee -
-                PercentageMath.percentMul(fee, protocolFeePercentage))
+            (price +
+                feeAmount -
+                PercentageMath.percentMul(feeAmount, protocolFeePercentage))
         );
 
         // Update liquidity pair price
         if (liquidity.liquidityType != DataTypes.LiquidityType.TradeDown) {
             liquidityPointer.spotPrice = SafeCast.toUint128(
-                IPricingCurve(liquidity.curve).priceAfterBuy(
+                IPricingCurve(liquidity.curve).priceAfterMultipleBuys(
+                    nftAmount,
                     liquidity.spotPrice,
-                    liquidity.delta,
-                    liquidity.fee
+                    liquidity.delta
                 )
             );
         }
@@ -74,21 +76,18 @@ library VaultGeneralLogic {
     function updateLiquidity721AfterSell(
         DataTypes.Liquidity721 memory liquidity,
         DataTypes.Liquidity721 storage liquidityPointer,
+        uint256 feeAmount,
         uint256 protocolFeePercentage,
         uint256 tokenId721
     ) external {
-        uint256 fee = PercentageMath.percentMul(
-            liquidity.spotPrice,
-            liquidity.fee
-        );
         // Add nft to liquidity pair nft list
         liquidityPointer.nftIds.push(tokenId721);
 
         // Update token amount in liquidity pair
         liquidityPointer.tokenAmount -= SafeCast.toUint128(
             (liquidity.spotPrice -
-                fee +
-                PercentageMath.percentMul(fee, protocolFeePercentage))
+                feeAmount +
+                PercentageMath.percentMul(feeAmount, protocolFeePercentage))
         );
 
         // Update liquidity pair price
@@ -106,26 +105,25 @@ library VaultGeneralLogic {
     function updateLiquidity1155AfterSell(
         DataTypes.Liquidity1155 memory liquidity,
         DataTypes.Liquidity1155 storage liquidityPointer,
+        uint256 price,
+        uint256 feeAmount,
         uint256 protocolFeePercentage,
-        uint256 tokenAmount1155
+        uint256 nftAmount
     ) external {
-        uint256 fee = PercentageMath.percentMul(
-            liquidity.spotPrice,
-            liquidity.fee
-        );
         // Add token amount to liquidity  token amount
-        liquidityPointer.tokenAmount += SafeCast.toUint128(tokenAmount1155);
+        liquidityPointer.nftAmount += SafeCast.toUint128(nftAmount);
 
         // Update token amount in liquidity
         liquidityPointer.tokenAmount -= SafeCast.toUint128(
-            (liquidity.spotPrice -
-                fee +
-                PercentageMath.percentMul(fee, protocolFeePercentage))
+            (price -
+                feeAmount +
+                PercentageMath.percentMul(feeAmount, protocolFeePercentage))
         );
         // Update liquidity  price
         if (liquidity.liquidityType != DataTypes.LiquidityType.TradeUp) {
             liquidityPointer.spotPrice = SafeCast.toUint128(
-                IPricingCurve(liquidity.curve).priceAfterSell(
+                IPricingCurve(liquidity.curve).priceAfterMultipleSells(
+                    nftAmount,
                     liquidity.spotPrice,
                     liquidity.delta,
                     liquidity.fee

@@ -32,7 +32,7 @@ library VaultValidationLogic {
 
     using ERC165Checker for address;
 
-    function validateAddLiquidityPair(
+    function validateAddLiquidity(
         DataTypes.LiquidityType liquidityType,
         DataTypes.TokenStandard tokenStandard,
         uint256 nftAmount,
@@ -115,7 +115,11 @@ library VaultValidationLogic {
 
         // Validate LP params for chosen curve
         if (liquidityType != DataTypes.LiquidityType.Swap) {
-            IPricingCurve(curve).validateLpParameters(spotPrice, delta, fee);
+            IPricingCurve(curve).validateLiquidityParameters(
+                spotPrice,
+                delta,
+                fee
+            );
         } else if (spotPrice > 0 || delta > 0 || fee > 0) {
             revert InvalidCurveParams();
         }

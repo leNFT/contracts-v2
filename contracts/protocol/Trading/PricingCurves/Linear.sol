@@ -100,23 +100,23 @@ contract LinearPriceCurve is IPricingCurve, ERC165 {
     }
 
     /// @notice Validates the parameters for a liquidity provider deposit
-    /// @param spotPrice The initial spot price of the LP
-    /// @param delta The delta of the LP
-    /// @param fee The fee of the LP
-    function validateLpParameters(
+    /// @param spotPrice The initial spot price of the liquidity
+    /// @param delta The delta of the liquidity
+    /// @param fee The fee of the liquidity
+    function validateLiquidityParameters(
         uint256 spotPrice,
         uint256 delta,
         uint256 fee
     ) external pure override {
-        require(spotPrice > 0, "LPC:VLPP:INVALID_PRICE");
-        require(delta < spotPrice, "LPC:VLPP:INVALID_DELTA");
+        require(spotPrice > 0, "LPC:VLP:INVALID_PRICE");
+        require(delta < spotPrice, "LPC:VLP:INVALID_DELTA");
 
         if (fee > 0 && delta > 0) {
-            // Make sure the LP can't be drained by buying and selling from the same LP
+            // Make sure the liquidity can't be drained by buying and selling from the same liquidity
             require(
                 (spotPrice - delta) * (PercentageMath.PERCENTAGE_FACTOR + fee) >
                     spotPrice * (PercentageMath.PERCENTAGE_FACTOR - fee),
-                "LPC:VLPP:INVALID_FEE_DELTA_RATIO"
+                "LPC:VLP:INVALID_FEE_DELTA_RATIO"
             );
         }
     }

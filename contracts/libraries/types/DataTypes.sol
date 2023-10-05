@@ -99,9 +99,9 @@ library DataTypes {
 
     struct BuyRequest {
         uint256[] liquidityIds;
-        uint256[] lp721Indexes; // Must be decreasing order or same Liquidity
-        uint256[] lp721TokenIds;
-        uint256[] lp1155Amounts;
+        uint256[] liquidity721Indexes; // Must be decreasing order or same Liquidity
+        uint256[] liquidity721TokenIds;
+        uint256[] liquidity1155Amounts;
         uint256 maximumPrice;
     }
 
@@ -111,5 +111,11 @@ library DataTypes {
         uint256[] bought721Indexes;
         uint256[] toTokenIds721;
         uint256[] toTokenIds721Indexes;
+    }
+
+    struct SwapParams {
+        DataTypes.SellRequest sell;
+        DataTypes.BuyRequest buy;
+        DataTypes.SwapRequest swap;
     }
 }

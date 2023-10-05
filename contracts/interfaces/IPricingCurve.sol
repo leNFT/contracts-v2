@@ -39,7 +39,7 @@ interface IPricingCurve {
         uint256 delta
     ) external view returns (uint256);
 
-    function validateLpParameters(
+    function validateLiquidityParameters(
         uint256 spotPrice,
         uint256 delta,
         uint256 fee

@@ -117,42 +117,42 @@ async function main() {
   DEPLOY TEST CONTRACTS
   Deploy contracts that are used or testing
   ******************************************************************/
-  if (chainID != 1) {
-    console.log("Deploying Test Contracts");
-    // Deploy Test NFT contracts
-    const TestERC721 = await ethers.getContractFactory("TestERC721");
-    blueTestERC721 = await TestERC721.deploy(
-      "Blue Test 721",
-      "BT721",
-      "https://upload.wikimedia.org/wikipedia/commons/f/fd/000080_Navy_Blue_Square.svg"
-    );
-    await blueTestERC721.deployed();
-    addresses["Test"]["Blue721"] = blueTestERC721.address;
-    redTestERC721 = await TestERC721.deploy(
-      "Red Test 721",
-      "RT721",
-      "https://upload.wikimedia.org/wikipedia/commons/6/62/Solid_red.svg"
-    );
-    await redTestERC721.deployed();
-    addresses["Test"]["Red721"] = redTestERC721.address;
-    greenTestERC721 = await TestERC721.deploy(
-      "Green Test 721",
-      "GT721",
-      "https://upload.wikimedia.org/wikipedia/commons/2/29/Solid_green.svg"
-    );
-    await greenTestERC721.deployed();
-    addresses["Test"]["Green721"] = greenTestERC721.address;
-    const TestERC1155 = await ethers.getContractFactory("TestERC1155");
-    blueTestERC1155 = await TestERC1155.deploy(
-      "Blue Test 1155",
-      "BT1155",
-      "https://upload.wikimedia.org/wikipedia/commons/f/fd/000080_Navy_Blue_Square.svg"
-    );
-    await blueTestERC1155.deployed();
-    addresses["Test"]["Blue1155"] = blueTestERC1155.address;
+  // if (chainID != 1) {
+  //   console.log("Deploying Test Contracts");
+  //   // Deploy Test NFT contracts
+  //   const TestERC721 = await ethers.getContractFactory("TestERC721");
+  //   blueTestERC721 = await TestERC721.deploy(
+  //     "Blue Test 721",
+  //     "BT721",
+  //     "https://upload.wikimedia.org/wikipedia/commons/f/fd/000080_Navy_Blue_Square.svg"
+  //   );
+  //   await blueTestERC721.deployed();
+  //   addresses["Test"]["Blue721"] = blueTestERC721.address;
+  //   redTestERC721 = await TestERC721.deploy(
+  //     "Red Test 721",
+  //     "RT721",
+  //     "https://upload.wikimedia.org/wikipedia/commons/6/62/Solid_red.svg"
+  //   );
+  //   await redTestERC721.deployed();
+  //   addresses["Test"]["Red721"] = redTestERC721.address;
+  //   greenTestERC721 = await TestERC721.deploy(
+  //     "Green Test 721",
+  //     "GT721",
+  //     "https://upload.wikimedia.org/wikipedia/commons/2/29/Solid_green.svg"
+  //   );
+  //   await greenTestERC721.deployed();
+  //   addresses["Test"]["Green721"] = greenTestERC721.address;
+  //   const TestERC1155 = await ethers.getContractFactory("TestERC1155");
+  //   blueTestERC1155 = await TestERC1155.deploy(
+  //     "Blue Test 1155",
+  //     "BT1155",
+  //     "https://upload.wikimedia.org/wikipedia/commons/f/fd/000080_Navy_Blue_Square.svg"
+  //   );
+  //   await blueTestERC1155.deployed();
+  //   addresses["Test"]["Blue1155"] = blueTestERC1155.address;
 
-    console.log("Deployed Test Contracts");
-  }
+  //   console.log("Deployed Test Contracts");
+  // }
 
   /****************************************************************
   SAVE TO DISK

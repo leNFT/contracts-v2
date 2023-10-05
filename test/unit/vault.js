@@ -127,27 +127,29 @@ describe("Vault", function () {
 
     const swapTx = await vault.swap(
       owner.address,
-      {
-        liquidityIds: [],
-        tokenIds721: [],
-        tokenAmounts1155: [],
-        minimumPrice: ethers.utils.parseEther("0"),
-      },
-      {
-        liquidityIds: [0],
-        lp721Indexes: [0],
-        lp721TokenIds: [0],
-        lp1155Amounts: [],
-        maximumPrice: ethers.utils.parseEther("1"),
-      },
-      {
-        liquidityIds: [],
-        fromTokenIds721: [],
-        bought721Indexes: [],
-        toTokenIds721: [],
-        toTokenIds721Indexes: [],
-      },
       ethers.constants.AddressZero,
+      {
+        sell: {
+          liquidityIds: [],
+          tokenIds721: [],
+          tokenAmounts1155: [],
+          minimumPrice: ethers.utils.parseEther("0"),
+        },
+        buy: {
+          liquidityIds: [0],
+          liquidity721Indexes: [0],
+          liquidity721TokenIds: [0],
+          liquidity1155Amounts: [],
+          maximumPrice: ethers.utils.parseEther("1"),
+        },
+        swap: {
+          liquidityIds: [],
+          fromTokenIds721: [],
+          bought721Indexes: [],
+          toTokenIds721: [],
+          toTokenIds721Indexes: [],
+        },
+      },
       {
         value: ethers.utils.parseEther("0.11"),
       }
@@ -189,27 +191,29 @@ describe("Vault", function () {
 
     const swapTx = await vault.swap(
       owner.address,
-      {
-        liquidityIds: [],
-        tokenIds721: [],
-        tokenAmounts1155: [],
-        minimumPrice: ethers.utils.parseEther("0"),
-      },
-      {
-        liquidityIds: [0],
-        lp721Indexes: [],
-        lp721TokenIds: [],
-        lp1155Amounts: [1],
-        maximumPrice: ethers.utils.parseEther("1"),
-      },
-      {
-        liquidityIds: [],
-        fromTokenIds721: [],
-        bought721Indexes: [],
-        toTokenIds721: [],
-        toTokenIds721Indexes: [],
-      },
       ethers.constants.AddressZero,
+      {
+        sell: {
+          liquidityIds: [],
+          tokenIds721: [],
+          tokenAmounts1155: [],
+          minimumPrice: ethers.utils.parseEther("0"),
+        },
+        buy: {
+          liquidityIds: [0],
+          liquidity721Indexes: [],
+          liquidity721TokenIds: [],
+          liquidity1155Amounts: [1],
+          maximumPrice: ethers.utils.parseEther("1"),
+        },
+        swap: {
+          liquidityIds: [],
+          fromTokenIds721: [],
+          bought721Indexes: [],
+          toTokenIds721: [],
+          toTokenIds721Indexes: [],
+        },
+      },
       {
         value: ethers.utils.parseEther("0.11"),
       }
@@ -251,27 +255,29 @@ describe("Vault", function () {
 
     const swapTx = await vault.swap(
       owner.address,
-      {
-        liquidityIds: [0],
-        tokenIds721: [0],
-        tokenAmounts1155: [],
-        minimumPrice: ethers.utils.parseEther("0.05"),
-      },
-      {
-        liquidityIds: [],
-        lp721Indexes: [],
-        lp721TokenIds: [],
-        lp1155Amounts: [],
-        maximumPrice: ethers.utils.parseEther("0"),
-      },
-      {
-        liquidityIds: [],
-        fromTokenIds721: [],
-        bought721Indexes: [],
-        toTokenIds721: [],
-        toTokenIds721Indexes: [],
-      },
       ethers.constants.AddressZero,
+      {
+        sell: {
+          liquidityIds: [0],
+          tokenIds721: [0],
+          tokenAmounts1155: [],
+          minimumPrice: ethers.utils.parseEther("0.05"),
+        },
+        buy: {
+          liquidityIds: [],
+          liquidity721Indexes: [],
+          liquidity721TokenIds: [],
+          liquidity1155Amounts: [],
+          maximumPrice: ethers.utils.parseEther("0"),
+        },
+        swap: {
+          liquidityIds: [],
+          fromTokenIds721: [],
+          bought721Indexes: [],
+          toTokenIds721: [],
+          toTokenIds721Indexes: [],
+        },
+      },
       {
         value: ethers.utils.parseEther("0.11"),
       }
@@ -311,27 +317,29 @@ describe("Vault", function () {
 
     const swapTx = await vault.swap(
       owner.address,
-      {
-        liquidityIds: [0],
-        tokenIds721: [],
-        tokenAmounts1155: [1],
-        minimumPrice: ethers.utils.parseEther("0.05"),
-      },
-      {
-        liquidityIds: [],
-        lp721Indexes: [],
-        lp721TokenIds: [],
-        lp1155Amounts: [],
-        maximumPrice: ethers.utils.parseEther("0"),
-      },
-      {
-        liquidityIds: [],
-        fromTokenIds721: [],
-        bought721Indexes: [],
-        toTokenIds721: [],
-        toTokenIds721Indexes: [],
-      },
       ethers.constants.AddressZero,
+      {
+        sell: {
+          liquidityIds: [0],
+          tokenIds721: [],
+          tokenAmounts1155: [1],
+          minimumPrice: ethers.utils.parseEther("0.05"),
+        },
+        buy: {
+          liquidityIds: [],
+          liquidity721Indexes: [],
+          liquidity721TokenIds: [],
+          liquidity1155Amounts: [],
+          maximumPrice: ethers.utils.parseEther("0"),
+        },
+        swap: {
+          liquidityIds: [],
+          fromTokenIds721: [],
+          bought721Indexes: [],
+          toTokenIds721: [],
+          toTokenIds721Indexes: [],
+        },
+      },
       {
         value: ethers.utils.parseEther("0.11"),
       }
@@ -378,27 +386,29 @@ describe("Vault", function () {
 
     const swapTx = await vault.swap(
       owner.address,
-      {
-        liquidityIds: [],
-        tokenIds721: [],
-        tokenAmounts1155: [],
-        minimumPrice: ethers.utils.parseEther("0"),
-      },
-      {
-        liquidityIds: [],
-        lp721Indexes: [],
-        lp721TokenIds: [],
-        lp1155Amounts: [],
-        maximumPrice: ethers.utils.parseEther("0"),
-      },
-      {
-        liquidityIds: [0],
-        fromTokenIds721: [1],
-        bought721Indexes: [],
-        toTokenIds721: [0],
-        toTokenIds721Indexes: [0],
-      },
       ethers.constants.AddressZero,
+      {
+        sell: {
+          liquidityIds: [],
+          tokenIds721: [],
+          tokenAmounts1155: [],
+          minimumPrice: ethers.utils.parseEther("0"),
+        },
+        buy: {
+          liquidityIds: [],
+          liquidity721Indexes: [],
+          liquidity721TokenIds: [],
+          liquidity1155Amounts: [],
+          maximumPrice: ethers.utils.parseEther("0"),
+        },
+        swap: {
+          liquidityIds: [0],
+          fromTokenIds721: [1],
+          bought721Indexes: [],
+          toTokenIds721: [0],
+          toTokenIds721Indexes: [0],
+        },
+      },
       {
         value: ethers.utils.parseEther("0.011"),
       }
@@ -460,27 +470,29 @@ describe("Vault", function () {
 
     const swapTx = await vault.swap(
       owner.address,
-      {
-        liquidityIds: [],
-        tokenIds721: [],
-        tokenAmounts1155: [],
-        minimumPrice: ethers.utils.parseEther("0"),
-      },
-      {
-        liquidityIds: [0],
-        lp721Indexes: [0],
-        lp721TokenIds: [0],
-        lp1155Amounts: [],
-        maximumPrice: ethers.utils.parseEther("0.11"),
-      },
-      {
-        liquidityIds: [1],
-        fromTokenIds721: [],
-        bought721Indexes: [0],
-        toTokenIds721: [1],
-        toTokenIds721Indexes: [0],
-      },
       ethers.constants.AddressZero,
+      {
+        sell: {
+          liquidityIds: [],
+          tokenIds721: [],
+          tokenAmounts1155: [],
+          minimumPrice: ethers.utils.parseEther("0"),
+        },
+        buy: {
+          liquidityIds: [0],
+          liquidity721Indexes: [0],
+          liquidity721TokenIds: [0],
+          liquidity1155Amounts: [],
+          maximumPrice: ethers.utils.parseEther("0.11"),
+        },
+        swap: {
+          liquidityIds: [1],
+          fromTokenIds721: [],
+          bought721Indexes: [0],
+          toTokenIds721: [1],
+          toTokenIds721Indexes: [0],
+        },
+      },
       {
         value: ethers.utils.parseEther("0.22"),
       }
@@ -542,27 +554,29 @@ describe("Vault", function () {
 
     const swapTx = await vault.swap(
       owner.address,
-      {
-        liquidityIds: [0],
-        tokenIds721: [0],
-        tokenAmounts1155: [],
-        minimumPrice: ethers.utils.parseEther("0.05"),
-      },
-      {
-        liquidityIds: [1],
-        lp721Indexes: [0],
-        lp721TokenIds: [1],
-        lp1155Amounts: [],
-        maximumPrice: ethers.utils.parseEther("0.2"),
-      },
-      {
-        liquidityIds: [],
-        fromTokenIds721: [],
-        bought721Indexes: [],
-        toTokenIds721: [],
-        toTokenIds721Indexes: [],
-      },
       ethers.constants.AddressZero,
+      {
+        sell: {
+          liquidityIds: [0],
+          tokenIds721: [0],
+          tokenAmounts1155: [],
+          minimumPrice: ethers.utils.parseEther("0.05"),
+        },
+        buy: {
+          liquidityIds: [1],
+          liquidity721Indexes: [0],
+          liquidity721TokenIds: [1],
+          liquidity1155Amounts: [],
+          maximumPrice: ethers.utils.parseEther("0.2"),
+        },
+        swap: {
+          liquidityIds: [],
+          fromTokenIds721: [],
+          bought721Indexes: [],
+          toTokenIds721: [],
+          toTokenIds721Indexes: [],
+        },
+      },
       {
         value: ethers.utils.parseEther("0.15"),
       }
@@ -627,27 +641,29 @@ describe("Vault", function () {
 
     const swapTx = await vault.swap(
       owner.address,
-      {
-        liquidityIds: [0],
-        tokenIds721: [1],
-        tokenAmounts1155: [],
-        minimumPrice: ethers.utils.parseEther("0.05"),
-      },
-      {
-        liquidityIds: [],
-        lp721Indexes: [],
-        lp721TokenIds: [],
-        lp1155Amounts: [],
-        maximumPrice: ethers.utils.parseEther("0"),
-      },
-      {
-        liquidityIds: [1],
-        fromTokenIds721: [2],
-        bought721Indexes: [],
-        toTokenIds721: [0],
-        toTokenIds721Indexes: [0],
-      },
       ethers.constants.AddressZero,
+      {
+        sell: {
+          liquidityIds: [0],
+          tokenIds721: [1],
+          tokenAmounts1155: [],
+          minimumPrice: ethers.utils.parseEther("0.05"),
+        },
+        buy: {
+          liquidityIds: [],
+          liquidity721Indexes: [],
+          liquidity721TokenIds: [],
+          liquidity1155Amounts: [],
+          maximumPrice: ethers.utils.parseEther("0"),
+        },
+        swap: {
+          liquidityIds: [1],
+          fromTokenIds721: [2],
+          bought721Indexes: [],
+          toTokenIds721: [0],
+          toTokenIds721Indexes: [0],
+        },
+      },
       {
         value: ethers.utils.parseEther("0.1"),
       }
@@ -733,27 +749,29 @@ describe("Vault", function () {
 
     const swapTx = await vault.swap(
       owner.address,
-      {
-        liquidityIds: [0],
-        tokenIds721: [2],
-        tokenAmounts1155: [],
-        minimumPrice: ethers.utils.parseEther("0.05"),
-      },
-      {
-        liquidityIds: [1],
-        lp721Indexes: [0],
-        lp721TokenIds: [0],
-        lp1155Amounts: [],
-        maximumPrice: ethers.utils.parseEther("0.2"),
-      },
-      {
-        liquidityIds: [2],
-        fromTokenIds721: [3],
-        bought721Indexes: [],
-        toTokenIds721: [1],
-        toTokenIds721Indexes: [0],
-      },
       ethers.constants.AddressZero,
+      {
+        sell: {
+          liquidityIds: [0],
+          tokenIds721: [2],
+          tokenAmounts1155: [],
+          minimumPrice: ethers.utils.parseEther("0.05"),
+        },
+        buy: {
+          liquidityIds: [1],
+          liquidity721Indexes: [0],
+          liquidity721TokenIds: [0],
+          liquidity1155Amounts: [],
+          maximumPrice: ethers.utils.parseEther("0.2"),
+        },
+        swap: {
+          liquidityIds: [2],
+          fromTokenIds721: [3],
+          bought721Indexes: [],
+          toTokenIds721: [1],
+          toTokenIds721Indexes: [0],
+        },
+      },
       {
         value: ethers.utils.parseEther("0.3"),
       }

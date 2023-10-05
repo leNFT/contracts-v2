@@ -99,7 +99,7 @@ contract Vault is
         uint256 fee,
         uint256 swapFee
     ) external payable notPaused {
-        VaultValidationLogic.validateAddLiquidityPair(
+        VaultValidationLogic.validateAddLiquidity(
             liquidityType,
             DataTypes.TokenStandard.ERC721,
             nftIds.length,
@@ -178,7 +178,7 @@ contract Vault is
         uint256 delta,
         uint256 fee
     ) external payable notPaused {
-        VaultValidationLogic.validateAddLiquidityPair(
+        VaultValidationLogic.validateAddLiquidity(
             liquidityType,
             DataTypes.TokenStandard.ERC1155,
             nftAmount,
@@ -329,10 +329,8 @@ contract Vault is
 
     function swap(
         address receiver,
-        DataTypes.SellRequest calldata sellRequest,
-        DataTypes.BuyRequest calldata buyRequest,
-        DataTypes.SwapRequest calldata swapRequest,
-        address token
+        address token,
+        DataTypes.SwapParams calldata swapParams
     )
         external
         payable
@@ -344,21 +342,21 @@ contract Vault is
         uint256 protocolFeePercentage = _protocolFeePercentage;
 
         // Start by performing the sells
-        if (sellRequest.liquidityIds.length > 0) {
+        if (swapParams.sell.liquidityIds.length > 0) {
             if (
-                sellRequest.tokenIds721.length +
-                    sellRequest.tokenAmounts1155.length !=
-                sellRequest.liquidityIds.length
+                swapParams.sell.tokenIds721.length +
+                    swapParams.sell.tokenAmounts1155.length !=
+                swapParams.sell.liquidityIds.length
             ) {
                 revert LiquidityMismatch();
             }
 
             // Transfer the NFTs to the vault
-            for (uint i = 0; i < sellRequest.liquidityIds.length; i++) {
-                if (i < sellRequest.tokenIds721.length) {
-                    uint256 tokenId721 = sellRequest.tokenIds721[i];
+            for (uint i = 0; i < swapParams.sell.liquidityIds.length; i++) {
+                if (i < swapParams.sell.tokenIds721.length) {
+                    uint256 tokenId721 = swapParams.sell.tokenIds721[i];
                     DataTypes.Liquidity721 memory liquidity721 = _liquidity721[
-                        sellRequest.liquidityIds[i]
+                        swapParams.sell.liquidityIds[i]
                     ];
 
                     if (liquidity721.nft == address(0)) {
@@ -372,7 +370,7 @@ contract Vault is
                         DataTypes.LiquidityType.Swap
                     ) {
                         revert IncompatibleLiquidity(
-                            sellRequest.liquidityIds[i]
+                            swapParams.sell.liquidityIds[i]
                         );
                     }
 
@@ -383,18 +381,17 @@ contract Vault is
                         revert TokenMismatch();
                     }
 
+                    uint256 feeAmount = PercentageMath.percentMul(
+                        liquidity721.spotPrice,
+                        liquidity721.fee
+                    );
+
                     if (
                         liquidity721.tokenAmount <
                         liquidity721.spotPrice -
+                            feeAmount +
                             PercentageMath.percentMul(
-                                liquidity721.spotPrice,
-                                liquidity721.fee
-                            ) +
-                            PercentageMath.percentMul(
-                                PercentageMath.percentMul(
-                                    liquidity721.spotPrice,
-                                    liquidity721.fee
-                                ),
+                                feeAmount,
                                 protocolFeePercentage
                             )
                     ) {
@@ -402,16 +399,9 @@ contract Vault is
                     }
 
                     // Update total price quote and fee sum
-                    sellPrice += (liquidity721.spotPrice -
-                        PercentageMath.percentMul(
-                            liquidity721.spotPrice,
-                            liquidity721.fee
-                        ));
+                    sellPrice += (liquidity721.spotPrice - feeAmount);
                     totalProtocolFee += PercentageMath.percentMul(
-                        PercentageMath.percentMul(
-                            liquidity721.spotPrice,
-                            liquidity721.fee
-                        ),
+                        feeAmount,
                         protocolFeePercentage
                     );
 
@@ -423,19 +413,19 @@ contract Vault is
 
                     VaultGeneralLogic.updateLiquidity721AfterSell(
                         liquidity721,
-                        _liquidity721[sellRequest.liquidityIds[i]],
+                        _liquidity721[swapParams.sell.liquidityIds[i]],
+                        feeAmount,
                         protocolFeePercentage,
                         tokenId721
                     );
                 } else {
                     DataTypes.Liquidity1155
                         memory liquidity1155 = _liquidity1155[
-                            sellRequest.liquidityIds[i]
+                            swapParams.sell.liquidityIds[i]
                         ];
-                    uint256 tokenAmount1155 = sellRequest.tokenAmounts1155[
-                        i - sellRequest.tokenIds721.length
+                    uint256 tokenAmount1155 = swapParams.sell.tokenAmounts1155[
+                        i - swapParams.sell.tokenIds721.length
                     ];
-
                     if (liquidity1155.nft == address(0)) {
                         revert NonexistentLiquidity();
                     }
@@ -446,7 +436,7 @@ contract Vault is
                         DataTypes.LiquidityType.Sell
                     ) {
                         revert IncompatibleLiquidity(
-                            sellRequest.liquidityIds[i]
+                            swapParams.sell.liquidityIds[i]
                         );
                     }
 
@@ -457,18 +447,23 @@ contract Vault is
                         revert TokenMismatch();
                     }
 
+                    uint256 price = IPricingCurve(liquidity1155.curve)
+                        .sellPriceSum(
+                            tokenAmount1155,
+                            liquidity1155.spotPrice,
+                            liquidity1155.delta
+                        );
+                    uint256 feeAmount = PercentageMath.percentMul(
+                        price,
+                        liquidity1155.fee
+                    );
+
                     if (
                         liquidity1155.tokenAmount <
-                        liquidity1155.spotPrice -
+                        price -
+                            feeAmount +
                             PercentageMath.percentMul(
-                                liquidity1155.spotPrice,
-                                liquidity1155.fee
-                            ) +
-                            PercentageMath.percentMul(
-                                PercentageMath.percentMul(
-                                    liquidity1155.spotPrice,
-                                    liquidity1155.fee
-                                ),
+                                feeAmount,
                                 protocolFeePercentage
                             )
                     ) {
@@ -476,16 +471,9 @@ contract Vault is
                     }
 
                     // Update total price quote and fee sum
-                    sellPrice += (liquidity1155.spotPrice -
-                        PercentageMath.percentMul(
-                            liquidity1155.spotPrice,
-                            liquidity1155.fee
-                        ));
+                    sellPrice += (price - feeAmount);
                     totalProtocolFee += PercentageMath.percentMul(
-                        PercentageMath.percentMul(
-                            liquidity1155.spotPrice,
-                            liquidity1155.fee
-                        ),
+                        feeAmount,
                         protocolFeePercentage
                     );
 
@@ -499,7 +487,9 @@ contract Vault is
 
                     VaultGeneralLogic.updateLiquidity1155AfterSell(
                         liquidity1155,
-                        _liquidity1155[sellRequest.liquidityIds[i]],
+                        _liquidity1155[swapParams.sell.liquidityIds[i]],
+                        price,
+                        feeAmount,
                         protocolFeePercentage,
                         tokenAmount1155
                     );
@@ -507,40 +497,40 @@ contract Vault is
             }
 
             // Make sure the final price is greater than or equal to the minimum price set by the user
-            if (sellPrice < sellRequest.minimumPrice) {
+            if (sellPrice < swapParams.sell.minimumPrice) {
                 revert MinPriceNotReached();
             }
 
             emit Sell(
                 receiver,
-                sellRequest.liquidityIds,
-                sellRequest.tokenIds721,
-                sellRequest.tokenAmounts1155,
+                swapParams.sell.liquidityIds,
+                swapParams.sell.tokenIds721,
+                swapParams.sell.tokenAmounts1155,
                 sellPrice
             );
         }
 
         BoughtToken721[] memory boughtTokens721 = new BoughtToken721[](
-            buyRequest.lp721Indexes.length
+            swapParams.buy.liquidity721Indexes.length
         );
 
         // Perform the buys
-        if (buyRequest.liquidityIds.length > 0) {
+        if (swapParams.buy.liquidityIds.length > 0) {
             // Make sure the length of the liquidityIds array matches the sum of the buyParams arrays
             if (
-                buyRequest.lp721TokenIds.length +
-                    buyRequest.lp1155Amounts.length !=
-                buyRequest.liquidityIds.length ||
-                buyRequest.lp721Indexes.length !=
-                buyRequest.lp721TokenIds.length
+                swapParams.buy.liquidity721TokenIds.length +
+                    swapParams.buy.liquidity1155Amounts.length !=
+                swapParams.buy.liquidityIds.length ||
+                swapParams.buy.liquidity721Indexes.length !=
+                swapParams.buy.liquidity721TokenIds.length
             ) {
                 revert LiquidityMismatch();
             }
 
-            for (uint i = 0; i < buyRequest.liquidityIds.length; i++) {
-                if (i < buyRequest.lp721Indexes.length) {
+            for (uint i = 0; i < swapParams.buy.liquidityIds.length; i++) {
+                if (i < swapParams.buy.liquidity721Indexes.length) {
                     DataTypes.Liquidity721 memory liquidity721 = _liquidity721[
-                        buyRequest.liquidityIds[i]
+                        swapParams.buy.liquidityIds[i]
                     ];
 
                     if (liquidity721.nft == address(0)) {
@@ -560,55 +550,56 @@ contract Vault is
                         DataTypes.LiquidityType.Buy
                     ) {
                         revert IncompatibleLiquidity(
-                            buyRequest.liquidityIds[i]
+                            swapParams.buy.liquidityIds[i]
                         );
                     }
 
                     if (
-                        buyRequest.lp721TokenIds[i] !=
-                        liquidity721.nftIds[buyRequest.lp721Indexes[i]]
+                        swapParams.buy.liquidity721TokenIds[i] !=
+                        liquidity721.nftIds[
+                            swapParams.buy.liquidity721Indexes[i]
+                        ]
                     ) {
                         revert NFTMismatch();
                     }
 
+                    uint256 feeAmount = PercentageMath.percentMul(
+                        liquidity721.spotPrice,
+                        liquidity721.fee
+                    );
+
                     // Increase total price and fee sum
-                    buyPrice += (liquidity721.spotPrice +
-                        PercentageMath.percentMul(
-                            liquidity721.spotPrice,
-                            liquidity721.fee
-                        ));
+                    buyPrice += (liquidity721.spotPrice + feeAmount);
                     totalProtocolFee += PercentageMath.percentMul(
-                        PercentageMath.percentMul(
-                            liquidity721.spotPrice,
-                            liquidity721.fee
-                        ),
+                        feeAmount,
                         protocolFeePercentage
                     );
 
                     // Save the bought token
                     boughtTokens721[i] = BoughtToken721({
                         token: liquidity721.nft,
-                        tokenId: liquidity721.nftIds[buyRequest.lp721Indexes[i]]
+                        tokenId: liquidity721.nftIds[
+                            swapParams.buy.liquidity721Indexes[i]
+                        ]
                     });
 
-                    VaultGeneralLogic.updateLp721AfterBuy(
+                    VaultGeneralLogic.updateLiquidity721AfterBuy(
                         liquidity721,
-                        _liquidity721[buyRequest.liquidityIds[i]],
-                        PercentageMath.percentMul(
-                            liquidity721.spotPrice,
-                            liquidity721.fee
-                        ),
+                        _liquidity721[swapParams.buy.liquidityIds[i]],
+                        feeAmount,
                         protocolFeePercentage,
-                        buyRequest.lp721Indexes[i]
+                        swapParams.buy.liquidity721Indexes[i]
                     );
                 } else {
                     DataTypes.Liquidity1155
                         memory liquidity1155 = _liquidity1155[
-                            buyRequest.liquidityIds[i]
+                            swapParams.buy.liquidityIds[i]
                         ];
-                    uint256 tokenAmount1155 = buyRequest.lp1155Amounts[
-                        i - buyRequest.lp721Indexes.length
-                    ];
+                    uint256 tokenAmount1155 = swapParams
+                        .buy
+                        .liquidity1155Amounts[
+                            i - swapParams.buy.liquidity721Indexes.length
+                        ];
 
                     if (liquidity1155.nft == address(0)) {
                         revert NonexistentLiquidity();
@@ -628,29 +619,33 @@ contract Vault is
                         DataTypes.LiquidityType.Buy
                     ) {
                         revert IncompatibleLiquidity(
-                            buyRequest.liquidityIds[i]
+                            swapParams.buy.liquidityIds[i]
                         );
                     }
 
                     if (
-                        buyRequest.lp1155Amounts[
-                            i - buyRequest.lp721Indexes.length
+                        swapParams.buy.liquidity1155Amounts[
+                            i - swapParams.buy.liquidity721Indexes.length
                         ] > liquidity1155.tokenAmount
                     ) {
                         revert InsufficientTokensInLP();
                     }
 
+                    uint256 feeAmount = PercentageMath.percentMul(
+                        liquidity1155.spotPrice,
+                        liquidity1155.fee
+                    );
+                    uint256 price = IPricingCurve(liquidity1155.curve)
+                        .buyPriceSum(
+                            tokenAmount1155,
+                            liquidity1155.spotPrice,
+                            liquidity1155.delta
+                        );
+
                     // Increase total price and fee sum
-                    buyPrice += (liquidity1155.spotPrice +
-                        PercentageMath.percentMul(
-                            liquidity1155.spotPrice,
-                            liquidity1155.fee
-                        ));
+                    buyPrice += (price + feeAmount);
                     totalProtocolFee += PercentageMath.percentMul(
-                        PercentageMath.percentMul(
-                            liquidity1155.spotPrice,
-                            liquidity1155.fee
-                        ),
+                        feeAmount,
                         protocolFeePercentage
                     );
 
@@ -662,44 +657,43 @@ contract Vault is
                         ""
                     );
 
-                    VaultGeneralLogic.updateLp1155AfterBuy(
+                    VaultGeneralLogic.updateLiquidity1155AfterBuy(
                         liquidity1155,
-                        _liquidity1155[buyRequest.liquidityIds[i]],
-                        PercentageMath.percentMul(
-                            liquidity1155.spotPrice,
-                            liquidity1155.fee
-                        ),
-                        protocolFeePercentage
+                        _liquidity1155[swapParams.buy.liquidityIds[i]],
+                        price,
+                        feeAmount,
+                        protocolFeePercentage,
+                        tokenAmount1155
                     );
                 }
             }
 
-            if (buyPrice > buyRequest.maximumPrice) {
+            if (buyPrice > swapParams.buy.maximumPrice) {
                 revert MaxPriceExceeded();
             }
 
             emit Buy(
                 receiver,
-                buyRequest.liquidityIds,
-                buyRequest.lp721TokenIds,
-                buyRequest.lp1155Amounts,
+                swapParams.buy.liquidityIds,
+                swapParams.buy.liquidity721TokenIds,
+                swapParams.buy.liquidity1155Amounts,
                 buyPrice
             );
         }
 
-        if (swapRequest.liquidityIds.length > 0) {
+        if (swapParams.swap.liquidityIds.length > 0) {
             if (
-                swapRequest.liquidityIds.length !=
-                swapRequest.fromTokenIds721.length +
-                    swapRequest.bought721Indexes.length ||
-                swapRequest.liquidityIds.length !=
-                swapRequest.toTokenIds721Indexes.length
+                swapParams.swap.liquidityIds.length !=
+                swapParams.swap.fromTokenIds721.length +
+                    swapParams.swap.bought721Indexes.length ||
+                swapParams.swap.liquidityIds.length !=
+                swapParams.swap.toTokenIds721Indexes.length
             ) {
                 revert LiquidityMismatch();
             }
             DataTypes.Liquidity721 memory liquidity721;
-            for (uint i = 0; i < swapRequest.liquidityIds.length; i++) {
-                liquidity721 = _liquidity721[swapRequest.liquidityIds[i]];
+            for (uint i = 0; i < swapParams.swap.liquidityIds.length; i++) {
+                liquidity721 = _liquidity721[swapParams.swap.liquidityIds[i]];
 
                 if (liquidity721.nft == address(0)) {
                     revert NonexistentLiquidity();
@@ -713,10 +707,12 @@ contract Vault is
 
                 // Only allow swapping from liquidity with a swap fee
                 if (liquidity721.swapFee == 0) {
-                    revert IncompatibleLiquidity(swapRequest.liquidityIds[i]);
+                    revert IncompatibleLiquidity(
+                        swapParams.swap.liquidityIds[i]
+                    );
                 }
 
-                _liquidity721[swapRequest.liquidityIds[i]]
+                _liquidity721[swapParams.swap.liquidityIds[i]]
                     .tokenAmount += SafeCast.toUint128(
                     liquidity721.swapFee -
                         PercentageMath.percentMul(
@@ -731,33 +727,35 @@ contract Vault is
                 );
 
                 // Swap NFTs in swap liquidity
-                if (i < swapRequest.fromTokenIds721.length) {
+                if (i < swapParams.swap.fromTokenIds721.length) {
                     IERC721Upgradeable(liquidity721.nft).safeTransferFrom(
                         msg.sender,
                         address(this),
-                        swapRequest.fromTokenIds721[i]
+                        swapParams.swap.fromTokenIds721[i]
                     );
                     if (
-                        swapRequest.toTokenIds721[i] !=
-                        liquidity721.nftIds[swapRequest.toTokenIds721Indexes[i]]
+                        swapParams.swap.toTokenIds721[i] !=
+                        liquidity721.nftIds[
+                            swapParams.swap.toTokenIds721Indexes[i]
+                        ]
                     ) {
                         revert NFTMismatch();
                     }
 
                     // Swap tokens in swap liquidity
-                    _liquidity721[swapRequest.liquidityIds[i]].nftIds[
-                            swapRequest.toTokenIds721Indexes[i]
-                        ] = swapRequest.fromTokenIds721[i];
+                    _liquidity721[swapParams.swap.liquidityIds[i]].nftIds[
+                            swapParams.swap.toTokenIds721Indexes[i]
+                        ] = swapParams.swap.fromTokenIds721[i];
 
                     IERC721Upgradeable(liquidity721.nft).safeTransferFrom(
                         address(this),
                         receiver,
-                        swapRequest.toTokenIds721[i]
+                        swapParams.swap.toTokenIds721[i]
                     );
                 } else {
                     BoughtToken721 memory boughtToken = boughtTokens721[
-                        swapRequest.bought721Indexes[
-                            i - swapRequest.fromTokenIds721.length
+                        swapParams.swap.bought721Indexes[
+                            i - swapParams.swap.fromTokenIds721.length
                         ]
                     ];
 
@@ -766,27 +764,27 @@ contract Vault is
                     }
 
                     // Swap tokens in swap liquidity
-                    _liquidity721[swapRequest.liquidityIds[i]].nftIds[
-                            swapRequest.toTokenIds721Indexes[i]
+                    _liquidity721[swapParams.swap.liquidityIds[i]].nftIds[
+                            swapParams.swap.toTokenIds721Indexes[i]
                         ] = boughtToken.tokenId;
 
                     boughtTokens721[
-                        swapRequest.bought721Indexes[
-                            i - swapRequest.fromTokenIds721.length
+                        swapParams.swap.bought721Indexes[
+                            i - swapParams.swap.fromTokenIds721.length
                         ]
                     ] = BoughtToken721({
                         token: liquidity721.nft,
-                        tokenId: swapRequest.toTokenIds721[i]
+                        tokenId: swapParams.swap.toTokenIds721[i]
                     });
                 }
             }
 
             emit Swap(
                 receiver,
-                swapRequest.liquidityIds,
-                swapRequest.fromTokenIds721,
-                swapRequest.bought721Indexes,
-                swapRequest.toTokenIds721
+                swapParams.swap.liquidityIds,
+                swapParams.swap.fromTokenIds721,
+                swapParams.swap.bought721Indexes,
+                swapParams.swap.toTokenIds721
             );
         }
 
