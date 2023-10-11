@@ -11,12 +11,13 @@ import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {DataTypes} from "../../../libraries/types/DataTypes.sol";
 import {IAddressProvider} from "../../../interfaces/IAddressProvider.sol";
 import {IVault} from "../../../interfaces/IVault.sol";
+import {ILiquidityMetadata} from "../../../interfaces/ILiquidityMetadata.sol";
 
 /// @title Liquidity Metadata
 /// @author leNFT. Based on out.eth (@outdoteth) work.
 /// @notice This contract is used to generate a liquidity pair's metadata.
 /// @dev Fills the metadata with dynamic data from the liquidity pair.
-contract Liquidity1155Metadata {
+contract Liquidity1155Metadata is ILiquidityMetadata {
     IAddressProvider private immutable _addressProvider;
 
     modifier liquidityExists(uint256 liquidityId) {
@@ -278,13 +279,14 @@ contract Liquidity1155Metadata {
     }
 
     function _requireLiquidityExists(uint256 liquidityId) internal view {
-        require(
+        if (
             IERC721(
                 IVault(_addressProvider.getVault()).getLiquidityToken(
                     liquidityId
                 )
-            ).ownerOf(liquidityId) != address(0),
-            "LIQUIDITY_DOES_NOT_EXIST"
-        );
+            ).ownerOf(liquidityId) == address(0)
+        ) {
+            revert NonexistentLiquidity();
+        }
     }
 }

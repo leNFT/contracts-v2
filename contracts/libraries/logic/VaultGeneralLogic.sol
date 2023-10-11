@@ -5,8 +5,8 @@ import {DataTypes} from "../types/DataTypes.sol";
 import {PercentageMath} from "../utils/PercentageMath.sol";
 import {SafeCast} from "../utils/SafeCast.sol";
 import {IPricingCurve} from "../../interfaces/IPricingCurve.sol";
-import {IERC721MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
-import {IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import {IERC721Metadata} from "@openzeppelin/contracts/interfaces/IERC721Metadata.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {LiquidityToken} from "../../protocol/Trading/LiquidityToken.sol";
 import "hardhat/console.sol";
 
@@ -140,11 +140,11 @@ library VaultGeneralLogic {
         // Create the NFT LP contract if it doesn't exist
         string memory name = "leNFT2 Liquidity Token";
         string memory symbol = "leNFT2";
-        string memory tokenSymbol = IERC20MetadataUpgradeable(token).symbol();
+        string memory tokenSymbol = IERC20Metadata(token).symbol();
         string memory nftSymbol;
 
         if (tokenStandard == DataTypes.TokenStandard.ERC721) {
-            nftSymbol = IERC721MetadataUpgradeable(nft).symbol();
+            nftSymbol = IERC721Metadata(nft).symbol();
         } else if (tokenStandard == DataTypes.TokenStandard.ERC1155) {
             // Make an external call to get the ERC1155 token's symbol
             (bool success, bytes memory data) = nft.staticcall(

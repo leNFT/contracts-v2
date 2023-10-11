@@ -4,11 +4,11 @@ pragma solidity 0.8.21;
 import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
-import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {DataTypes} from "../libraries/types/DataTypes.sol";
-import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 /// @title FeeDistributor
 /// @author leNFT
@@ -25,7 +25,7 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuardUpgradeable {
     // Token + epoch = amount
     mapping(address => uint256) private _accountedFees;
 
-    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using SafeERC20 for IERC20;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(IAddressProvider addressProvider) {
@@ -68,7 +68,7 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuardUpgradeable {
             balance = address(this).balance;
         } else {
             // Find the current balance of the token in question
-            balance = IERC20Upgradeable(token).balanceOf(address(this));
+            balance = IERC20(token).balanceOf(address(this));
         }
 
         // Add unaccounted fees to current epoch
@@ -143,9 +143,7 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuardUpgradeable {
         );
 
         // Make sure the lock exists
-        address lockOwner = IERC721Upgradeable(address(votingEscrow)).ownerOf(
-            tokenId
-        );
+        address lockOwner = IERC721(address(votingEscrow)).ownerOf(tokenId);
         require(lockOwner != address(0), "FD:C:LOCK_NOT_FOUND");
 
         // Check if user has any user actions and therefore possibly something to claim
@@ -262,7 +260,7 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuardUpgradeable {
                 require(sent, "FD:C:ETH_TRANSFER_FAILED");
             } else {
                 // Transfer the fees to the lock owner (the user
-                IERC20Upgradeable(token).safeTransfer(lockOwner, amountToClaim);
+                IERC20(token).safeTransfer(lockOwner, amountToClaim);
             }
 
             emit ClaimFees(msg.sender, token, tokenId, amountToClaim);

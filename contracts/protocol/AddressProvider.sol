@@ -21,7 +21,7 @@ contract AddressProvider is OwnableUpgradeable, IAddressProvider {
     }
 
     function initialize() external initializer {
-        __Ownable_init();
+        __Ownable_init(msg.sender);
     }
 
     function setVault(address vault) external override onlyOwner {

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.8.21;
 
-import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {IERC1155Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
-import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {DataTypes} from "../../libraries/types/DataTypes.sol";
@@ -17,15 +17,15 @@ import {PercentageMath} from "../../libraries/utils/PercentageMath.sol";
 import {IPricingCurve} from "../../interfaces/IPricingCurve.sol";
 import {VaultValidationLogic} from "../../libraries/logic/VaultValidationLogic.sol";
 import {VaultGeneralLogic} from "../../libraries/logic/VaultGeneralLogic.sol";
-import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import {IERC721ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
-import {IERC1155ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155ReceiverUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
+import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 
 contract Vault is
     OwnableUpgradeable,
     IVault,
-    IERC721ReceiverUpgradeable,
-    IERC1155ReceiverUpgradeable,
+    IERC721Receiver,
+    IERC1155Receiver,
     ReentrancyGuardUpgradeable
 {
     IAddressProvider private immutable _addressProvider;
@@ -41,10 +41,15 @@ contract Vault is
     bool private _paused;
     uint256 private _protocolFeePercentage;
 
-    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using SafeERC20 for IERC20;
 
     modifier notPaused() {
         _requireNotPaused();
+        _;
+    }
+
+    modifier liquidityExists(uint256 liquidityId) {
+        _requireLiquidityExists(liquidityId);
         _;
     }
 
@@ -56,25 +61,37 @@ contract Vault is
     }
 
     function initialize(uint256 protocolFeePercentage) external initializer {
-        __Ownable_init();
+        __Ownable_init(msg.sender);
         _protocolFeePercentage = protocolFeePercentage;
     }
 
     function getLiquidityToken(
         uint256 liquidityId
-    ) external view override returns (address) {
+    ) external view override liquidityExists(liquidityId) returns (address) {
         return _liquidityIdToken[liquidityId];
     }
 
     function getLiquidity721(
         uint256 liquidityId
-    ) external view override returns (DataTypes.Liquidity721 memory) {
+    )
+        external
+        view
+        override
+        liquidityExists(liquidityId)
+        returns (DataTypes.Liquidity721 memory)
+    {
         return _liquidity721[liquidityId];
     }
 
     function getLiquidity1155(
         uint256 liquidityId
-    ) external view override returns (DataTypes.Liquidity1155 memory) {
+    )
+        external
+        view
+        override
+        liquidityExists(liquidityId)
+        returns (DataTypes.Liquidity1155 memory)
+    {
         return _liquidity1155[liquidityId];
     }
 
@@ -98,7 +115,7 @@ contract Vault is
         uint256 delta,
         uint256 fee,
         uint256 swapFee
-    ) external payable notPaused {
+    ) external payable notPaused returns (uint256 liquidityId) {
         VaultValidationLogic.validateAddLiquidity(
             liquidityType,
             DataTypes.TokenStandard.ERC721,
@@ -129,10 +146,9 @@ contract Vault is
         // Send user token to the vault
         _receiveToken(token, tokenAmount);
 
-        uint256 liquidityCount = _liquidityCount;
-
         // Save the user deposit info
-        _liquidity721[liquidityCount] = DataTypes.Liquidity721({
+        liquidityId = _liquidityCount++;
+        _liquidity721[liquidityId] = DataTypes.Liquidity721({
             liquidityType: liquidityType,
             nftIds: nftIds,
             token: token == address(0) ? address(_weth) : token,
@@ -144,15 +160,11 @@ contract Vault is
             fee: SafeCast.toUint16(fee),
             swapFee: SafeCast.toUint128(swapFee)
         });
-        _liquidityTokenStandard[liquidityCount] = DataTypes
-            .TokenStandard
-            .ERC721;
-        _liquidityIdToken[liquidityCount] = liquidityToken;
+        _liquidityTokenStandard[liquidityId] = DataTypes.TokenStandard.ERC721;
+        _liquidityIdToken[liquidityId] = liquidityToken;
 
         // Mint liquidity position NFT
-        ILiquidityToken(liquidityToken).mint(receiver, liquidityCount);
-
-        _liquidityCount++;
+        ILiquidityToken(liquidityToken).mint(receiver, liquidityId);
 
         // Add user nfts to the vault
         _transfer721Batch(msg.sender, address(this), nft, nftIds);
@@ -161,7 +173,7 @@ contract Vault is
             receiver,
             DataTypes.TokenStandard.ERC721,
             liquidityToken,
-            liquidityCount
+            liquidityId
         );
     }
 
@@ -177,7 +189,7 @@ contract Vault is
         address curve,
         uint256 delta,
         uint256 fee
-    ) external payable notPaused {
+    ) external payable notPaused returns (uint256 liquidityId) {
         VaultValidationLogic.validateAddLiquidity(
             liquidityType,
             DataTypes.TokenStandard.ERC1155,
@@ -206,10 +218,9 @@ contract Vault is
         // Send user token to the vault
         _receiveToken(token, tokenAmount);
 
-        uint256 liquidityCount = _liquidityCount;
-
         // Save the user deposit info
-        _liquidity1155[liquidityCount] = DataTypes.Liquidity1155({
+        liquidityId = _liquidityCount++;
+        _liquidity1155[liquidityId] = DataTypes.Liquidity1155({
             liquidityType: liquidityType,
             nftId: nftId,
             nft: nft,
@@ -221,18 +232,14 @@ contract Vault is
             delta: SafeCast.toUint128(delta),
             fee: SafeCast.toUint16(fee)
         });
-        _liquidityTokenStandard[liquidityCount] = DataTypes
-            .TokenStandard
-            .ERC1155;
-        _liquidityIdToken[liquidityCount] = liquidityToken;
+        _liquidityTokenStandard[liquidityId] = DataTypes.TokenStandard.ERC1155;
+        _liquidityIdToken[liquidityId] = liquidityToken;
 
         // Mint liquidity position NFT
-        ILiquidityToken(liquidityToken).mint(receiver, liquidityCount);
-
-        _liquidityCount++;
+        ILiquidityToken(liquidityToken).mint(receiver, liquidityId);
 
         // Add user nfts to the vault
-        IERC1155Upgradeable(nft).safeTransferFrom(
+        IERC1155(nft).safeTransferFrom(
             msg.sender,
             address(this),
             nftId,
@@ -244,7 +251,7 @@ contract Vault is
             receiver,
             DataTypes.TokenStandard.ERC1155,
             liquidityToken,
-            liquidityCount
+            liquidityId
         );
     }
 
@@ -264,7 +271,10 @@ contract Vault is
     /// @notice Private function that removes a liquidity pair, sending back deposited tokens and transferring the NFTs to the user
     /// @param liquidityId The ID of the LP token to remove
     /// @param unwrap Whether to unwrap WETH to ETH
-    function _removeLiquidity(uint256 liquidityId, bool unwrap) internal {
+    function _removeLiquidity(
+        uint256 liquidityId,
+        bool unwrap
+    ) internal liquidityExists(liquidityId) {
         address liquidityToken = _liquidityIdToken[liquidityId];
         //Require the caller owns LP
         VaultValidationLogic.validateRemoveLiquidity(
@@ -294,14 +304,13 @@ contract Vault is
             _liquidityTokenStandard[liquidityId] ==
             DataTypes.TokenStandard.ERC1155
         ) {
-            IERC1155Upgradeable(_liquidity1155[liquidityId].nft)
-                .safeTransferFrom(
-                    address(this),
-                    msg.sender,
-                    _liquidity1155[liquidityId].nftId,
-                    _liquidity1155[liquidityId].nftAmount,
-                    ""
-                );
+            IERC1155(_liquidity1155[liquidityId].nft).safeTransferFrom(
+                address(this),
+                msg.sender,
+                _liquidity1155[liquidityId].nftId,
+                _liquidity1155[liquidityId].nftAmount,
+                ""
+            );
             token = _liquidity1155[liquidityId].token;
             tokenAmount = _liquidity1155[liquidityId].tokenAmount;
 
@@ -318,6 +327,9 @@ contract Vault is
 
         // Burn liquidity position NFT
         ILiquidityToken(liquidityToken).burn(liquidityId);
+
+        delete _liquidityTokenStandard[liquidityId];
+        delete _liquidityIdToken[liquidityId];
 
         emit RemoveLiquity(msg.sender, liquidityToken, liquidityId);
     }
@@ -405,7 +417,7 @@ contract Vault is
                         protocolFeePercentage
                     );
 
-                    IERC721Upgradeable(liquidity721.nft).safeTransferFrom(
+                    IERC721(liquidity721.nft).safeTransferFrom(
                         msg.sender,
                         address(this),
                         tokenId721
@@ -477,7 +489,7 @@ contract Vault is
                         protocolFeePercentage
                     );
 
-                    IERC1155Upgradeable(liquidity1155.nft).safeTransferFrom(
+                    IERC1155(liquidity1155.nft).safeTransferFrom(
                         msg.sender,
                         address(this),
                         liquidity1155.nftId,
@@ -649,7 +661,7 @@ contract Vault is
                         protocolFeePercentage
                     );
 
-                    IERC1155Upgradeable(liquidity1155.nft).safeTransferFrom(
+                    IERC1155(liquidity1155.nft).safeTransferFrom(
                         address(this),
                         receiver,
                         liquidity1155.nftId,
@@ -728,7 +740,7 @@ contract Vault is
 
                 // Swap NFTs in swap liquidity
                 if (i < swapParams.swap.fromTokenIds721.length) {
-                    IERC721Upgradeable(liquidity721.nft).safeTransferFrom(
+                    IERC721(liquidity721.nft).safeTransferFrom(
                         msg.sender,
                         address(this),
                         swapParams.swap.fromTokenIds721[i]
@@ -747,7 +759,7 @@ contract Vault is
                             swapParams.swap.toTokenIds721Indexes[i]
                         ] = swapParams.swap.fromTokenIds721[i];
 
-                    IERC721Upgradeable(liquidity721.nft).safeTransferFrom(
+                    IERC721(liquidity721.nft).safeTransferFrom(
                         address(this),
                         receiver,
                         swapParams.swap.toTokenIds721[i]
@@ -789,7 +801,7 @@ contract Vault is
         }
 
         for (uint i = 0; i < boughtTokens721.length; i++) {
-            IERC721Upgradeable(boughtTokens721[i].token).safeTransferFrom(
+            IERC721(boughtTokens721[i].token).safeTransferFrom(
                 address(this),
                 receiver,
                 boughtTokens721[i].tokenId
@@ -831,7 +843,7 @@ contract Vault is
         uint256[] memory tokenIds
     ) internal {
         for (uint i = 0; i < tokenIds.length; i++) {
-            IERC721Upgradeable(nft).safeTransferFrom(from, to, tokenIds[i]);
+            IERC721(nft).safeTransferFrom(from, to, tokenIds[i]);
         }
     }
 
@@ -847,11 +859,7 @@ contract Vault is
             // Deposit in WETH contract
             _weth.deposit{value: amount}();
         } else {
-            IERC20Upgradeable(token).safeTransferFrom(
-                msg.sender,
-                address(this),
-                amount
-            );
+            IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
         }
     }
 
@@ -864,7 +872,7 @@ contract Vault is
                 revert ETHTransferFailed();
             }
         } else {
-            IERC20Upgradeable(token).safeTransfer(to, amount);
+            IERC20(token).safeTransfer(to, amount);
         }
     }
 
@@ -874,13 +882,19 @@ contract Vault is
         }
     }
 
+    function _requireLiquidityExists(uint256 liquidityId) internal view {
+        if (_liquidityIdToken[liquidityId] == address(0)) {
+            revert NonexistentLiquidity();
+        }
+    }
+
     function onERC721Received(
         address,
         address,
         uint256,
         bytes calldata
     ) external pure override returns (bytes4) {
-        return IERC721ReceiverUpgradeable.onERC721Received.selector;
+        return IERC721Receiver.onERC721Received.selector;
     }
 
     function onERC1155Received(
@@ -890,7 +904,7 @@ contract Vault is
         uint256,
         bytes calldata
     ) external pure override returns (bytes4) {
-        return IERC1155ReceiverUpgradeable.onERC1155Received.selector;
+        return IERC1155Receiver.onERC1155Received.selector;
     }
 
     function onERC1155BatchReceived(
@@ -900,15 +914,15 @@ contract Vault is
         uint256[] calldata,
         bytes calldata
     ) external pure override returns (bytes4) {
-        return IERC1155ReceiverUpgradeable.onERC1155BatchReceived.selector;
+        return IERC1155Receiver.onERC1155BatchReceived.selector;
     }
 
     function supportsInterface(
         bytes4 interfaceId
     ) external pure override returns (bool) {
         return
-            interfaceId == type(IERC721ReceiverUpgradeable).interfaceId ||
-            interfaceId == type(IERC1155ReceiverUpgradeable).interfaceId;
+            interfaceId == type(IERC721Receiver).interfaceId ||
+            interfaceId == type(IERC1155Receiver).interfaceId;
     }
 
     receive() external payable {}

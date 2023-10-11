@@ -253,13 +253,14 @@ contract Liquidity721Metadata is ILiquidityMetadata {
     }
 
     function _requireLiquidityExists(uint256 liquidityId) internal view {
-        require(
+        if (
             IERC721(
                 IVault(_addressProvider.getVault()).getLiquidityToken(
                     liquidityId
                 )
-            ).ownerOf(liquidityId) != address(0),
-            "LIQUIDITY_DOES_NOT_EXIST"
-        );
+            ).ownerOf(liquidityId) == address(0)
+        ) {
+            revert NonexistentLiquidity();
+        }
     }
 }

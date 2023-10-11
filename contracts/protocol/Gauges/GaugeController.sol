@@ -5,10 +5,10 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {PercentageMath} from "../../libraries/utils/PercentageMath.sol";
 import {DataTypes} from "../../libraries/types/DataTypes.sol";
 import {IVotingEscrow} from "../../interfaces/IVotingEscrow.sol";
-import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IGaugeController} from "../../interfaces/IGaugeController.sol";
 import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
-import {ERC165CheckerUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
+import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {IGauge} from "../../interfaces/IGauge.sol";
 import {SafeCast} from "../../libraries/utils/SafeCast.sol";
 
@@ -48,7 +48,7 @@ contract GaugeController is OwnableUpgradeable, IGaugeController {
     mapping(address => address) private _liquidityPoolToGauge;
     uint256 private _lpMaturityPeriod; // in seconds
 
-    using ERC165CheckerUpgradeable for address;
+    using ERC165Checker for address;
 
     modifier validGauge(address gauge) {
         _requireValidGauge(gauge);
@@ -74,7 +74,7 @@ contract GaugeController is OwnableUpgradeable, IGaugeController {
     /// @notice Initializes the contract by setting up the owner and the addresses provider contract.
     /// @param lpMaturityPeriod The maturity period for the LP tokens
     function initialize(uint256 lpMaturityPeriod) external initializer {
-        __Ownable_init();
+        __Ownable_init(msg.sender);
         _lpMaturityPeriod = lpMaturityPeriod;
         _totalWeigthHistory.push(0);
         _lastWeightCheckpoint = DataTypes.Point(
@@ -361,8 +361,7 @@ contract GaugeController is OwnableUpgradeable, IGaugeController {
             _addressProvider.getVotingEscrow()
         );
         require(
-            IERC721Upgradeable(address(votingEscrow)).ownerOf(tokenId) ==
-                msg.sender,
+            IERC721(address(votingEscrow)).ownerOf(tokenId) == msg.sender,
             "GC:V:NOT_LOCK_OWNER"
         );
 
@@ -566,9 +565,7 @@ contract GaugeController is OwnableUpgradeable, IGaugeController {
 
     function _requireLockExists(uint256 tokenId) internal view {
         try
-            IERC721Upgradeable(_addressProvider.getVotingEscrow()).ownerOf(
-                tokenId
-            ) // solhint-disable-next-line no-empty-blocks
+            IERC721(_addressProvider.getVotingEscrow()).ownerOf(tokenId) // solhint-disable-next-line no-empty-blocks
         {} catch {
             revert("GC:LOCK_NOT_FOUND");
         }
