@@ -203,7 +203,7 @@ contract Vault is
             0
         );
 
-        address erc20Token = token == address(0) ? address(_weth) : token;
+        address erc20Token = (token == address(0) ? address(_weth) : token);
         address liquidityToken = _liquidityTokens[nft][erc20Token];
 
         if (liquidityToken == address(0)) {
@@ -848,31 +848,41 @@ contract Vault is
     }
 
     function _receiveToken(address token, uint256 amount) internal {
-        if (token == address(0)) {
-            // In the case the user sends more ETH than needed, send it back
-            if (msg.value > amount) {
-                (bool sent, ) = msg.sender.call{value: msg.value - amount}("");
-                if (!sent) {
-                    revert ETHTransferFailed();
+        if (amount > 0) {
+            if (token == address(0)) {
+                // In the case the user sends more ETH than needed, send it back
+                if (msg.value > amount) {
+                    (bool sent, ) = msg.sender.call{value: msg.value - amount}(
+                        ""
+                    );
+                    if (!sent) {
+                        revert ETHTransferFailed();
+                    }
                 }
+                // Deposit in WETH contract
+                _weth.deposit{value: amount}();
+            } else {
+                IERC20(token).safeTransferFrom(
+                    msg.sender,
+                    address(this),
+                    amount
+                );
             }
-            // Deposit in WETH contract
-            _weth.deposit{value: amount}();
-        } else {
-            IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
         }
     }
 
     function _sendToken(address token, address to, uint256 amount) internal {
-        if (token == address(0)) {
-            // Withdraw from WETH contract
-            _weth.withdraw(amount);
-            (bool sent, ) = to.call{value: amount}("");
-            if (!sent) {
-                revert ETHTransferFailed();
+        if (amount > 0) {
+            if (token == address(0)) {
+                // Withdraw from WETH contract
+                _weth.withdraw(amount);
+                (bool sent, ) = to.call{value: amount}("");
+                if (!sent) {
+                    revert ETHTransferFailed();
+                }
+            } else {
+                IERC20(token).safeTransfer(to, amount);
             }
-        } else {
-            IERC20(token).safeTransfer(to, amount);
         }
     }
 
