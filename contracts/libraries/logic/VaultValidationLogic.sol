@@ -13,14 +13,12 @@ error NFTMismatch();
 error TokenMismatch();
 error EmptyLiquidity();
 error LiquidityMismatch();
-error IsBuyLP();
-error IsSellLP();
-error InsufficientTokensInLP();
+error InsufficientTokensInLiquidity();
 error EmptyDeposit();
 error TokensOnly();
 error NFTsOnly();
 error InvalidDelta();
-error InvalidCurve();
+error InvalidCurve(address curve);
 error InvalidFee();
 error InvalidSwapFee();
 error InvalidSwap1155();
@@ -107,13 +105,12 @@ library VaultValidationLogic {
                     type(IPricingCurve).interfaceId
                 )
             ) {
-                revert InvalidCurve();
+                revert InvalidCurve(curve);
             }
         } else if (curve != address(0)) {
-            revert InvalidCurve();
+            revert InvalidCurve(curve);
         }
-
-        // Validate LP params for chosen curve
+        // Validate liquidity params for chosen curve
         if (liquidityType != DataTypes.LiquidityType.Swap) {
             IPricingCurve(curve).validateLiquidityParameters(
                 spotPrice,

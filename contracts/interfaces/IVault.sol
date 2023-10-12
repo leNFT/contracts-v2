@@ -11,12 +11,12 @@ interface IVault {
     error EmptyLiquidity();
     error LiquidityMismatch();
     error IncompatibleLiquidity(uint256 liquidityId);
-    error InsufficientTokensInLP();
+    error InsufficientTokensInLiquidity();
     error EmptyDeposit();
     error TokensOnly();
     error NFTsOnly();
     error InvalidDelta();
-    error InvalidCurve();
+    error InvalidCurve(address curve);
     error InvalidFee();
     error MaxPriceExceeded();
     error MinPriceNotReached();
@@ -62,7 +62,7 @@ interface IVault {
         address indexed user,
         uint256[] liquidityIds,
         uint256[] fromTokenIds721,
-        uint256[] boughtLp721Indexes,
+        uint256[] boughtLiquidity721Indexes,
         uint256[] toTokenIds721
     );
 

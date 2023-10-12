@@ -64,6 +64,96 @@
       "address": "0x83b5691956F4838b9DDAD979AB4233bB8d54fA07",
       "txHash": "0x8fe6c644694654c364f52777d113cd98942ebe50995067d2a8cfd2ad66c7de91",
       "kind": "transparent"
+    },
+    {
+      "address": "0x6D40f142e15325A4F8bC25d55BF832ae423B7f8D",
+      "txHash": "0x43251e704e8a3af38abfb63e5df16c5f0dbd4c6a4f4787abdec070d970336cf7",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xE7EE3395c023bD6f866a5c725367af95dE671dAa",
+      "txHash": "0xbb7019b958936269a337b8f98fe51e94dc233c7d3abceaa3c0757da7b0a327e7",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x95a05f2c8d3B55af0D27cbA3148a5E7f135C4AA9",
+      "txHash": "0x07e6f6b9f17f7d993d8dca81760a799c88c9df0842b581697ec1759a2f04fb01",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xFfc73236c9848efAFbFA0998dC98e2f176737Ddd",
+      "txHash": "0xeb2e1aea456e4c8a1db0f055be09ba125f180e2926202d168d4e24c7fe4592c5",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xa5685EDCd754dD936F4F1e8f4264eb9799872Cc8",
+      "txHash": "0x8a36caed82d2759b67cd5326bf22d24886fec7dfbe463ee5443aea66d770b33f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xb8a92a8F63c2fBB25827Ca91b34004645CEad0a9",
+      "txHash": "0x36839ed1c93c13e81fe0eece894ca0b5e98b124eb3e29d462d6bee657ca53134",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xcA281E67c57Fd2fB2D7Ad2A2f8479Ce800f6973c",
+      "txHash": "0x18708d5e4182a0c1683eb83b5fb1114745791f1c1f56a5091965f9c5f930959f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1F6eF37680ef2aDA6da21394a4841368fB020bF8",
+      "txHash": "0xb96556d7486fb1b7d445b0110e3efc88bf419175a5bc345ec20d73ed9631cc29",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xF1Ceba60cA2C94F73cb6db162eE7ad7391D17a44",
+      "txHash": "0x084a85d1a484412ee0010b7bfbeddefe7272ac797c34a0371bd913bda4783f00",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xC50579255036904aA8d0674Cdfb72039d7af10a0",
+      "txHash": "0x888c7cda3d35aee74ca86a468bfe6c17de0aa2d97bb08e9fe4a6a87d2d211796",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x464005BA5a7f45E15e3Df0f7284b68F986F68a4F",
+      "txHash": "0x074e94e8fbf08dee0bf8d335eaf636315573aa83c3e83c4371e6d2cf66d39a44",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xD08219D49C3d5886509759103f558d6a2fC90644",
+      "txHash": "0xc931a19bb5f793914f76997ba946fb57a8508f9ccbad6fc1fbcad982ecbe8797",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x596c1DeA3fd081940977f544BA34cDE052B90FB4",
+      "txHash": "0x1d865405f4272ee20728666c1caf96a4a1f8ebfa13306a2e063b45d713584393",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x28a14ff06c893478C4a9d4faAF5d1824f914B0cd",
+      "txHash": "0x1f84b904fc523c38c032356670ee863c915e791ffa72db4e889cae42f80a2411",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1428731C16fC1CB82B031A7ed6B1E3e1BF816B8e",
+      "txHash": "0xe134596bd2a56640b88c47043ab1f376306dd1a1cbde5469561fc4e5cc3ad7cc",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x7f4523160610c8a1450Aeb9496606bD3dFEB724C",
+      "txHash": "0xd9caa03192fc4770b8e73241ae8c59ea9806bd98955c60122e3f21414244e584",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6625492F2aa22600B89cBc2e5393aEc53f5294Ff",
+      "txHash": "0x31012dd65876b0d192d6fb79a22d8978de43f3e36410b35f6b285651b0360bab",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xa590fc13c720530A762876761478F1C6E8A243B6",
+      "txHash": "0x24217432f2c84bfdb3fb1d262281c99bee1029cdb765e0c6cded1e22a4be253b",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -1936,6 +2026,2496 @@
     "4927ea403665bc06b4c4882a698686b76897fb9154518f2a42b2cf8eb3ef40db": {
       "address": "0xEc3B95D1016e239Fb3Ed95AcB9AD6555Adc57aAa",
       "txHash": "0xed9c058372ebe0196b7ba00e89a4c11426012a5d0359f18d929a60ec5514007f",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_lockHistoryPointer",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:20"
+          },
+          {
+            "label": "_epochFees",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:22"
+          },
+          {
+            "label": "_lockNextClaimableEpoch",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:23"
+          },
+          {
+            "label": "_accountedFees",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:26"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "a2ebc700fcb318c1d600b662055f0c5a84cb5c2c97091e8cb631d0169ceebc1c": {
+      "address": "0x5302Df102f2aAD02dabF44111866A0DF292E353C",
+      "txHash": "0x8ce27d75899457233ac18f7647ec36248a2ba90762f1c3446a8da7c44b210756",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_isPriceCurve",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:34"
+          },
+          {
+            "label": "_liquidityTokens",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_address))",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:35"
+          },
+          {
+            "label": "_liquidityIdToken",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:36"
+          },
+          {
+            "label": "_liquidityCount",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:37"
+          },
+          {
+            "label": "_liquidity721",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity721)6858_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:38"
+          },
+          {
+            "label": "_liquidity1155",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity1155)6880_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:39"
+          },
+          {
+            "label": "_liquidityTokenStandard",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_enum(TokenStandard)6905)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:40"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_bool",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:41"
+          },
+          {
+            "label": "_protocolFeePercentage",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:42"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_enum(LiquidityType)6834": {
+            "label": "enum DataTypes.LiquidityType",
+            "members": [
+              "Trade",
+              "TradeUp",
+              "TradeDown",
+              "Buy",
+              "Sell",
+              "Swap"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(TokenStandard)6905": {
+            "label": "enum DataTypes.TokenStandard",
+            "members": [
+              "ERC721",
+              "ERC1155"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_address))": {
+            "label": "mapping(address => mapping(address => address))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_enum(TokenStandard)6905)": {
+            "label": "mapping(uint256 => enum DataTypes.TokenStandard)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity1155)6880_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity1155)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity721)6858_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity721)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Liquidity1155)6880_storage": {
+            "label": "struct DataTypes.Liquidity1155",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftAmount",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6834",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(Liquidity721)6858_storage": {
+            "label": "struct DataTypes.Liquidity721",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "swapFee",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6834",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_uint128": {
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "93bf2a8d0dd69d55fed3c53bc210b43133d74a02c8b0190061f631456649fcc2": {
+      "address": "0x8954D8e4a525857580B95F9C22778F4E8843d78e",
+      "txHash": "0xf30e349a4c6c228a263a6b5521e1964259c41e890a311ad009eba36b29eb41ba",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_lockHistoryPointer",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:20"
+          },
+          {
+            "label": "_epochFees",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:22"
+          },
+          {
+            "label": "_lockNextClaimableEpoch",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:23"
+          },
+          {
+            "label": "_accountedFees",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:26"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "7b01edfe6439454599ce48aee76e97644dbb0b7e1f9c8da873b6ad4c18c2e958": {
+      "address": "0x24062e9F49929cc6A48e34b9E2fefb2A4e9B1b74",
+      "txHash": "0xe6292f7e8ce82e125cd4fffd6386527433fe911a408d0ee910c823ed6f322aad",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_isPriceCurve",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:34"
+          },
+          {
+            "label": "_liquidityTokens",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_address))",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:35"
+          },
+          {
+            "label": "_liquidityIdToken",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:36"
+          },
+          {
+            "label": "_liquidityCount",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:37"
+          },
+          {
+            "label": "_liquidity721",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity721)6863_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:38"
+          },
+          {
+            "label": "_liquidity1155",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity1155)6885_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:39"
+          },
+          {
+            "label": "_liquidityTokenStandard",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_enum(TokenStandard)6910)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:40"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_bool",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:41"
+          },
+          {
+            "label": "_protocolFeePercentage",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:42"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_enum(LiquidityType)6839": {
+            "label": "enum DataTypes.LiquidityType",
+            "members": [
+              "Trade",
+              "TradeUp",
+              "TradeDown",
+              "Buy",
+              "Sell",
+              "Swap"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(TokenStandard)6910": {
+            "label": "enum DataTypes.TokenStandard",
+            "members": [
+              "ERC721",
+              "ERC1155"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_address))": {
+            "label": "mapping(address => mapping(address => address))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_enum(TokenStandard)6910)": {
+            "label": "mapping(uint256 => enum DataTypes.TokenStandard)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity1155)6885_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity1155)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity721)6863_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity721)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Liquidity1155)6885_storage": {
+            "label": "struct DataTypes.Liquidity1155",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftAmount",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6839",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(Liquidity721)6863_storage": {
+            "label": "struct DataTypes.Liquidity721",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "swapFee",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6839",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_uint128": {
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "4310c4fbe4835a2abd2ae119de4d782b1dd8a0d68bd79f798751da2da9f46fd9": {
+      "address": "0x6e9C8BD78ae37eFC7DEad33aA20A609C38534DA4",
+      "txHash": "0x86b20718c08d8bb93445b6b27bb9ca590ac4869113f50ad33ecd52597317f8fa",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_lockHistoryPointer",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:20"
+          },
+          {
+            "label": "_epochFees",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:22"
+          },
+          {
+            "label": "_lockNextClaimableEpoch",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:23"
+          },
+          {
+            "label": "_accountedFees",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:26"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "8b6b2cda2c85eb99678036f56c359c4d134298d7aa01ea514a243ed0abc98fcb": {
+      "address": "0xa1371A4B5765bD873567A19D7b4543110F543a17",
+      "txHash": "0x842e93173f96143888d43b67a89e0d8e4da62a691d4794f9448799e03553aeaa",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_isPriceCurve",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:34"
+          },
+          {
+            "label": "_liquidityTokens",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_address))",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:35"
+          },
+          {
+            "label": "_liquidityIdToken",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:36"
+          },
+          {
+            "label": "_liquidityCount",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:37"
+          },
+          {
+            "label": "_liquidity721",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity721)6863_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:38"
+          },
+          {
+            "label": "_liquidity1155",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity1155)6885_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:39"
+          },
+          {
+            "label": "_liquidityTokenStandard",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_enum(TokenStandard)6910)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:40"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_bool",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:41"
+          },
+          {
+            "label": "_protocolFeePercentage",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:42"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_enum(LiquidityType)6839": {
+            "label": "enum DataTypes.LiquidityType",
+            "members": [
+              "Trade",
+              "TradeUp",
+              "TradeDown",
+              "Buy",
+              "Sell",
+              "Swap"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(TokenStandard)6910": {
+            "label": "enum DataTypes.TokenStandard",
+            "members": [
+              "ERC721",
+              "ERC1155"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_address))": {
+            "label": "mapping(address => mapping(address => address))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_enum(TokenStandard)6910)": {
+            "label": "mapping(uint256 => enum DataTypes.TokenStandard)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity1155)6885_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity1155)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity721)6863_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity721)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Liquidity1155)6885_storage": {
+            "label": "struct DataTypes.Liquidity1155",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftAmount",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6839",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(Liquidity721)6863_storage": {
+            "label": "struct DataTypes.Liquidity721",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "swapFee",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6839",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_uint128": {
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "a27aa53282be8df1dbf589c724d03db4c26fc6f0d7bc20166ffff2a2f9b3821f": {
+      "address": "0x010b5D6aE36C6E3F08a1C50531b8E3AE15595F43",
+      "txHash": "0x779da3f7044bbd2409ff9b715ae9ef136fa0495202ba4a64ca84774e103af4c5",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_lockHistoryPointer",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:20"
+          },
+          {
+            "label": "_epochFees",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:22"
+          },
+          {
+            "label": "_lockNextClaimableEpoch",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:23"
+          },
+          {
+            "label": "_accountedFees",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:26"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "022ce33007e3eebcf2f64f273ce742015223de03f15fd5d9d70875433480d910": {
+      "address": "0xDc1D947286d972FD7dA5D59ceE8D327E5C587FB1",
+      "txHash": "0xe12286ef584e2821d607c0debf5d4c7939021176dec8748eb3fc7ac770b6600c",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_isPriceCurve",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:34"
+          },
+          {
+            "label": "_liquidityTokens",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_address))",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:35"
+          },
+          {
+            "label": "_liquidityIdToken",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:36"
+          },
+          {
+            "label": "_liquidityCount",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:37"
+          },
+          {
+            "label": "_liquidity721",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity721)6863_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:38"
+          },
+          {
+            "label": "_liquidity1155",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity1155)6885_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:39"
+          },
+          {
+            "label": "_liquidityTokenStandard",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_enum(TokenStandard)6910)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:40"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_bool",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:41"
+          },
+          {
+            "label": "_protocolFeePercentage",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:42"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_enum(LiquidityType)6839": {
+            "label": "enum DataTypes.LiquidityType",
+            "members": [
+              "Trade",
+              "TradeUp",
+              "TradeDown",
+              "Buy",
+              "Sell",
+              "Swap"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(TokenStandard)6910": {
+            "label": "enum DataTypes.TokenStandard",
+            "members": [
+              "ERC721",
+              "ERC1155"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_address))": {
+            "label": "mapping(address => mapping(address => address))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_enum(TokenStandard)6910)": {
+            "label": "mapping(uint256 => enum DataTypes.TokenStandard)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity1155)6885_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity1155)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity721)6863_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity721)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Liquidity1155)6885_storage": {
+            "label": "struct DataTypes.Liquidity1155",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftAmount",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6839",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(Liquidity721)6863_storage": {
+            "label": "struct DataTypes.Liquidity721",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "swapFee",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6839",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_uint128": {
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "cd514fa1886a705265dd705a4c84d9591e327cf4de613215c3920e7fcd8752bb": {
+      "address": "0x4bcC5B1Bf74dd87283C6f438ECE440F50b940606",
+      "txHash": "0x3b646ab97b830d3c0b5a15b97be884df6ac31b7d5ebe776ac335b2cc8b8c4d99",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_lockHistoryPointer",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:20"
+          },
+          {
+            "label": "_epochFees",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:22"
+          },
+          {
+            "label": "_lockNextClaimableEpoch",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:23"
+          },
+          {
+            "label": "_accountedFees",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:26"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "cead9de7b8eabfd562bbe3c092994f07bf232bfef9934ed93a84a690ecd3155b": {
+      "address": "0x0E335C779441bfA587AA5D647566b01cB43B6202",
+      "txHash": "0xfeddb840831d262a16af1d1c4c06ecb8dd1437d3ca2860ad4d077e466a5dc148",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_isPriceCurve",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:34"
+          },
+          {
+            "label": "_liquidityTokens",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_address))",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:35"
+          },
+          {
+            "label": "_liquidityIdToken",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:36"
+          },
+          {
+            "label": "_liquidityCount",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:37"
+          },
+          {
+            "label": "_liquidity721",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity721)6863_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:38"
+          },
+          {
+            "label": "_liquidity1155",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity1155)6885_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:39"
+          },
+          {
+            "label": "_liquidityTokenStandard",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_enum(TokenStandard)6910)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:40"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_bool",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:41"
+          },
+          {
+            "label": "_protocolFeePercentage",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:42"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_enum(LiquidityType)6839": {
+            "label": "enum DataTypes.LiquidityType",
+            "members": [
+              "Trade",
+              "TradeUp",
+              "TradeDown",
+              "Buy",
+              "Sell",
+              "Swap"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(TokenStandard)6910": {
+            "label": "enum DataTypes.TokenStandard",
+            "members": [
+              "ERC721",
+              "ERC1155"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_address))": {
+            "label": "mapping(address => mapping(address => address))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_enum(TokenStandard)6910)": {
+            "label": "mapping(uint256 => enum DataTypes.TokenStandard)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity1155)6885_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity1155)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity721)6863_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity721)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Liquidity1155)6885_storage": {
+            "label": "struct DataTypes.Liquidity1155",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftAmount",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6839",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(Liquidity721)6863_storage": {
+            "label": "struct DataTypes.Liquidity721",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "swapFee",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6839",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_uint128": {
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "76137e5b5867cfa4c715332a914af84a2796ea51964e102e23cb3267a61ca1c4": {
+      "address": "0x5657B03401641FA6A91B698a3960C326d5DfB03c",
+      "txHash": "0x1a085f2a2128dac1f1b7d9ab909072094400efb5ac359b183945b8e4fac06cad",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_lockHistoryPointer",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:20"
+          },
+          {
+            "label": "_epochFees",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:22"
+          },
+          {
+            "label": "_lockNextClaimableEpoch",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:23"
+          },
+          {
+            "label": "_accountedFees",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FeeDistributor",
+            "src": "contracts/protocol/FeeDistributor.sol:26"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "a5cce6757acb652eb7469f378f8c5858083437804d608b8a48938c60783af81a": {
+      "address": "0xFF749dA61Eb615Df565EaFcE4c34D863734F796d",
+      "txHash": "0x574f9f0750fd0cf58e1ee61b8665dbd5c2d1bf3c01216b0fff18f26b618286c6",
+      "layout": {
+        "solcVersion": "0.8.21",
+        "storage": [
+          {
+            "label": "_isPriceCurve",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:34"
+          },
+          {
+            "label": "_liquidityTokens",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_address))",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:35"
+          },
+          {
+            "label": "_liquidityIdToken",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:36"
+          },
+          {
+            "label": "_liquidityCount",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:37"
+          },
+          {
+            "label": "_liquidity721",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity721)6075_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:38"
+          },
+          {
+            "label": "_liquidity1155",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_struct(Liquidity1155)6097_storage)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:39"
+          },
+          {
+            "label": "_liquidityTokenStandard",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_enum(TokenStandard)6122)",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:40"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_bool",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:41"
+          },
+          {
+            "label": "_protocolFeePercentage",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts/protocol/Trading/Vault.sol:42"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_enum(LiquidityType)6051": {
+            "label": "enum DataTypes.LiquidityType",
+            "members": [
+              "Trade",
+              "TradeUp",
+              "TradeDown",
+              "Buy",
+              "Sell",
+              "Swap"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(TokenStandard)6122": {
+            "label": "enum DataTypes.TokenStandard",
+            "members": [
+              "ERC721",
+              "ERC1155"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_address))": {
+            "label": "mapping(address => mapping(address => address))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_enum(TokenStandard)6122)": {
+            "label": "mapping(uint256 => enum DataTypes.TokenStandard)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity1155)6097_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity1155)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Liquidity721)6075_storage)": {
+            "label": "mapping(uint256 => struct DataTypes.Liquidity721)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Liquidity1155)6097_storage": {
+            "label": "struct DataTypes.Liquidity1155",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftAmount",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6051",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(Liquidity721)6075_storage": {
+            "label": "struct DataTypes.Liquidity721",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nft",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nftIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "swapFee",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "tokenAmount",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "3"
+              },
+              {
+                "label": "spotPrice",
+                "type": "t_uint128",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint128",
+                "offset": 16,
+                "slot": "4"
+              },
+              {
+                "label": "curve",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "5"
+              },
+              {
+                "label": "liquidityType",
+                "type": "t_enum(LiquidityType)6051",
+                "offset": 22,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_uint128": {
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "f4b10757df523d76691ab5dd4bd75a8355825fd2491ec32a379811dc0b60d462": {
+      "address": "0xd1e7F3f551916Cf2A48A2258A6fc5aEBd89091A6",
+      "txHash": "0x71b0fedc924260fb3b74ee69396173a7a965f30f2c684d99dfc4521416224c58",
       "layout": {
         "solcVersion": "0.8.21",
         "storage": [

@@ -108,16 +108,22 @@ contract LinearPriceCurve is IPricingCurve, ERC165 {
         uint256 delta,
         uint256 fee
     ) external pure override {
-        require(spotPrice > 0, "LPC:VLP:INVALID_PRICE");
-        require(delta < spotPrice, "LPC:VLP:INVALID_DELTA");
+        if (spotPrice == 0) {
+            revert InvalidPrice();
+        }
+        if (delta >= spotPrice) {
+            revert InvalidDelta();
+        }
 
         if (fee > 0 && delta > 0) {
             // Make sure the liquidity can't be drained by buying and selling from the same liquidity
-            require(
-                (spotPrice - delta) * (PercentageMath.PERCENTAGE_FACTOR + fee) >
-                    spotPrice * (PercentageMath.PERCENTAGE_FACTOR - fee),
-                "LPC:VLP:INVALID_FEE_DELTA_RATIO"
-            );
+            if (
+                (spotPrice - delta) *
+                    (PercentageMath.PERCENTAGE_FACTOR + fee) <=
+                spotPrice * (PercentageMath.PERCENTAGE_FACTOR - fee)
+            ) {
+                revert InvalidFeeDeltaRatio();
+            }
         }
     }
 

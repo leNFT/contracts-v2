@@ -8,7 +8,6 @@ import {IPricingCurve} from "../../interfaces/IPricingCurve.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/interfaces/IERC721Metadata.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {LiquidityToken} from "../../protocol/Trading/LiquidityToken.sol";
-import "hardhat/console.sol";
 
 library VaultGeneralLogic {
     event CreateLiquidityToken(
@@ -22,7 +21,7 @@ library VaultGeneralLogic {
         DataTypes.Liquidity721 storage liquidityPointer,
         uint256 fee,
         uint256 protocolFeePercentage,
-        uint256 lp721Index
+        uint256 liquidity721Index
     ) external {
         // Update token amount in liquidity
         liquidityPointer.tokenAmount += SafeCast.toUint128(
@@ -41,7 +40,7 @@ library VaultGeneralLogic {
             );
         }
 
-        liquidityPointer.nftIds[lp721Index] = liquidity.nftIds[
+        liquidityPointer.nftIds[liquidity721Index] = liquidity.nftIds[
             liquidity.nftIds.length - 1
         ];
         liquidityPointer.nftIds.pop();
@@ -137,7 +136,7 @@ library VaultGeneralLogic {
         address nft,
         address token
     ) external returns (address liquidityToken) {
-        // Create the NFT LP contract if it doesn't exist
+        // Create the NFT Liquidity contract if it doesn't exist
         string memory name = "leNFT2 Liquidity Token";
         string memory symbol = "leNFT2";
         string memory tokenSymbol = IERC20Metadata(token).symbol();
@@ -158,7 +157,7 @@ library VaultGeneralLogic {
             }
         }
 
-        // Deploy ERC721 LP contract
+        // Deploy ERC721 liquidity contract
         liquidityToken = address(
             new LiquidityToken(
                 string.concat(name, nftSymbol, "-", tokenSymbol),

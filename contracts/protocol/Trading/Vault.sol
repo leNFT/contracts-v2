@@ -269,7 +269,7 @@ contract Vault is
     }
 
     /// @notice Private function that removes a liquidity pair, sending back deposited tokens and transferring the NFTs to the user
-    /// @param liquidityId The ID of the LP token to remove
+    /// @param liquidityId The ID of the liquidity to remove
     /// @param unwrap Whether to unwrap WETH to ETH
     function _removeLiquidity(
         uint256 liquidityId,
@@ -374,7 +374,7 @@ contract Vault is
                     if (liquidity721.nft == address(0)) {
                         revert NonexistentLiquidity();
                     }
-                    // Can't sell to sell or swap LP
+                    // Can't sell to sell or swap liquidity
                     if (
                         liquidity721.liquidityType ==
                         DataTypes.LiquidityType.Sell ||
@@ -407,7 +407,7 @@ contract Vault is
                                 protocolFeePercentage
                             )
                     ) {
-                        revert InsufficientTokensInLP();
+                        revert InsufficientTokensInLiquidity();
                     }
 
                     // Update total price quote and fee sum
@@ -442,7 +442,7 @@ contract Vault is
                         revert NonexistentLiquidity();
                     }
 
-                    // Can't sell to sell LP
+                    // Can't sell to sell liquidity
                     if (
                         liquidity1155.liquidityType ==
                         DataTypes.LiquidityType.Sell
@@ -479,7 +479,7 @@ contract Vault is
                                 protocolFeePercentage
                             )
                     ) {
-                        revert InsufficientTokensInLP();
+                        revert InsufficientTokensInLiquidity();
                     }
 
                     // Update total price quote and fee sum
@@ -556,7 +556,7 @@ contract Vault is
                         revert TokenMismatch();
                     }
 
-                    // Can't buy from buy LP
+                    // Can't buy from buy liquidity
                     if (
                         liquidity721.liquidityType ==
                         DataTypes.LiquidityType.Buy
@@ -625,7 +625,7 @@ contract Vault is
                         revert TokenMismatch();
                     }
 
-                    // Can't buy from buy LP
+                    // Can't buy from buy liquidity
                     if (
                         liquidity1155.liquidityType ==
                         DataTypes.LiquidityType.Buy
@@ -638,9 +638,9 @@ contract Vault is
                     if (
                         swapParams.buy.liquidity1155Amounts[
                             i - swapParams.buy.liquidity721Indexes.length
-                        ] > liquidity1155.tokenAmount
+                        ] > liquidity1155.nftAmount
                     ) {
-                        revert InsufficientTokensInLP();
+                        revert InsufficientTokensInLiquidity();
                     }
 
                     uint256 feeAmount = PercentageMath.percentMul(

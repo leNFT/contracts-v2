@@ -5,7 +5,6 @@ import {IPricingCurve} from "../../../interfaces/IPricingCurve.sol";
 import {PercentageMath} from "../../../libraries/utils/PercentageMath.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {FixedPointMathLib} from "solmate/src/utils/FixedPointMathLib.sol";
-import "hardhat/console.sol";
 
 /// @title Exponential Price Curve Contract
 /// @author leNFT
@@ -127,20 +126,23 @@ contract ExponentialPriceCurve is IPricingCurve, ERC165 {
         uint256 delta,
         uint256 fee
     ) external pure override {
-        require(spotPrice > 0, "EPC:VLP:INVALID_PRICE");
-        require(
-            delta < PercentageMath.PERCENTAGE_FACTOR,
-            "EPC:VLP:INVALID_DELTA"
-        );
+        if (spotPrice == 0) {
+            revert InvalidPrice();
+        }
+        if (delta >= PercentageMath.PERCENTAGE_FACTOR) {
+            revert InvalidDelta();
+        }
+
         if (fee > 0 && delta > 0) {
             // If this doesn't happen then a user would be able to profitably buy and sell from the same liquidity and drain its funds
-            require(
+            if (
                 PercentageMath.PERCENTAGE_FACTOR *
-                    (PercentageMath.PERCENTAGE_FACTOR + fee) >
-                    (PercentageMath.PERCENTAGE_FACTOR + delta) *
-                        (PercentageMath.PERCENTAGE_FACTOR - fee),
-                "EPC:VLP:INVALID_FEE_DELTA_RATIO"
-            );
+                    (PercentageMath.PERCENTAGE_FACTOR + fee) <=
+                (PercentageMath.PERCENTAGE_FACTOR + delta) *
+                    (PercentageMath.PERCENTAGE_FACTOR - fee)
+            ) {
+                revert InvalidFeeDeltaRatio();
+            }
         }
     }
 

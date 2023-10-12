@@ -2,6 +2,10 @@
 pragma solidity 0.8.21;
 
 interface IPricingCurve {
+    error InvalidPrice();
+    error InvalidDelta();
+    error InvalidFeeDeltaRatio();
+
     function priceAfterBuy(
         uint256 price,
         uint256 delta,
