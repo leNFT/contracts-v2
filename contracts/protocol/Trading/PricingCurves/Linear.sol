@@ -106,7 +106,8 @@ contract LinearPriceCurve is IPricingCurve, ERC165 {
     function validateLiquidityParameters(
         uint256 spotPrice,
         uint256 delta,
-        uint256 fee
+        uint256 fee,
+        uint256 protocolFeePercentage
     ) external pure override {
         if (spotPrice == 0) {
             revert InvalidPrice();
@@ -116,11 +117,15 @@ contract LinearPriceCurve is IPricingCurve, ERC165 {
         }
 
         if (fee > 0 && delta > 0) {
+            uint256 feeLimit = PercentageMath.percentMul(
+                fee,
+                protocolFeePercentage
+            );
             // Make sure the liquidity can't be drained by buying and selling from the same liquidity
             if (
                 (spotPrice - delta) *
-                    (PercentageMath.PERCENTAGE_FACTOR + fee) <=
-                spotPrice * (PercentageMath.PERCENTAGE_FACTOR - fee)
+                    (PercentageMath.PERCENTAGE_FACTOR + feeLimit) <=
+                spotPrice * (PercentageMath.PERCENTAGE_FACTOR - feeLimit)
             ) {
                 revert InvalidFeeDeltaRatio();
             }

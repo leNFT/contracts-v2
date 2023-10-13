@@ -124,7 +124,8 @@ contract ExponentialPriceCurve is IPricingCurve, ERC165 {
     function validateLiquidityParameters(
         uint256 spotPrice,
         uint256 delta,
-        uint256 fee
+        uint256 fee,
+        uint256 protocolFeePercentage
     ) external pure override {
         if (spotPrice == 0) {
             revert InvalidPrice();
@@ -134,12 +135,16 @@ contract ExponentialPriceCurve is IPricingCurve, ERC165 {
         }
 
         if (fee > 0 && delta > 0) {
+            uint256 feeLimit = PercentageMath.percentMul(
+                fee,
+                PercentageMath.PERCENTAGE_FACTOR - protocolFeePercentage
+            );
             // If this doesn't happen then a user would be able to profitably buy and sell from the same liquidity and drain its funds
             if (
                 PercentageMath.PERCENTAGE_FACTOR *
-                    (PercentageMath.PERCENTAGE_FACTOR + fee) <=
+                    (PercentageMath.PERCENTAGE_FACTOR + feeLimit) <=
                 (PercentageMath.PERCENTAGE_FACTOR + delta) *
-                    (PercentageMath.PERCENTAGE_FACTOR - fee)
+                    (PercentageMath.PERCENTAGE_FACTOR - feeLimit)
             ) {
                 revert InvalidFeeDeltaRatio();
             }

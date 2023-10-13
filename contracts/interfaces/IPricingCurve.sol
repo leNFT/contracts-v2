@@ -46,6 +46,7 @@ interface IPricingCurve {
     function validateLiquidityParameters(
         uint256 spotPrice,
         uint256 delta,
-        uint256 fee
+        uint256 fee,
+        uint256 protocolFeePercentage
     ) external view;
 }

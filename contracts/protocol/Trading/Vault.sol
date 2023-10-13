@@ -126,7 +126,8 @@ contract Vault is
             curve,
             delta,
             fee,
-            swapFee
+            swapFee,
+            _protocolFeePercentage
         );
         address liquidityToken = _liquidityTokens[nft][
             token == address(0) ? address(_weth) : token
@@ -200,7 +201,8 @@ contract Vault is
             curve,
             delta,
             fee,
-            0
+            0,
+            _protocolFeePercentage
         );
 
         address erc20Token = (token == address(0) ? address(_weth) : token);

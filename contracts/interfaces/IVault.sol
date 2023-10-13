@@ -24,6 +24,10 @@ interface IVault {
     error NFTMismatch();
     error Paused();
     error NonexistentLiquidity();
+    error InvalidSwapFee();
+    error InvalidSwap1155();
+    error InvalidCurveParams();
+
     event AddLiquidity(
         address indexed user,
         DataTypes.TokenStandard indexed tokenStandard,

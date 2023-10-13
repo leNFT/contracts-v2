@@ -9,11 +9,6 @@ import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165C
 
 error NotLiquidityOwner();
 error WrongMessageValue();
-error NFTMismatch();
-error TokenMismatch();
-error EmptyLiquidity();
-error LiquidityMismatch();
-error InsufficientTokensInLiquidity();
 error EmptyDeposit();
 error TokensOnly();
 error NFTsOnly();
@@ -23,7 +18,6 @@ error InvalidFee();
 error InvalidSwapFee();
 error InvalidSwap1155();
 error InvalidCurveParams();
-error NonexistentLiquidity();
 
 library VaultValidationLogic {
     uint256 constant MAX_FEE = 8000;
@@ -40,7 +34,8 @@ library VaultValidationLogic {
         address curve,
         uint256 delta,
         uint256 fee,
-        uint256 swapFee
+        uint256 swapFee,
+        uint256 protocolFeePercentage
     ) external view {
         // If the user is sending ETH we check the message value
         if (token == address(0) && msg.value != tokenAmount) {
@@ -115,7 +110,8 @@ library VaultValidationLogic {
             IPricingCurve(curve).validateLiquidityParameters(
                 spotPrice,
                 delta,
-                fee
+                fee,
+                protocolFeePercentage
             );
         } else if (spotPrice > 0 || delta > 0 || fee > 0) {
             revert InvalidCurveParams();
